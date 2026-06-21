@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — AnimeWave</title>
+  <link rel="icon" href="logo.PNG" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'aw': { bg:'#0a0a0a', bg2:'#141414', card:'#1a1a1a', border:'#2a2a2a', fg:'#f0f0f0', muted:'#8a8a8a', accent:'#e63946', accentL:'#ff6b6b', accentD:'#c1121f' }
+          },
+          fontFamily: { display:['"Dela Gothic One"','cursive'], body:['"Outfit"','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden;scrollbar-width:none}
+    html::-webkit-scrollbar,body::-webkit-scrollbar{width:0;height:0;display:none}
+
+    /* Background orbs */
+    .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:0.12;pointer-events:none;z-index:0}
+    .bg-orb-1{width:500px;height:500px;background:#e63946;top:-150px;left:-150px;animation:orbFloat1 22s ease-in-out infinite}
+    .bg-orb-2{width:400px;height:400px;background:#ff6b6b;bottom:-100px;right:-100px;animation:orbFloat2 28s ease-in-out infinite}
+    .bg-orb-3{width:300px;height:300px;background:#c1121f;top:50%;left:50%;transform:translate(-50%,-50%);animation:orbFloat3 18s ease-in-out infinite}
+    @keyframes orbFloat1{0%,100%{transform:translate(0,0)}33%{transform:translate(120px,180px)}66%{transform:translate(-60px,100px)}}
+    @keyframes orbFloat2{0%,100%{transform:translate(0,0)}33%{transform:translate(-100px,-120px)}66%{transform:translate(80px,-60px)}}
+    @keyframes orbFloat3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-30%,-60%) scale(1.2)}}
+
+    /* Grid background */
+    .bg-grid{background-image:radial-gradient(circle,#1a1a1a 1px,transparent 1px);background-size:40px 40px}
+
+    /* Glitch */
+    .glitch{position:relative;display:inline-block}
+    .glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+    .glitch::before{animation:glitch1 4s infinite;color:#e63946;z-index:-1}
+    .glitch::after{animation:glitch2 4s infinite;color:#ff6b6b;z-index:-2}
+    @keyframes glitch1{0%,92%,100%{clip-path:inset(0)}93%{clip-path:inset(15% 0 45% 0);transform:translate(-5px,0)}95%{clip-path:inset(55% 0 15% 0);transform:translate(5px,0)}97%{clip-path:inset(0)}}
+    @keyframes glitch2{0%,90%,100%{clip-path:inset(0)}91%{clip-path:inset(35% 0 25% 0);transform:translate(5px,0)}94%{clip-path:inset(5% 0 65% 0);transform:translate(-5px,0)}96%{clip-path:inset(0)}}
+
+    /* Ghost */
+    .ghost-wrap{position:relative;width:140px;height:140px;margin:0 auto}
+    .ghost-body{position:absolute;inset:0;border-radius:50% 50% 45% 45%;background:linear-gradient(145deg,#1a1a1a 0%,#252525 100%);border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);overflow:hidden}
+    .ghost-body::before{content:'';position:absolute;top:8px;left:8px;right:8px;bottom:8px;border-radius:inherit;background:radial-gradient(ellipse at 30% 20%,rgba(230,57,70,0.08) 0%,transparent 60%);pointer-events:none}
+    .ghost-body:hover{transform:scale(1.08);border-color:rgba(230,57,70,0.4);box-shadow:0 0 40px -10px rgba(230,57,70,0.2),0 0 0 1px rgba(230,57,70,0.15) inset}
+    .ghost-body:hover .ghost-eyes{transform:translateX(4px)}
+    .ghost-eyes{display:flex;gap:18px;transition:transform 0.3s ease}
+    .ghost-eye{width:16px;height:20px;background:#e63946;border-radius:50%;position:relative;overflow:hidden}
+    .ghost-eye::after{content:'';position:absolute;width:6px;height:6px;background:#0a0a0a;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);animation:eyeMove 4s ease-in-out infinite}
+    @keyframes eyeMove{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(-20%,-60%)}50%{transform:translate(20%,-40%)}75%{transform:translate(0%,-60%)}}
+    .ghost-mouth{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:#e63946;opacity:0.6}
+
+    /* Pulse rings */
+    .pulse-ring{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(230,57,70,0.25);animation:pulseRing 3s ease-out infinite;pointer-events:none}
+    .pulse-ring:nth-child(2){animation-delay:1s;border-color:rgba(230,57,70,0.15)}
+    .pulse-ring:nth-child(3){animation-delay:2s;border-color:rgba(230,57,70,0.08)}
+    @keyframes pulseRing{0%{transform:scale(0.95);opacity:1}100%{transform:scale(1.8);opacity:0}}
+
+    /* Float */
+    .float{animation:float 6s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+
+    /* Fade ins */
+    .fade-in{animation:fadeIn 0.8s ease forwards}
+    .fade-in-d1{animation:fadeIn 0.8s ease 0.15s forwards;opacity:0}
+    .fade-in-d2{animation:fadeIn 0.8s ease 0.3s forwards;opacity:0}
+    .fade-in-d3{animation:fadeIn 0.8s ease 0.45s forwards;opacity:0}
+    .fade-in-d4{animation:fadeIn 0.8s ease 0.6s forwards;opacity:0}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Glow line */
+    .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulse 3s ease infinite}
+    @keyframes glowPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    /* Scan line */
+    .scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(230,57,70,0.4),transparent);animation:scanDown 4s linear infinite;pointer-events:none;z-index:5}
+    @keyframes scanDown{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+
+    /* Floating particles */
+    .particle{position:absolute;border-radius:50%;background:rgba(230,57,70,0.3);pointer-events:none}
+    .particle:nth-child(1){width:3px;height:3px;top:20%;left:15%;animation:particleFloat 8s 0s ease-in-out infinite}
+    .particle:nth-child(2){width:2px;height:2px;top:60%;left:80%;animation:particleFloat 10s 2s ease-in-out infinite}
+    .particle:nth-child(3){width:4px;height:4px;top:35%;left:70%;animation:particleFloat 7s 1s ease-in-out infinite}
+    .particle:nth-child(4){width:2px;height:2px;top:75%;left:25%;animation:particleFloat 9s 3s ease-in-out infinite}
+    .particle:nth-child(5){width:3px;height:3px;top:45%;left:45%;animation:particleFloat 11s 0.5s ease-in-out infinite}
+    .particle:nth-child(6){width:2px;height:2px;top:85%;left:60%;animation:particleFloat 8s 4s ease-in-out infinite}
+    @keyframes particleFloat{0%,100%{transform:translate(0,0);opacity:0.3}25%{transform:translate(15px,-20px);opacity:0.8}50%{transform:translate(-10px,-35px);opacity:0.4}75%{transform:translate(20px,-15px);opacity:0.7}}
+
+    /* Suggestion card */
+    .suggestion-card{transition:all 0.35s cubic-bezier(0.22,1,0.36,1);opacity:0;animation:fadeIn 0.8s ease 0.8s forwards}
+    .suggestion-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 16px 48px rgba(230,57,70,0.12),0 0 0 1px rgba(230,57,70,0.15);border-color:rgba(230,57,70,0.3)}
+    .suggestion-card:hover .sug-overlay{opacity:1}
+    .suggestion-card:hover .sug-play{transform:scale(1);opacity:1}
+    .sug-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.1) 50%,transparent 70%);opacity:0;transition:opacity 0.3s ease;border-radius:0.75rem}
+    .sug-play{transform:scale(0.5);opacity:0;transition:all 0.3s ease}
+
+    /* Action buttons */
+    .action-btn{transition:all 0.25s cubic-bezier(0.22,1,0.36,1);position:relative;overflow:hidden}
+    .action-btn:hover{transform:translateY(-2px)}
+    .action-btn:active{transform:translateY(0) scale(0.97);transition-duration:0.08s}
+    .action-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transition:left 0.5s ease}
+    .action-btn:hover::before{left:100%}
+
+    /* Footer link */
+    .footer-link{transition:color 0.2s ease}
+    .footer-link:hover{color:#f0f0f0}
+
+    @media(prefers-reduced-motion:reduce){.bg-orb,.particle,.pulse-ring,.scan-line{animation:none!important}}
+    @media(max-width:640px){.glitch{font-size:6rem!important}}
+  </style>
+</head>
+<body class="min-h-screen bg-grid">
+
+  <!-- Background Orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <!-- Floating Particles -->
+  <div class="fixed inset-0 pointer-events-none z-[1]">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="min-h-screen flex flex-col relative z-[2]">
+
+    <!-- Nav -->
+    <nav class="shrink-0 bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-4">
+        <a href="index.html" class="flex items-center gap-2">
+          <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+          <span class="font-display text-aw-fg text-lg hidden sm:block">AnimeWave</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-12 relative">
+
+      <!-- Scan Line Effect -->
+      <div class="scan-line"></div>
+
+      <!-- Ghost -->
+      <div class="ghost-wrap float fade-in mb-8">
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <div class="ghost-body cursor-pointer" id="ghostBody" title="Boo!">
+          <div class="ghost-eyes">
+            <div class="ghost-eye"></div>
+            <div class="ghost-eye"></div>
+          </div>
+          <div class="ghost-mouth"></div>
+        </div>
+      </div>
+
+      <!-- 404 Number -->
+      <h1 class="glitch font-display text-[7rem] sm:text-[9rem] lg:text-[11rem] leading-none text-aw-fg mb-2 fade-in-d1" data-text="404">404</h1>
+
+      <!-- Divider -->
+      <div class="w-24 glow-line rounded-full mb-6 fade-in-d1"></div>
+
+      <!-- Text -->
+      <p class="text-xl sm:text-2xl font-semibold text-aw-fg mb-2 fade-in-d2">Lost in the void</p>
+      <p class="text-aw-muted text-sm sm:text-base max-w-md text-center leading-relaxed mb-10 fade-in-d2">The anime you're looking for doesn't exist or has been moved to another dimension.</p>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap justify-center gap-3 mb-12 fade-in-d3">
+        <a href="index.html" class="action-btn inline-flex items-center gap-2 bg-aw-accent hover:bg-aw-accentD text-white font-semibold px-7 py-3 rounded-xl shadow-lg shadow-aw-accent/20">
+          <i class="fas fa-home text-sm"></i> Back to Home
+        </a>
+        <a href="save.html" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-fg font-medium px-6 py-3 rounded-xl hover:border-aw-accent/30">
+          <i class="fas fa-bookmark text-sm"></i> My Saves
+        </a>
+        <button onclick="goRandom()" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted font-medium px-6 py-3 rounded-xl hover:text-aw-fg hover:border-aw-accent/30" id="randomBtn">
+          <i class="fas fa-dice text-sm"></i> <span class="hidden sm:inline">Random</span> Anime
+        </button>
+      </div>
+
+      <!-- Suggestion Card -->
+      <div id="suggestionArea" class="w-full max-w-xs"></div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="shrink-0 border-t border-aw-border relative z-[2]">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-8">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-aw-muted text-xs">
+          <div class="flex items-center gap-2">
+            <img src="logo.PNG" alt="" class="h-6 w-6 rounded-md object-cover">
+            <span class="font-display text-aw-fg text-sm">AnimeWave</span>
+          </div>
+          <div class="flex items-center gap-6">
+            <a href="index.html" class="footer-link">Home</a>
+            <a href="save.html" class="footer-link">Saved</a>
+            <span class="text-aw-border">|</span>
+            <span>&copy; 2025</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2"></div>
+
+  <script>
+    /* Security */
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('selectstart', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+
+    /* Toast */
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      const icons = { info: 'fa-circle-info', success: 'fa-circle-check' };
+      const colors = { info: 'border-aw-accent', success: 'border-green-500' };
+      t.className = `toast border-l-4 ${colors[type] || colors.info} bg-aw-card rounded-lg px-4 py-3 text-sm text-aw-fg shadow-2xl max-w-xs flex items-center gap-3`;
+      t.style.animation = 'fadeIn 0.3s ease forwards';
+      t.innerHTML = `<i class="fas ${icons[type] || icons.info} text-aw-accent text-base shrink-0"></i><span>${msg}</span>`;
+      c.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(120%)'; t.style.transition = 'all 0.3s ease'; setTimeout(() => t.remove(), 300); }, 2800);
+    }
+
+    /* Ghost click Easter egg */
+    let ghostClicks = 0;
+    document.getElementById('ghostBody').addEventListener('click', () => {
+      ghostClicks++;
+      const messages = [
+        'Boo!', 'Stop poking me!', 'I\'m just a ghost...', 'That tickles!', 'Find your way home!',
+        '*spooky noises*', 'I believe in you!', 'The void is cozy though', 'Almost got me!', 'Okay bye now 👋'
+      ];
+      showToast(messages[Math.min(ghostClicks - 1, messages.length - 1)], ghostClicks >= 10 ? 'success' : 'info');
+      if (ghostClicks >= 10) {
+        setTimeout(() => {
+          ghostClicks = 0;
+          showToast('Ghost counter reset — start over!', 'info');
+        }, 1500);
+      }
+    });
+
+    /* Random Anime */
+    let allAnime = [];
+    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","rating":7,"year":2024,"episodes":12,"genre":["Adventure","Fantasy"],"state":"watched"}];
+
+    async function loadSuggestion() {
+      try {
+        const res = await fetch('details.json');
+        if (!res.ok) throw new Error();
+        allAnime = await res.json();
+        if (!Array.isArray(allAnime)) allAnime = [allAnime];
+      } catch { allAnime = FALLBACK; }
+      showSuggestion();
+    }
+
+        function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
+
+    function showSuggestion() {
+      if (!allAnime.length) return;
+      const pool = allAnime.filter(a => !isUpcoming(a));
+      if (!pool.length) return;
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      const ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
+      document.getElementById('suggestionArea').innerHTML = `
+        <div class="text-center mb-3 fade-in-d3">
+          <p class="text-aw-muted text-xs uppercase tracking-widest mb-1">While you're here...</p>
+          <p class="text-aw-fg text-sm font-medium">How about this anime?</p>
+        </div>
+        <a href="anime.html?id=${encodeURIComponent(a.id)}" class="suggestion-card block bg-aw-card border border-aw-border rounded-xl overflow-hidden cursor-pointer">
+          <div class="relative overflow-hidden">
+            <img src="${a.image}" alt="${a.name}" class="w-full object-cover" style="aspect-ratio:5/7" loading="lazy"
+              onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 420%22%3E%3Crect fill=%22%231a1a1a%22 width=%22300%22 height=%22420%22/%3E%3Ctext fill=%22%232a2a2a%22 font-family=%22sans-serif%22 font-size=%2214%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
+            <div class="sug-overlay">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="sug-play w-12 h-12 rounded-full bg-aw-accent/90 flex items-center justify-center shadow-lg shadow-aw-accent/30">
+                  <i class="fas fa-play text-white text-sm ml-0.5"></i>
+                </div>
+              </div>
+            </div>
+            ${a.rating ? `<div class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm ${ratingColor} text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1"><i class="fas fa-star text-[8px]"></i>${a.rating}</div>` : ''}
+          </div>
+          <div class="p-3">
+            <h3 class="text-sm font-semibold text-aw-fg truncate mb-1">${a.name}</h3>
+            <div class="flex items-center gap-2 text-[11px] text-aw-muted">
+              <span>${a.year || ''}</span>
+              ${a.episodes ? `<span>&middot;</span><span>${a.episodes} Ep</span>` : ''}
+              ${(a.genre||[]).length ? `<span>&middot;</span><span class="truncate">${a.genre[0]}</span>` : ''}
+            </div>
+          </div>
+        </a>
+        <div class="text-center mt-3">
+          <button onclick="reshuffleSuggestion()" class="text-aw-muted hover:text-aw-accent text-xs font-medium transition-colors inline-flex items-center gap-1.5">
+            <i class="fas fa-shuffle text-[10px]"></i> Not this one
+          </button>
+        </div>`;
+    }
+
+    function reshuffleSuggestion() {
+      const area = document.getElementById('suggestionArea');
+      area.style.opacity = '0';
+      area.style.transform = 'scale(0.95)';
+      area.style.transition = 'all 0.25s ease';
+      setTimeout(() => {
+        showSuggestion();
+        area.style.opacity = '1';
+        area.style.transform = 'scale(1)';
+      }, 250);
+    }
+
+    function goRandom() {
+      if (!allAnime.length) { showToast('No anime data loaded yet', 'info'); return; }
+      const a = allAnime[Math.floor(Math.random() * allAnime.length)];
+      showToast(`Random pick: ${a.name}`, 'info');
+      setTimeout(() => { window.location.href = 'anime.html?id=' + encodeURIComponent(a.id); }, 600);
+    }
+
+    /* Keyboard shortcuts */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'r' || e.key === 'R') goRandom();
+      if (e.key === 'Escape' || e.key === 'Enter') window.location.href = 'index.html';
+    });
+
+    loadSuggestion();
+  </script>
+</body>
+</html>

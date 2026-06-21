@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Notifications — AnimeWave</title>
+  <link rel="icon" href="logo.PNG" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'aw': { bg:'#0a0a0a', bg2:'#141414', card:'#1a1a1a', border:'#2a2a2a', fg:'#f0f0f0', muted:'#8a8a8a', accent:'#e63946', accentL:'#ff6b6b', accentD:'#c1121f' }
+          },
+          fontFamily: { display:['"Dela Gothic One"','cursive'], body:['"Outfit"','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+    .no-select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+    input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow:hidden;height:100vh}
+    ::-webkit-scrollbar{width:8px}
+
+    /* Striking visual indication for unread notifications */
+    .mail-row.unread { background: rgba(0, 168, 132, 0.04) !important; }
+    html.light .mail-row.unread { background: rgba(0, 168, 132, 0.06) !important; }
+    ::-webkit-scrollbar-track{background:#0a0a0a}
+    ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:#3a3a3a}
+
+    /* ── Loading Screen ── */
+    #loadingScreen{transition:opacity 0.6s ease,visibility 0.6s ease}
+    #loadingScreen.hide{opacity:0;visibility:hidden}
+    @keyframes loadPulse{0%,100%{transform:scale(1);opacity:0.7}50%{transform:scale(1.05);opacity:1}}
+    @keyframes loadBar{0%{width:0;margin-left:0}50%{width:70%;margin-left:15%}100%{width:0;margin-left:100%}}
+
+    /* ── Background Orbs ── */
+    .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:0.12;pointer-events:none;z-index:0}
+    .bg-orb-1{width:500px;height:500px;background:#e63946;top:-150px;left:-150px;animation:orbFloat1 22s ease-in-out infinite}
+    .bg-orb-2{width:400px;height:400px;background:#ff6b6b;bottom:-100px;right:-100px;animation:orbFloat2 28s ease-in-out infinite}
+    @keyframes orbFloat1{0%,100%{transform:translate(0,0)}33%{transform:translate(120px,180px)}66%{transform:translate(-60px,100px)}}
+    @keyframes orbFloat2{0%,100%{transform:translate(0,0)}33%{transform:translate(-100px,-120px)}66%{transform:translate(80px,-60px)}}
+    @media(prefers-reduced-motion:reduce){.bg-orb{animation:none!important}*{transition-duration:0.01ms!important;animation-duration:0.01ms!important}}
+
+    /* ── Sidebar ── */
+    #sbToggle{width:36px;height:36px;border-radius:8px;border:none;background:none;cursor:pointer;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;padding:9px;transition:background 0.2s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+    #sbToggle:hover{background:#1a1a1a}
+    #sbToggle span{display:block;width:18px;height:2px;background:#f0f0f0;border-radius:1px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);transform-origin:center}
+    #sbToggle.active span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+    #sbToggle.active span:nth-child(2){opacity:0;transform:scaleX(0)}
+    #sbToggle.active span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+    @media(min-width:1024px){#sbToggle{display:flex}}
+
+    #sidebar{position:fixed;top:64px;left:0;bottom:0;width:60px;z-index:998;background:rgba(10,10,10,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-right:1px solid #2a2a2a;display:flex;flex-direction:column;align-items:center;padding:10px 0;overflow-y:auto;overflow-x:hidden;transition:width 0.25s cubic-bezier(0.4,0,0.2,1)}
+    #sidebar::-webkit-scrollbar{width:0}
+    #sidebar.expanded{width:200px;align-items:stretch}
+    .sb-btn{width:44px;height:44px;border-radius:12px;border:none;background:none;color:#8a8a8a;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;transition:all 0.2s ease;position:relative;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+    .sb-btn:hover{background:#1a1a1a;color:#f0f0f0}
+    .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.1)}
+    .sb-btn:active{transform:scale(0.9)}
+    .sb-btn .sb-tip{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:5px 10px;border-radius:8px;font-size:0.75rem;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s ease;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:10;font-family:'Outfit',sans-serif}
+    .sb-btn:hover .sb-tip{opacity:1}
+    .sb-label{display:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;font-weight:500;color:inherit}
+    #sidebar.expanded .sb-btn{width:100%;justify-content:flex-start;padding:0 12px;gap:14px;border-radius:10px;height:42px}
+    #sidebar.expanded .sb-btn i{width:20px;text-align:center;flex-shrink:0;font-size:1rem}
+    #sidebar.expanded .sb-label{display:inline}
+    #sidebar.expanded .sb-tip{display:none!important}
+    #sidebar.expanded .sb-sep{width:calc(100% - 24px);margin:6px 12px}
+    .sb-sep{width:28px;height:1px;background:#2a2a2a;margin:6px 0;flex-shrink:0}
+    @media(max-width:1023px){#sidebar{display:none!important}}
+    #mainWrap{transition:margin-left 0.25s cubic-bezier(0.4,0,0.2,1)}
+    @media(min-width:1024px){body.sb-expanded #mainWrap{margin-left:200px!important}}
+
+    /* ── Mobile Bottom Nav ── */
+    #mobileNavBar{position:fixed;bottom:0;left:0;right:0;z-index:998;background:rgba(10,10,10,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #2a2a2a;padding-bottom:env(safe-area-inset-bottom)}
+html{--mnav-h:4.5rem}
+    .mnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1;padding:8px 0 6px;cursor:pointer;transition:all 0.2s ease;-webkit-tap-highlight-color:transparent}
+    .mnav-btn:active{transform:scale(0.88)}
+    .mnav-btn .mnav-icon{font-size:1.1rem;color:#8a8a8a;transition:color 0.2s}
+    .mnav-btn .mnav-label{font-size:9px;font-weight:600;color:#8a8a8a;transition:color 0.2s;letter-spacing:0.02em}
+    .mnav-btn.active .mnav-icon{color:#e63946}
+    .mnav-btn.active .mnav-label{color:#e63946}
+    .mnav-btn:not(.active):hover .mnav-icon,.mnav-btn:not(.active):hover .mnav-label{color:#f0f0f0}
+    @media(min-width:1024px){#mobileNavBar{display:none!important}}
+    @media(max-width:1023px){footer{padding-bottom:5rem!important}}
+
+    /* ── Settings Overlay ── */
+    #settingsBackdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity 0.3s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+    #settingsBackdrop.show{opacity:1;pointer-events:auto}
+    @media(max-width:1023px){#settingsBackdrop{display:none!important}}
+    #settingsOverlay{position:fixed;inset:0;z-index:10000;background:#0a0a0a;visibility:hidden;pointer-events:none;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0.35s;display:flex;flex-direction:column}
+    #settingsOverlay.open{visibility:visible;pointer-events:auto;transform:translateY(0);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0s}
+    @media(min-width:1024px){
+      #settingsOverlay{left:auto;right:0;top:0;bottom:0;width:420px;transform:translateX(100%);border-left:1px solid #2a2a2a;border-radius:20px 0 0 20px;box-shadow:-20px 0 60px rgba(0,0,0,0.5)}
+      #settingsOverlay.open{transform:translateX(0)}
+      #settingsOverlay .st-head{padding-top:16px;border-radius:20px 0 0 0}
+      #settingsOverlay .st-body{padding:20px 24px}
+    }
+    .st-head{display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid #2a2a2a;flex-shrink:0}
+    .st-head h2{font-family:'Dela Gothic One',cursive;font-size:1.1rem;color:#f0f0f0}
+    .st-back{width:40px;height:40px;border-radius:50%;border:none;background:none;color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background 0.15s}
+    .st-back:active{background:#1a1a1a}
+    .st-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px}
+    .st-group{margin-bottom:20px}
+    .st-group-title{font-size:10px;font-weight:700;color:#8a8a8a;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-left:2px}
+    .st-item{display:flex;align-items:center;gap:14px;padding:14px;background:#141414;border:1px solid #2a2a2a;border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+    .st-item:active{transform:scale(0.98);background:#1a1a1a}
+    .st-item-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .st-item-icon.gray{background:rgba(138,138,138,0.1);color:#8a8a8a}
+    .st-item-text{flex:1;min-width:0}
+    .st-item-title{font-size:0.875rem;font-weight:600;color:#f0f0f0}
+    .st-item-desc{font-size:0.7rem;color:#8a8a8a;margin-top:2px;line-height:1.4}
+    .st-item.danger{border-color:rgba(230,57,70,0.2)}
+    .st-item.danger:active{background:rgba(230,57,70,0.08)}
+    .st-item-icon.red{background:rgba(230,57,70,0.12);color:#e63946}
+    .st-item-icon.blue{background:rgba(56,189,248,0.12);color:#38bdf8}
+    .st-item-arrow{color:#3a3a3a;font-size:0.7rem;flex-shrink:0;transition:color 0.2s}
+    .st-item:active .st-item-arrow{color:#8a8a8a}
+    .st-item.danger .st-item-title{color:#ff6b6b}
+    .st-item-normal{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+    .st-item-confirm{display:none;align-items:center;gap:10px;flex:1;animation:slideIn 0.15s ease}
+    .st-item.confirming .st-item-normal{display:none}
+    .st-item.confirming .st-item-confirm{display:flex}
+    .st-item.confirming{border-color:rgba(230,57,70,0.3);background:rgba(230,57,70,0.06)}
+    .st-item-confirm p{flex:1;font-size:0.8rem;color:#ff6b6b}
+    .st-item-confirm button{padding:6px 14px;border-radius:8px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s}
+    .st-item-confirm .st-yes{background:#e63946;color:#fff}
+    .st-item-confirm .st-yes:active{background:#c1121f}
+    .st-item-confirm .st-no{background:#2a2a2a;color:#f0f0f0}
+    .st-item-confirm .st-no:active{background:#3a3a3a}
+    .st-random-confirm{display:none;align-items:center;gap:10px;flex:1;animation:slideIn 0.15s ease}
+    .st-item.confirming.random-active .st-item-normal{display:none}
+    .st-item.confirming.random-active .st-random-confirm{display:flex}
+    .st-item.confirming.random-active{border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.06)}
+    .st-random-confirm p{flex:1;font-size:0.8rem;color:#38bdf8}
+    .st-random-confirm button{padding:6px 14px;border-radius:8px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s}
+    .st-random-confirm .st-yes{background:#38bdf8;color:#fff}
+    .st-random-confirm .st-yes:active{background:#0ea5e9}
+    .st-random-confirm .st-no{background:#2a2a2a;color:#f0f0f0}
+    .st-random-confirm .st-no:active{background:#3a3a3a}
+    .stat-card{position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease}
+    .stat-card:hover{transform:translateY(-2px);border-color:rgba(230,57,70,0.3)}
+    .stat-card::after{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(230,57,70,0.06) 0%,transparent 70%);pointer-events:none}
+    .st-toggle{position:relative;width:44px;height:24px;border-radius:12px;background:#2a2a2a;border:none;cursor:pointer;transition:background 0.25s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+    .st-toggle.active{background:#e63946}
+    .st-toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+    .st-toggle.active::after{transform:translateX(20px)}
+    .st-about{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:18px;text-align:center}
+    .st-about img{width:52px;height:52px;border-radius:14px;margin-bottom:10px}
+    .st-about h3{font-family:'Dela Gothic One',cursive;font-size:1rem;color:#f0f0f0;margin-bottom:4px}
+    .st-about p{font-size:0.75rem;color:#8a8a8a;line-height:1.5}
+    .st-about .st-ver{display:inline-block;margin-top:10px;font-size:0.65rem;color:#3a3a3a;border:1px solid #2a2a2a;border-radius:99px;padding:3px 12px}
+
+    /* ── Toast ── */
+    .toast{animation:slideIn 0.3s ease forwards}
+    @keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast-out{animation:slideOut 0.3s ease forwards}
+    @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+
+    /* ── Skeleton ── */
+    .skeleton{background:linear-gradient(90deg,#1a1a1a 25%,#252525 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ── Glow line ── */
+    .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulse 3s ease infinite}
+    @keyframes glowPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    /* ── Gmail-style layout ── */
+    #appShell{display:flex;height:calc(100vh - 64px);margin-top:64px;position:relative;z-index:1;background:#111b21}
+
+    /* Inbox pane */
+    #inboxPane{width:380px;flex-shrink:0;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;overflow:hidden;background:#111b21}
+    #inboxHeader{padding:14px 16px 12px;border-bottom:1px solid #1f1f1f;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#202c33}
+    #inboxList{overflow-y:auto;flex:1}
+    #inboxList::-webkit-scrollbar{width:4px}
+    #inboxList::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px}
+
+    .mail-row{display:flex;align-items:center;padding:0 16px;cursor:pointer;transition:background 0.15s ease;position:relative;-webkit-tap-highlight-color:transparent;height:72px;}
+    .mail-row:hover{background:#202c33}
+    .mail-row.active{background:#2a3942}
+    .mail-row.unread .mail-time{color:#00a884;}
+    .mail-row.unread .mail-sender{font-weight:500;}
+    .mail-row:active{background:#2a3942}
+
+    .mail-avatar{width:48px;height:48px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#00a884,#025c4c);display:flex;align-items:center;justify-content:center;font-family:'Dela Gothic One',cursive;font-size:15px;color:#fff;letter-spacing:0.02em;margin-right:14px;}
+    .mail-meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;height:100%;border-bottom:1px solid #202c33;padding-right:8px;}
+    .mail-row:last-child .mail-meta{border-bottom:none;}
+    .mail-sender{font-size:1.05rem;color:#e9edef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400;}
+    .mail-subject{font-size:0.85rem;color:#8696a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .mail-time{font-size:0.75rem;color:#8696a0;white-space:nowrap;flex-shrink:0;margin-top:2px;}
+    .mail-unread-dot{width:10px;height:10px;border-radius:50%;background:#25d366;flex-shrink:0;box-shadow:0 0 0 2px rgba(37,211,102,0.15);}
+
+    .badge-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em}
+    .badge-new{background:rgba(230,57,70,0.15);color:#e63946;border:1px solid rgba(230,57,70,0.25)}
+    .badge-improved{background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.25)}
+    .badge-fixed{background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.25)}
+
+    /* Read pane */
+    #readPane{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:#0b141a}
+    #readEmpty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#3a3a3a;padding:40px;background:#0b141a}
+    #readContent{flex:1;overflow-y:auto;display:none;flex-direction:column;background:#0b141a}
+    #readContent::-webkit-scrollbar{width:5px}
+    #readContent::-webkit-scrollbar-thumb{background:#1f2c34;border-radius:3px}
+    #readHeader{padding:16px 24px 16px;border-bottom:1px solid #1f2c34;flex-shrink:0;background:#202c33}
+    #readBody{flex:1;padding:28px 32px;overflow-y:auto}
+    #readBody::-webkit-scrollbar{width:5px}
+    #readBody::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+
+    /* Story viewer */
+    #storyViewer{display:none;flex-direction:column;align-items:center;padding:32px 32px 40px;gap:16px}
+    #storyViewer.visible{display:flex}
+    .story-img-wrap{width:100%;max-width:400px;border-radius:20px;overflow:hidden;background:#1a1a1a;box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);position:relative;display:flex;align-items:center;justify-content:center}
+    .story-img{width:100%;height:auto;display:block;object-fit:contain;background:#0a0a0a;max-height:55vh}
+    .story-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.1) 50%,transparent 75%);pointer-events:none}
+    .story-content{position:absolute;bottom:0;left:0;right:0;padding:20px}
+    .story-title{font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.3;text-shadow:0 1px 8px rgba(0,0,0,0.5)}
+    .story-desc{font-size:0.8rem;color:rgba(255,255,255,0.75);line-height:1.45;text-shadow:0 1px 4px rgba(0,0,0,0.6)}
+
+    .wn-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+    .wn-badge.new-badge{background:rgba(230,57,70,0.9);color:#fff;box-shadow:0 0 12px rgba(230,57,70,0.4)}
+    .wn-badge.improved-badge{background:rgba(56,189,248,0.9);color:#fff;box-shadow:0 0 12px rgba(56,189,248,0.3)}
+    .wn-badge.fast-badge{background:rgba(34,197,94,0.9);color:#fff;box-shadow:0 0 12px rgba(34,197,94,0.3)}
+
+    .story-nav{display:flex;align-items:center;gap:12px;margin-top:4px}
+    .story-nav-btn{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+    .story-nav-btn:hover{background:rgba(230,57,70,0.8);border-color:#e63946}
+    .story-nav-btn:active{transform:scale(0.88)}
+    .story-nav-btn:disabled{opacity:0.25;cursor:not-allowed}
+
+    .wn-progress{display:flex;gap:5px;width:100%;max-width:400px;margin:0 auto}
+    .wn-dot{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,0.15);overflow:hidden;position:relative}
+    .wn-dot-fill{position:absolute;inset:0;border-radius:99px;background:#e63946;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease}
+    .wn-dot.filled .wn-dot-fill{transform:scaleX(1)}
+    .wn-dot.active .wn-dot-fill{transform:scaleX(1)}
+    .wn-counter{font-size:0.7rem;color:rgba(255,255,255,0.35);letter-spacing:0.05em;font-variant-numeric:tabular-nums;text-align:center}
+
+    @keyframes storyEnter{from{opacity:0;transform:translateY(12px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .story-enter{animation:storyEnter 0.38s cubic-bezier(0.22,1,0.36,1) both}
+
+    /* ── Mobile layout ── */
+    @media(max-width:1023px){
+      #appShell{flex-direction:row;height:calc(100vh - 64px - var(--mnav-h, 4.5rem));position:relative;overflow:hidden}
+      #inboxPane{width:100% !important;border-right:none !important;flex:1 !important;max-height:100% !important;display:flex}
+      #readPane{position:absolute;inset:0;width:100%;height:100%;z-index:50;display:none;flex-direction:column}
+      #readPane.mobile-active{display:flex !important}
+      #readHeader{padding:16px 16px 14px}
+      #readBody{padding:16px}
+      #storyViewer{padding:16px 16px 32px}
+    }
+
+    /* ── Light mode support ── */
+    html.light body{background:#f5f5f5;color:#111}
+    html.light #sidebar{background:rgba(245,245,245,0.95);border-color:#e0e0e0}
+    html.light .sb-btn:hover{background:#eee;color:#111}
+    html.light .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.08)}
+    html.light .sb-tip{background:#fff;border-color:#e0e0e0;color:#111}
+    html.light .sb-sep{background:#e0e0e0}
+    html.light #sbToggle span{background:#111}
+    html.light #sbToggle:hover{background:#eee}
+    html.light #mobileNavBar{background:rgba(245,245,245,0.92)!important;border-color:#e0e0e0}
+    html.light .mnav-btn .mnav-icon,.html.light .mnav-btn .mnav-label{color:#999}
+    html.light .mnav-btn.active .mnav-icon,.html.light .mnav-btn.active .mnav-label{color:#e63946}
+    html.light nav{background:rgba(245,245,245,0.85)!important}
+    html.light #settingsOverlay{border-color:#e0e0e0;background:#f5f5f5}
+    html.light .st-head h2{color:#111}
+    html.light .st-back{color:#111}
+    html.light .st-back:active{background:#eee}
+    html.light .stat-card{background:#fff;border-color:#e0e0e0}
+    html.light .st-item-icon.gray{background:rgba(0,0,0,0.05);color:#555}
+    html.light .st-head{background:#f5f5f5;border-color:#e0e0e0}
+    html.light .st-item.confirming.random-active{background:rgba(56,189,248,0.04);border-color:rgba(56,189,248,0.2)}
+    html.light .st-random-confirm .st-no{background:#e0e0e0;color:#111}
+    html.light .st-item{background:#fff;border-color:#e0e0e0}
+    html.light .st-item.danger{border-color:rgba(230,57,70,0.15)}
+    html.light .st-item-icon.red{background:rgba(230,57,70,0.08)}
+    html.light .st-item-confirm .st-no{background:#e0e0e0;color:#111}
+    html.light .st-item.confirming{background:rgba(230,57,70,0.04);border-color:rgba(230,57,70,0.2)}
+    html.light .stat-card::after{background:radial-gradient(circle,rgba(230,57,70,0.03) 0%,transparent 70%)}
+    html.light .st-item-title{color:#111}
+    html.light .st-about{background:#fff;border-color:#e0e0e0}
+    html.light .st-about h3{color:#111}
+    html.light #inboxPane{background:rgba(245,245,245,0.96);border-color:#e0e0e0}
+    html.light .mail-row:hover{background:#eee}
+    html.light .mail-row.active{background:#e8e8e8}
+    html.light .mail-sender{color:#333}
+    html.light .mail-subject{color:#555}
+    html.light #readHeader{border-color:#e0e0e0}
+    html.light .bg-orb{opacity:0.05}
+    html.light ::-webkit-scrollbar-track{background:#f5f5f5}
+    html.light ::-webkit-scrollbar-thumb{background:#ddd}
+    html.light .toast{background:#fff}
+    html.light .skeleton{background:linear-gradient(90deg,#e8e8e8 25%,#f0f0f0 50%,#e8e8e8 75%);background-size:200% 100%}
+
+    /* Gmail/WhatsApp style layout Light Mode fixes */
+    html.light #appShell { background: #f0f2f5 !important; }
+    html.light #inboxPane { background: #ffffff !important; border-color: #e0e0e0 !important; }
+    html.light #inboxHeader { background: #f0f2f5 !important; border-color: #e0e0e0 !important; color: #111111 !important; }
+    html.light .mail-row { border-bottom: 1px solid #f0f2f5 !important; }
+    html.light .mail-row:hover { background: #f0f2f5 !important; }
+    html.light .mail-row.active { background: #e1f5fe !important; }
+    html.light .mail-meta { border-color: #f0f2f5 !important; }
+    html.light .mail-sender { color: #111b21 !important; }
+    html.light .mail-subject { color: #667781 !important; }
+    html.light .mail-time { color: #667781 !important; }
+    html.light #readPane, html.light #readContent { background: #f0f2f5 !important; }
+    html.light #readHeader { background: #f0f2f5 !important; border-color: #e0e0e0 !important; color: #111111 !important; }
+    html.light #readBody { background: #ffffff !important; color: #111111 !important; }
+    html.light #readEmpty { background: #f0f2f5 !important; color: #667781 !important; }
+    html.light #readHeader h2, html.light #inboxHeader h2 { color: #111111 !important; }
+
+    /* ── save-dirty-dot (for save badge, same as other pages) ── */
+    .save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1}
+    .save-dirty-dot.show{display:flex}
+
+    /* ── Mobile extra nav buttons (search/random) ── */
+    @media(max-width:1023px){ #mobileExtraBtns{display:flex} }
+    @media(min-width:1024px){ #mobileExtraBtns{display:none!important} }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-aw-bg flex flex-col items-center justify-center">
+    <img src="logo.PNG" alt="Loading" class="w-16 h-16 rounded-2xl mb-5" style="animation:loadPulse 1.8s ease-in-out infinite">
+    <div class="w-36 h-1 bg-aw-bg2 rounded-full overflow-hidden">
+      <div class="h-full bg-aw-accent rounded-full" style="animation:loadBar 1.5s ease-in-out infinite"></div>
+    </div>
+    <p class="text-aw-muted text-xs mt-4 tracking-widest uppercase">Loading notifications</p>
+  </div>
+
+  <!-- Background Orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+      <button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+        <span class="font-display text-aw-fg text-lg">AnimeWave</span>
+      </a>
+      <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
+      <span class="text-aw-muted text-sm hidden sm:block font-medium">Notifications</span>
+      <div id="mobileExtraBtns" class="shrink-0 items-center gap-1 lg:hidden">
+        <button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()">
+          <i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        </button>
+        <button id="mobileRandomBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Random Anime" onclick="goRandom()">
+          <i class="fas fa-dice text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        </button>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <button id="notifBtn" onclick="window.location.href='notification.html'" class="shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">
+          <i class="fas fa-bell text-aw-accent text-lg"></i>
+          <span id="notifDot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-aw-accent rounded-full"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="flex flex-col gap-1 w-full px-2">
+      <button class="sb-btn" data-sb="home" onclick="window.location.href='index.html'" title="Home (H)">
+        <i class="fas fa-house"></i><span class="sb-label">Home</span><span class="sb-tip">Home (H)</span>
+      </button>
+      <button class="sb-btn" data-sb="search" onclick="openMobileSearch()" title="Search">
+        <i class="fas fa-magnifying-glass"></i><span class="sb-label">Search</span><span class="sb-tip">Search</span>
+      </button>
+      <button class="sb-btn" data-sb="shorts" onclick="handleSbShorts(this)" title="Shorts">
+        <i class="fas fa-clapperboard"></i><span class="sb-label">Shorts</span><span class="sb-tip">Shorts</span>
+      </button>
+      <button class="sb-btn" id="sbRandomBtn" data-sb="random" onclick="goRandom()" title="Random (R)">
+        <i class="fas fa-dice"></i><span class="sb-label">Random</span><span class="sb-tip">Random (R)</span>
+      </button>
+      <button class="sb-btn" data-sb="saved" onclick="localStorage.removeItem('aw_save_dirty');window.location.href='save.html'" title="Saved (S)">
+        <i class="fas fa-bookmark"></i><span class="sb-label">Saved</span><span class="sb-tip">Saved (S)</span>
+        <span class="save-dirty-dot" id="sbSaveDirty"></span>
+      </button>
+      <button class="sb-btn" data-sb="profile" onclick="openComingSoon('Profile')" title="Profile">
+        <i class="fas fa-user"></i><span class="sb-label">Profile</span><span class="sb-tip">Profile</span>
+      </button>
+      <div class="sb-sep"></div>
+    </div>
+    <div class="flex-1"></div>
+    <div class="flex flex-col gap-1 w-full px-2 pb-2">
+      <div class="sb-sep"></div>
+      <button class="sb-btn" data-sb="notif" onclick="window.location.href='notification.html'" title="Notifications (N)" id="sbNotifBtn" style="display:none">
+        <i class="fas fa-bell"></i><span class="sb-label">Notifications</span><span class="sb-tip">Notifications (N)</span>
+      </button>
+      <button class="sb-btn" data-sb="settings" onclick="openSettings()" title="Settings">
+        <i class="fas fa-gear"></i><span class="sb-label">Settings</span><span class="sb-tip">Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrap -->
+  <div id="mainWrap" class="lg:ml-[60px]">
+
+    <!-- Gmail-style app shell -->
+    <div id="appShell">
+
+      <!-- Left: Inbox Pane -->
+      <div id="inboxPane">
+
+        <div id="inboxList">
+          <!-- Skeleton rows -->
+          <div id="skeletonRows">
+            <div class="mail-row" style="cursor:default">
+              <div class="mail-avatar skeleton" style="background:#1a1a1a"></div>
+              <div class="mail-meta" style="gap:6px;display:flex;flex-direction:column">
+                <div class="skeleton h-3 rounded" style="width:60%"></div>
+                <div class="skeleton h-2.5 rounded" style="width:80%"></div>
+                <div class="skeleton h-2 rounded" style="width:50%"></div>
+              </div>
+            </div>
+            <div class="mail-row" style="cursor:default">
+              <div class="mail-avatar skeleton" style="background:#1a1a1a"></div>
+              <div class="mail-meta" style="gap:6px;display:flex;flex-direction:column">
+                <div class="skeleton h-3 rounded" style="width:55%"></div>
+                <div class="skeleton h-2.5 rounded" style="width:75%"></div>
+                <div class="skeleton h-2 rounded" style="width:40%"></div>
+              </div>
+            </div>
+            <div class="mail-row" style="cursor:default">
+              <div class="mail-avatar skeleton" style="background:#1a1a1a"></div>
+              <div class="mail-meta" style="gap:6px;display:flex;flex-direction:column">
+                <div class="skeleton h-3 rounded" style="width:65%"></div>
+                <div class="skeleton h-2.5 rounded" style="width:70%"></div>
+                <div class="skeleton h-2 rounded" style="width:45%"></div>
+              </div>
+            </div>
+          </div>
+          <div id="inboxEmpty" style="display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;gap:12px;text-align:center">
+            <div class="w-16 h-16 rounded-2xl bg-aw-card border border-aw-border flex items-center justify-center">
+              <i class="fas fa-inbox text-2xl text-aw-border"></i>
+            </div>
+            <p class="text-sm text-aw-muted">No notifications yet</p>
+            <p class="text-xs text-aw-border">Check back soon for updates</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Read Pane -->
+      <div id="readPane">
+        <!-- Empty state -->
+        <div id="readEmpty">
+          <div class="w-20 h-20 rounded-2xl bg-aw-card border border-aw-border flex items-center justify-center">
+            <i class="fas fa-envelope-open text-3xl text-aw-border"></i>
+          </div>
+          <p class="text-sm font-medium text-aw-muted">Select a notification to view</p>
+          <p class="text-xs text-aw-border">AnimeWave updates will appear here</p>
+        </div>
+
+        <!-- Active read content -->
+        <div id="readContent">
+          <div id="readHeader">
+            <div class="flex items-center gap-3">
+              <!-- WhatsApp Style Back Button Navigation -->
+              <button id="readBackBtn" onclick="closeMailMobile()" class="mr-2 text-xl text-aw-muted hover:text-aw-accent transition-colors" aria-label="Back to chat list">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background:linear-gradient(135deg,#00a884,#025c4c);font-family:'Dela Gothic One',cursive">AW</div>
+              <div>
+                <p class="text-sm font-semibold text-aw-fg">AnimeWave Updates</p>
+                <p class="text-xs text-aw-muted">updates@animewave.web.app</p>
+              </div>
+              <span id="rTime" class="ml-auto text-xs text-aw-muted"></span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap mt-4 mb-1">
+              <span id="rBadge" class="wn-badge" style="display:none"></span>
+            </div>
+            <h2 id="rTitle" class="font-semibold text-aw-fg" style="font-size:1.2rem;line-height:1.3"></h2>
+          </div>
+
+          <div id="readBody">
+            <div id="storyViewer">
+              <div class="story-img-wrap" id="storyImgWrap">
+                <img id="sImg" src="" alt="" class="story-img">
+                <div class="story-overlay"></div>
+                <div class="story-content">
+                  <span id="sBadge" class="wn-badge" style="display:none"></span>
+                  <h3 id="sTitle" class="story-title"></h3>
+                  <p id="sDesc" class="story-desc"></p>
+                </div>
+              </div>
+              <div class="wn-progress" id="sProgress"></div>
+              <div class="wn-counter" id="sCounter"></div>
+              <div class="story-nav">
+                <button class="story-nav-btn" id="sPrev" onclick="storyPrev()" disabled aria-label="Previous">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="sNavLabel" class="text-xs text-aw-muted flex-1 text-center"></span>
+                <button class="story-nav-btn" id="sNext" onclick="storyNext()" aria-label="Next">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end #appShell -->
+
+  </div><!-- end #mainWrap -->
+
+  <!-- Settings Backdrop -->
+  <div id="settingsBackdrop"></div>
+
+  <!-- Settings Overlay -->
+  <div id="settingsOverlay">
+    <div class="st-head">
+      <button class="st-back" onclick="closeSettings()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <h2>Settings</h2>
+    </div>
+    <div class="st-body">
+      <div class="grid grid-cols-2 gap-3 mb-5" id="settingsStatsGrid"></div>
+      <div class="st-group">
+        <div class="st-group-title">Data</div>
+        <div class="st-item" onclick="showStConfirm(this,'Clear all watch history?',confirmClearHistory)">
+          <div class="st-item-normal">
+            <div class="st-item-icon red"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Clear Watch History</div>
+              <div class="st-item-desc">Remove all recently watched anime</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-item-confirm">
+            <p>Clear all watch history?</p>
+            <button class="st-no" onclick="event.stopPropagation();hideStConfirm(this)">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+        <div class="st-item danger" onclick="showStConfirm(this,'Clear all saved animes?',confirmClearSaved)">
+          <div class="st-item-normal">
+            <div class="st-item-icon red"><i class="fas fa-bookmark"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Clear Saved List</div>
+              <div class="st-item-desc">Remove all bookmarked animes</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-item-confirm">
+            <p>Clear all saved animes?</p>
+            <button class="st-no" onclick="event.stopPropagation();hideStConfirm(this)">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+      </div>
+      <div class="st-group">
+        <div class="st-group-title">Personalization</div>
+        <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-sun"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Light Mode</div>
+            <div class="st-item-desc">Switch to light theme</div>
+          </div>
+          <button class="st-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+        </div>
+        <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray"><i class="fas fa-magnifying-glass"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Search Button</div>
+            <div class="st-item-desc">Show search shortcut in <span class="hidden lg:inline">sidebar</span><span class="lg:hidden">top bar</span></div>
+          </div>
+          <button class="st-toggle" id="navSearchToggle" onclick="toggleNavSearch()"></button>
+        </div>
+        <div class="st-item" id="notifSettingsItem" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray"><i class="fas fa-bell"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Notification!</div>
+            <div class="st-item-desc">Show notification in top bar.</div>
+          </div>
+          <button class="st-toggle" id="notifToggle" onclick="toggleNotifPos()"></button>
+        </div>
+        <div class="st-item" id="randomSettingsItem" onpointerdown="startRandomLongPress(event)" onpointerup="cancelRandomLongPress()" onpointerleave="cancelRandomLongPress()" onclick="if(!randomConfirming)goRandom()">
+          <div class="st-item-normal">
+            <div class="st-item-icon blue"><i class="fas fa-dice"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Random Anime</div>
+              <div class="st-item-desc">Discover a random title</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-random-confirm">
+            <p id="randomConfirmText">Add Random button to top bar?</p>
+            <button class="st-no" onclick="event.stopPropagation();cancelRandomLongPress();hideRandomConfirm()">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+      </div>
+      <div class="st-group">
+        <div class="st-group-title">About</div>
+        <div class="st-about">
+          <img src="logo.PNG" alt="AnimeWave">
+          <h3>AnimeWave</h3>
+          <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
+          <span class="st-ver">v1.15.x34</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2"></div>
+
+  <!-- Mobile Bottom Nav -->
+  <div id="mobileNavBar">
+    <div class="flex items-stretch max-w-[500px] mx-auto">
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html'" title="Home" aria-label="Home">
+        <i class="fas fa-house mnav-icon"></i>
+        <span class="mnav-label">Home</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openMobileSearch()" title="Search" aria-label="Search">
+        <i class="fas fa-magnifying-glass mnav-icon"></i>
+        <span class="mnav-label">Search</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html?shorts=1'" title="Shorts" aria-label="Shorts">
+        <i class="fas fa-clapperboard mnav-icon"></i>
+        <span class="mnav-label">Shorts</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
+        <i class="fas fa-bookmark mnav-icon"></i>
+        <span class="mnav-label">Save</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openSettings()" title="Settings" aria-label="Settings">
+        <i class="fas fa-gear mnav-icon"></i>
+        <span class="mnav-label">Settings</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ====== Security ====== */
+    document.addEventListener('contextmenu', function(e){ e.preventDefault(); return false; });
+    document.addEventListener('copy', function(e){ e.preventDefault(); return false; });
+    document.addEventListener('selectstart', function(e){
+      if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+      e.preventDefault(); return false;
+    });
+    document.addEventListener('dragstart', function(e){ e.preventDefault(); return false; });
+
+    /* ====== Toast ====== */
+    function showToast(msg, type) {
+      type = type || 'info';
+      var c = document.getElementById('toastContainer');
+      var t = document.createElement('div');
+      var icons = { info:'fa-circle-info', success:'fa-circle-check', error:'fa-circle-xmark' };
+      var colors = { info:'border-aw-accent', success:'border-green-500', error:'border-red-500' };
+      t.className = 'toast border-l-4 ' + (colors[type]||colors.info) + ' bg-aw-card rounded-lg px-4 py-3 text-sm text-aw-fg shadow-2xl max-w-xs flex items-center gap-3';
+      t.innerHTML = '<i class="fas ' + (icons[type]||icons.info) + ' ' + (type==='success'?'text-green-500':type==='error'?'text-red-500':'text-aw-accent') + ' text-base shrink-0"></i><span>' + msg + '</span>';
+      c.appendChild(t);
+      setTimeout(function(){ t.classList.add('toast-out'); setTimeout(function(){ t.remove(); },300); }, 2800);
+    }
+
+    /* ====== Sidebar Toggle ====== */
+    (function(){
+      var sb = document.getElementById('sidebar');
+      var btn = document.getElementById('sbToggle');
+      var KEY = 'aw_sb_expanded';
+      function apply(v){ sb.classList.toggle('expanded',v); btn.classList.toggle('active',v); document.body.classList.toggle('sb-expanded',v); }
+      function get(){ return localStorage.getItem(KEY)==='true'; }
+      function set(v){ localStorage.setItem(KEY, v?'true':'false'); apply(v); }
+      apply(get());
+      btn.addEventListener('click', function(e){ e.stopPropagation(); set(!get()); });
+      window.toggleSidebar = function(){ set(!get()); };
+      window.openMobileSearch = function(){ window.location.href='index.html'; };
+    })();
+
+    function setSbActive(btn){
+      document.querySelectorAll('.sb-btn').forEach(function(b){ b.classList.remove('active'); });
+      if(btn) btn.classList.add('active');
+    }
+
+    /* ====== Settings Overlay ====== */
+    var isClosingOverlay = false;
+    history.replaceState({page:'notification'}, '');
+
+    (function(){
+      var overlay = document.getElementById('settingsOverlay');
+      var backdrop = document.getElementById('settingsBackdrop');
+
+      window.openSettings = function(){
+        overlay.classList.add('open');
+        backdrop.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===4)});
+        renderSettingsStats();
+        history.pushState({overlay:'settings'}, '');
+      };
+
+      window.closeSettings = function(){
+        if(isClosingOverlay) return;
+        isClosingOverlay = true;
+        overlay.classList.remove('open');
+        backdrop.classList.remove('show');
+        document.body.style.overflow = '';
+        document.querySelectorAll('.st-item.confirming').forEach(function(i){i.classList.remove('confirming')});
+        history.back();
+        setTimeout(function(){ isClosingOverlay = false; }, 350);
+      };
+
+      if(backdrop) backdrop.addEventListener('click', function(){ closeSettings(); });
+
+      window.showStConfirm = function(el, msg, action){
+        document.querySelectorAll('.st-item.confirming').forEach(function(i){i.classList.remove('confirming')});
+        el.classList.add('confirming');
+        el.querySelector('.st-item-confirm p').textContent = msg;
+        el.querySelector('.st-item-confirm .st-yes').onclick = function(e){
+          e.stopPropagation();
+          el.classList.remove('confirming');
+          action();
+        };
+      };
+
+      window.hideStConfirm = function(btn){
+        btn.closest('.st-item').classList.remove('confirming');
+      };
+
+      window.confirmClearHistory = function(){
+        try { localStorage.setItem('aw_history', '[]'); } catch(e) {}
+        showToast('Watch history cleared', 'success');
+      };
+
+      window.confirmClearSaved = function(){
+        localStorage.setItem('aw_saved', '[]');
+        showToast('Saved list cleared', 'success');
+      };
+    })();
+
+    function getSaved(){ try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch(e) { return []; } }
+
+    function renderSettingsStats() {
+      var grid = document.getElementById('settingsStatsGrid');
+      var totalCount = allItems.length;
+      var unreadCount = allItems.filter(function(_,i){ return !readState[i]; }).length;
+      var stats = [
+        { icon: 'fa-envelope-open', label: 'Total Notifications', value: totalCount },
+        { icon: 'fa-envelope', label: 'Unread', value: unreadCount }
+      ];
+      grid.innerHTML = stats.map(function(s) {
+        return '<div class="stat-card bg-aw-card border border-aw-border rounded-xl p-4 text-center">' +
+          '<i class="fas ' + s.icon + ' text-aw-accent/60 text-lg mb-2"></i>' +
+          '<div class="text-2xl font-bold text-aw-fg">' + s.value + '</div>' +
+          '<div class="text-[10px] sm:text-xs text-aw-muted mt-1 uppercase tracking-wide">' + s.label + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    window.addEventListener('popstate', function(e){
+      if(isClosingOverlay) return;
+      var st = document.getElementById('settingsOverlay');
+      if(st && st.classList.contains('open')){
+        st.classList.remove('open');
+        document.body.style.overflow = '';
+        var bd = document.getElementById('settingsBackdrop');
+        if(bd) bd.classList.remove('show');
+      }
+    });
+
+    /* ====== Theme Toggle ====== */
+    (function(){
+      var toggle = document.getElementById('themeToggle');
+      var icon = document.getElementById('themeIcon');
+      var themeMeta = document.querySelector('meta[name="theme-color"]');
+
+      function applyTheme(light){
+        if(light){
+          document.documentElement.classList.add('light');
+          if(toggle) toggle.classList.add('active');
+          if(icon) icon.innerHTML = '<i class="fas fa-moon"></i>';
+          if(themeMeta) themeMeta.setAttribute('content','#ffffff');
+        } else {
+          document.documentElement.classList.remove('light');
+          if(toggle) toggle.classList.remove('active');
+          if(icon) icon.innerHTML = '<i class="fas fa-sun"></i>';
+          if(themeMeta) themeMeta.setAttribute('content','#0a0a0a');
+        }
+      }
+
+      function getTheme(){ var s=localStorage.getItem('aw_theme'); return s?s==='light':false; }
+      applyTheme(getTheme());
+
+      window.toggleTheme = function(){
+        var isLight = document.documentElement.classList.contains('light');
+        localStorage.setItem('aw_theme', isLight ? 'dark' : 'light');
+        applyTheme(!isLight);
+        showToast(isLight ? 'Dark mode enabled' : 'Light mode enabled', 'info');
+      };
+    })();
+
+    /* ====== Nav Search Toggle ====== */
+    (function(){
+      var toggle = document.getElementById('navSearchToggle');
+      var sbBtn = document.querySelector('#sidebar .sb-btn[data-sb="search"]');
+      var mobileSearchBtn = document.getElementById('mobileSearchOpenBtn');
+      function isDesktop(){ return window.innerWidth >= 1024; }
+      function sKey(){ return isDesktop() ? 'aw_nav_search_d' : 'aw_nav_search_m'; }
+      function sDef(){ return isDesktop() ? false : true; }
+      function applyNavSearch(show){
+        if(toggle) toggle.classList.toggle('active', show);
+        if(sbBtn) sbBtn.style.display = show ? '' : 'none';
+        if(mobileSearchBtn) mobileSearchBtn.style.display = show ? '' : 'none';
+      }
+      function getNavSearch(){
+        var stored = localStorage.getItem(sKey());
+        return stored === null ? sDef() : stored === 'true';
+      }
+      applyNavSearch(getNavSearch());
+      window.toggleNavSearch = function(){
+        var next = !getNavSearch();
+        localStorage.setItem(sKey(), next ? 'true' : 'false');
+        applyNavSearch(next);
+        showToast(next ? 'Search button shown' : 'Search button hidden', 'info');
+      };
+    })();
+
+    /* ====== Notification Position Toggle ====== */
+    (function(){
+      var toggle = document.getElementById('notifToggle');
+      var navBtn = document.getElementById('notifBtn');
+      var sbBtn = document.getElementById('sbNotifBtn');
+      var item = document.getElementById('notifSettingsItem');
+      function isDesktop(){ return window.innerWidth >= 1024; }
+      function nKey(){ return 'aw_notif_top'; }
+      function nDef(){ return true; }
+      function applyNotifPos(onTop){
+        if(!isDesktop()){
+          if(navBtn) navBtn.style.display = '';
+          if(sbBtn){ sbBtn.style.display = 'none'; sbBtn.classList.remove('active'); }
+          if(toggle) toggle.classList.add('active');
+          if(item) item.style.display = 'none';
+          return;
+        }
+        if(item) item.style.display = '';
+        if(onTop){
+          if(navBtn) navBtn.style.display = '';
+          if(sbBtn){ sbBtn.style.display = 'none'; sbBtn.classList.remove('active'); }
+          if(toggle) toggle.classList.add('active');
+        } else {
+          if(navBtn) navBtn.style.display = 'none';
+          if(sbBtn){ sbBtn.style.display = ''; sbBtn.classList.add('active'); }
+          if(toggle) toggle.classList.remove('active');
+        }
+      }
+      function getNotifPos(){
+        var stored = localStorage.getItem(nKey());
+        return stored === null ? nDef() : stored === 'true';
+      }
+      applyNotifPos(getNotifPos());
+      window.toggleNotifPos = function(){
+        var next = !getNotifPos();
+        localStorage.setItem(nKey(), next ? 'true' : 'false');
+        applyNotifPos(next);
+        showToast(next ? 'Notification moved to top bar' : 'Notification moved to sidebar', 'info');
+      };
+      window.addEventListener('resize', function(){ applyNotifPos(getNotifPos()); });
+    })();
+
+    /* ====== Random Button Visibility + Long Press ====== */
+    function rKey(){ return 'aw_nav_random'; }
+    function isRandomAdded(){ return localStorage.getItem(rKey()) === 'true'; }
+    function applyRandomBtn(show){
+      var btn = document.getElementById('sbRandomBtn');
+      var mobileBtn = document.getElementById('mobileRandomBtn');
+      if(btn) btn.style.display = show ? '' : 'none';
+      if(mobileBtn) mobileBtn.style.display = show ? '' : 'none';
+    }
+    function initRandomBtn(){ applyRandomBtn(isRandomAdded()); }
+    var allAnime = [];
+    (async function loadAnimeForRandom(){
+      try {
+        const res = await fetch('details.json');
+        if (!res.ok) throw new Error();
+        allAnime = await res.json();
+        if (!Array.isArray(allAnime)) allAnime = [allAnime];
+      } catch(e) {
+        allAnime = [];
+      }
+    })();
+    function goRandom(){
+      if (!allAnime.length) { showToast('Anime data not loaded yet', 'error'); return; }
+      const pool = allAnime.filter(a => { const s = (a.state || '').toLowerCase(); return s !== 'planned' && s !== 'upcoming' && s !== 'plan_to_watch' && s !== 'plan'; });
+      if (!pool.length) { showToast('No anime data available', 'error'); return; }
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      showToast(`Random pick: ${a.name}`, 'info');
+      setTimeout(() => { window.location.href = 'anime.html?id=' + encodeURIComponent(a.id); }, 600);
+    }
+
+    var randomLPTimer = null, randomConfirming = false;
+    function startRandomLongPress(e){
+      if(e.button !== 0) return;
+      randomConfirming = false;
+      var isAdded = isRandomAdded();
+      randomLPTimer = setTimeout(function(){
+        randomConfirming = true;
+        var item = document.getElementById('randomSettingsItem');
+        item.classList.add('confirming', 'random-active');
+        var confirmP = item.querySelector('.st-random-confirm p');
+        confirmP.textContent = isAdded ? 'Remove Shortcut?' : 'Add Shortcut?';
+        item.querySelector('.st-yes').onclick = function(ev){
+          ev.stopPropagation();
+          hideRandomConfirm();
+          if(isAdded){
+            localStorage.removeItem(rKey());
+            applyRandomBtn(false);
+            showToast('Random button removed', 'info');
+          } else {
+            localStorage.setItem(rKey(), 'true');
+            applyRandomBtn(true);
+            showToast('Random button added', 'success');
+          }
+        };
+      }, 500);
+    }
+    function cancelRandomLongPress(){ clearTimeout(randomLPTimer); }
+    function hideRandomConfirm(){
+      randomConfirming = false;
+      var item = document.getElementById('randomSettingsItem');
+      if(item) item.classList.remove('confirming', 'random-active');
+    }
+    initRandomBtn();
+
+    /* ====== Coming Soon placeholder ====== */
+    function openComingSoon(title, icon, heading, message){
+      showToast((heading || title || 'Feature') + ' coming soon', 'info');
+    }
+
+    function handleSbShorts(btn){
+      if(window.innerWidth>=1024){
+        openComingSoon('Shorts','fa-clapperboard','Shorts','Short-form anime clips are currently under development.');
+        setSbActive(btn);
+      } else {
+        window.location.href = 'index.html?shorts=1';
+      }
+    }
+
+    /* ====== Save dirty dot ====== */
+    (function(){
+      var dirty = localStorage.getItem('aw_save_dirty') === 'true';
+      var dot = document.getElementById('sbSaveDirty');
+      if(dot) dot.classList.toggle('show', dirty);
+    })();
+
+    /* ====== Notification data & state ====== */
+    var allItems = [];
+    var readState = {};
+    var timeState = {};
+    var activeIndex = -1;
+    var storyIdx = 0;
+    var storyItems = [];
+
+    try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){ readState = {}; }
+    try { timeState = JSON.parse(localStorage.getItem('aw_notif_times') || '{}'); } catch(e){ timeState = {}; }
+
+    function saveReadState(){ try { localStorage.setItem('aw_notif_read', JSON.stringify(readState)); } catch(e){} }
+    function saveTimeState(){ try { localStorage.setItem('aw_notif_times', JSON.stringify(timeState)); } catch(e){} }
+
+    function getNotifTimestamp(idx){
+      if(!timeState[idx]){
+        timeState[idx] = Date.now();
+        saveTimeState();
+      }
+      return timeState[idx];
+    }
+
+    function badgeClass(badge){
+      if(!badge) return 'new-badge';
+      switch(badge.toUpperCase()){
+        case 'IMPROVED': return 'improved-badge';
+        case 'FIXED': case 'FAST': return 'fast-badge';
+        default: return 'new-badge';
+      }
+    }
+
+    function timeSince(idx){
+      var ts = getNotifTimestamp(idx);
+      var d = new Date(ts);
+      var now = new Date();
+      var diffMin = Math.floor((now - d) / 60000);
+
+      if(diffMin < 1) return 'Just now';
+      if(diffMin < 60) return diffMin + ' min ago';
+
+      var sameDay = d.toDateString() === now.toDateString();
+      if(sameDay) return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+
+      var yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      if(d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+
+      return d.toLocaleDateString([], { day:'2-digit', month:'2-digit', year:'numeric' });
+    }
+
+    function escHtml(s){
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ====== Render Inbox ====== */
+    function renderInbox(){
+      var list = document.getElementById('inboxList');
+      var skeleton = document.getElementById('skeletonRows');
+      if(skeleton) skeleton.remove();
+      var empty = document.getElementById('inboxEmpty');
+      if(!allItems.length){ empty.style.display='flex'; return; }
+      empty.style.display='none';
+      list.querySelectorAll('.mail-row').forEach(function(r){ r.remove(); });
+
+      allItems.forEach(function(item, i){
+        var isRead = !!readState[i];
+        var slides = item._slides || [item];
+        var slideCount = slides.length;
+        var row = document.createElement('div');
+        row.className = 'mail-row' + (isRead ? '' : ' unread');
+        row.dataset.idx = i;
+        row.innerHTML =
+          '<div class="mail-avatar">AW</div>' +
+          '<div class="mail-meta">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">' +
+              '<span class="mail-sender">AnimeWave Update</span>' +
+              '<span class="mail-time">' + timeSince(i) + '</span>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
+              '<span class="mail-subject" style="flex:1;">' + escHtml(item.title) + '</span>' +
+              (!isRead ? '<span class="mail-unread-dot" aria-label="Unread"></span>' : '') +
+            '</div>' +
+          '</div>';
+        row.addEventListener('click', function(){ openMail(i); });
+        list.insertBefore(row, empty);
+      });
+    }
+
+    /* ====== Open Mail ====== */
+    function openMail(idx){
+      readState[idx] = true;
+      saveReadState();
+      activeIndex = idx;
+
+      document.querySelectorAll('.mail-row').forEach(function(r){
+        r.classList.remove('active');
+        var i = parseInt(r.dataset.idx);
+        if(i === idx){
+          r.classList.add('active');
+          r.classList.remove('unread');
+          var dot = r.querySelector('.mail-unread-dot');
+          if(dot) dot.remove();
+        }
+      });
+
+      var item = allItems[idx];
+      document.getElementById('readEmpty').style.display = 'none';
+      var rc = document.getElementById('readContent');
+      rc.style.display = 'flex';
+
+      var rBadge = document.getElementById('rBadge');
+      if(item.badge){ rBadge.textContent=item.badge; rBadge.className='wn-badge '+badgeClass(item.badge); rBadge.style.display=''; }
+      else { rBadge.style.display='none'; }
+      document.getElementById('rTitle').textContent = item.title;
+      document.getElementById('rTime').textContent = timeSince(idx);
+
+      storyItems = allItems[idx]._slides || [allItems[idx]];
+      storyIdx = 0;
+      renderStory();
+      document.getElementById('storyViewer').classList.add('visible');
+
+      if(window.innerWidth < 768){
+        document.getElementById('readPane').classList.add('mobile-active');
+      }
+    }
+
+    window.closeMailMobile = function(){
+      document.getElementById('readPane').classList.remove('mobile-active');
+      activeIndex = -1;
+      document.querySelectorAll('.mail-row').forEach(function(r){ r.classList.remove('active'); });
+      if(window.innerWidth >= 768){
+        document.getElementById('readContent').style.display = 'none';
+        document.getElementById('readEmpty').style.display = 'flex';
+      }
+    };
+
+    /* ====== Story Renderer ====== */
+    function renderStory(){
+      if(!storyItems.length) return;
+      var item = storyItems[storyIdx];
+      var isMobile = window.innerWidth < 1024;
+      var imgSrc = (isMobile && item.mobile) ? item.mobile : item.image;
+
+      var sImg = document.getElementById('sImg');
+      sImg.src = imgSrc;
+      sImg.onerror = function(){ this.src='https://placehold.co/600x400/1a1a1a/e63946?text=AnimeWave'; };
+
+      var sBadge = document.getElementById('sBadge');
+      if(item.badge){ sBadge.textContent=item.badge; sBadge.className='wn-badge '+badgeClass(item.badge); sBadge.style.display=''; }
+      else { sBadge.style.display='none'; }
+      document.getElementById('sTitle').textContent = item.title;
+      document.getElementById('sDesc').textContent = item.description;
+      document.getElementById('sCounter').textContent = (storyIdx+1) + ' / ' + storyItems.length;
+
+      var prog = document.getElementById('sProgress');
+      prog.innerHTML = storyItems.map(function(_,i){
+        var cls = i < storyIdx ? 'filled' : i === storyIdx ? 'active' : '';
+        return '<div class="wn-dot '+cls+'"><div class="wn-dot-fill"></div></div>';
+      }).join('');
+
+      document.getElementById('sNavLabel').textContent = storyIdx < storyItems.length-1 ? 'Next update →' : '✓ All caught up';
+      document.getElementById('sPrev').disabled = storyIdx === 0;
+      document.getElementById('sNext').disabled = storyIdx >= storyItems.length-1;
+
+      var wrap = document.getElementById('storyImgWrap');
+      wrap.classList.remove('story-enter');
+      void wrap.offsetHeight;
+      wrap.classList.add('story-enter');
+
+      document.querySelectorAll('.mail-row').forEach(function(r){
+        r.classList.toggle('active', parseInt(r.dataset.idx) === activeIndex);
+      });
+
+      readState[activeIndex] = true;
+      saveReadState();
+    }
+
+    function storyNext(){ if(storyIdx < storyItems.length-1){ storyIdx++; renderStory(); } }
+    function storyPrev(){ if(storyIdx > 0){ storyIdx--; renderStory(); } }
+
+    /* ====== Keyboard Shortcuts ====== */
+    document.addEventListener('keydown', function(e){
+      var tag = document.activeElement ? document.activeElement.tagName : '';
+      if(tag==='INPUT'||tag==='TEXTAREA') return;
+      var key = e.key;
+      if(key==='ArrowRight'||key==='ArrowDown'){ e.preventDefault(); storyNext(); }
+      else if(key==='ArrowLeft'||key==='ArrowUp'){ e.preventDefault(); storyPrev(); }
+      else if(key==='Escape'){ closeSettings(); }
+      else if(key==='Backspace'){ e.preventDefault(); window.location.href='index.html'; }
+      if(window.innerWidth < 1024) return;
+      if(key==='m'||key==='M'){ e.preventDefault(); toggleSidebar(); }
+      else if(key==='h'||key==='H'){ e.preventDefault(); window.location.href='index.html'; }
+      else if(key==='s'||key==='S'){ e.preventDefault(); openSettings(); }
+    });
+
+    /* ====== Keep displayed times live ====== */
+    setInterval(function(){
+      document.querySelectorAll('.mail-row').forEach(function(r){
+        var idx = parseInt(r.dataset.idx);
+        var t = r.querySelector('.mail-time');
+        if(t) t.textContent = timeSince(idx);
+      });
+      if(activeIndex >= 0){
+        var rt = document.getElementById('rTime');
+        if(rt) rt.textContent = timeSince(activeIndex);
+      }
+    }, 30000);
+
+    /* ====== Measure real bottom-nav height ====== */
+    function syncMnavHeight(){
+      var nav = document.getElementById('mobileNavBar');
+      if(!nav) return;
+      var h = nav.offsetHeight;
+      if(h > 0) document.documentElement.style.setProperty('--mnav-h', h + 'px');
+    }
+    syncMnavHeight();
+    window.addEventListener('resize', syncMnavHeight);
+    window.addEventListener('orientationchange', function(){ setTimeout(syncMnavHeight, 200); });
+
+    /* ====== Load Data ====== */
+    fetch('tnew.json')
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(data){
+        var slides = Array.isArray(data) ? data : [];
+        if(slides.length){
+          var grouped = {
+            title: "What's New add on to AnimeWave.",
+            badge: slides[0].badge || '',
+            description: slides[0].description || '',
+            image: slides[0].image || '',
+            mobile: slides[0].mobile || '',
+            _slides: slides
+          };
+          allItems = [grouped];
+        } else {
+          allItems = [];
+        }
+        renderInbox();
+        setTimeout(function(){ document.getElementById('loadingScreen').classList.add('hide'); }, 300);
+      })
+      .catch(function(err){
+        console.error('tnew.json load failed:', err);
+        var sk = document.getElementById('skeletonRows');
+        if(sk) sk.remove();
+        document.getElementById('inboxEmpty').style.display = 'flex';
+        var loader = document.getElementById('loadingScreen');
+        if(loader) loader.classList.add('hide');
+        showToast('Could not load notifications.');
+      });
+  </script>
+</body>
+</html>

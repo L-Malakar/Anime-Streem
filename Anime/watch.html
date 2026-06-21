@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watching — AnimeWave</title>
+  <link rel="icon" href="logo.PNG" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'aw': { bg:'#0a0a0a', bg2:'#141414', card:'#1a1a1a', border:'#2a2a2a', fg:'#f0f0f0', muted:'#8a8a8a', accent:'#e63946', accentL:'#ff6b6b', accentD:'#c1121f' }
+          },
+          fontFamily: { display:['"Dela Gothic One"','cursive'], body:['"Outfit"','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+    input,textarea,select{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden}
+    ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#3a3a3a}
+
+    .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:0.08;pointer-events:none;z-index:0}
+    .bg-orb-1{width:400px;height:400px;background:#e63946;top:-100px;left:-100px;animation:orbF1 22s ease-in-out infinite}
+    .bg-orb-2{width:350px;height:350px;background:#ff6b6b;bottom:-80px;right:-80px;animation:orbF2 28s ease-in-out infinite}
+    @keyframes orbF1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,100px)}}
+    @keyframes orbF2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-80px)}}
+    @media(prefers-reduced-motion:reduce){.bg-orb{animation:none!important}}
+
+    .video-wrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;box-shadow:0 0 0 1px rgba(255,255,255,0.04),0 20px 60px -15px rgba(0,0,0,0.6)}
+    .video-wrap video{width:100%;height:100%;display:block}
+    .video-wrap .controls-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 18px;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);opacity:0;transition:opacity 0.3s ease;display:flex;flex-direction:column;gap:8px}
+    .video-wrap:hover .controls-overlay,.video-wrap.show-controls .controls-overlay{opacity:1}
+    .video-wrap .big-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);cursor:pointer;transition:opacity 0.25s}
+    .video-wrap .big-play.hidden{opacity:0;pointer-events:none}
+    .big-play-circle{width:64px;height:64px;border-radius:50%;background:rgba(230,57,70,0.92);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(230,57,70,0.4);transition:transform 0.2s}
+    .big-play:hover .big-play-circle{transform:scale(1.08)}
+    .big-play:active .big-play-circle{transform:scale(0.95)}
+
+    .progress-bar{width:100%;height:4px;background:rgba(255,255,255,0.12);border-radius:99px;cursor:pointer;position:relative;transition:height 0.15s}
+    .progress-bar:hover{height:7px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#e63946,#ff6b6b);border-radius:99px;position:relative;pointer-events:none}
+    .progress-fill::after{content:'';position:absolute;right:-7px;top:50%;transform:translateY(-50%) scale(0);width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,0.5);transition:transform 0.15s}
+    .progress-bar:hover .progress-fill::after{transform:translateY(-50%) scale(1)}
+    .progress-buffer{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,0.1);border-radius:99px;pointer-events:none}
+
+    .ep-item{transition:all 0.2s ease;border:1px solid transparent}
+    .ep-item:hover{background:#1e1e1e;border-color:#333}
+    .ep-item.active{background:rgba(230,57,70,0.1);border-color:rgba(230,57,70,0.35)}
+    .ep-item.watched .ep-num{background:rgba(34,197,94,0.15);color:#22c55e}
+    .ep-item.current .ep-num{background:rgba(230,57,70,0.2);color:#e63946}
+    .ep-num{width:32px;height:32px;border-radius:8px;background:#1a1a1a;color:#8a8a8a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all 0.2s;flex-shrink:0}
+    .ep-item:hover .ep-num{background:rgba(230,57,70,0.15);color:#ff6b6b}
+    .ep-current-dot{width:6px;height:6px;border-radius:50%;background:#e63946;animation:dotPulse 1.5s ease-in-out infinite;flex-shrink:0}
+    @keyframes dotPulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+
+    .mep-card{transition:all 0.2s ease;border:1px solid transparent}
+    .mep-card:hover{border-color:rgba(230,57,70,0.3)}
+    .mep-card.active{background:rgba(230,57,70,0.1);border-color:rgba(230,57,70,0.4)}
+    .mep-card.watched .mep-num{color:#22c55e}
+
+    .toast{animation:slideIn 0.3s ease forwards}
+    @keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast-out{animation:slideOut 0.3s ease forwards}
+    @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+
+    .fade-in{animation:fadeIn 0.4s ease forwards}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulse 3s ease infinite}
+    @keyframes glowPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    .action-btn{transition:all 0.2s ease}
+    .action-btn:hover{transform:translateY(-1px)}
+    .action-btn:active{transform:scale(0.97)}
+
+    kbd{display:inline-block;padding:1px 5px;border-radius:4px;background:#1a1a1a;border:1px solid #2a2a2a;font-family:'Outfit',sans-serif;font-size:10px;color:#8a8a8a;line-height:1.6}
+
+    .back-btn{transition:all 0.2s ease}
+    .back-btn:hover{background:rgba(255,255,255,0.06)}
+    .back-btn:active{transform:scale(0.92)}
+
+    .season-drawer-trigger{transition:all 0.2s ease;cursor:pointer}
+    .season-drawer-trigger:hover{background:rgba(255,255,255,0.04)}
+    .season-drawer-trigger:active{transform:scale(0.98)}
+    .season-drawer-panel{max-height:0;overflow:hidden;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease;opacity:0}
+    .season-drawer-panel.open{max-height:300px;opacity:1}
+    .season-option{transition:all 0.15s ease;cursor:pointer}
+    .season-option:hover{background:rgba(230,57,70,0.08)}
+    .season-option.active{background:rgba(230,57,70,0.12);color:#e63946}
+    .season-option.playing-indicator{position:relative}
+
+    .ep-nav-btn{transition:all 0.2s ease;position:relative;overflow:hidden}
+    .ep-nav-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(230,57,70,0.15),rgba(255,107,107,0.08));opacity:0;transition:opacity 0.2s}
+    .ep-nav-btn:hover::before{opacity:1}
+    .ep-nav-btn:hover{border-color:rgba(230,57,70,0.4);transform:translateY(-1px)}
+    .ep-nav-btn:active{transform:scale(0.97)}
+    .ep-nav-btn:disabled{opacity:0.3;pointer-events:none}
+    .ep-nav-btn:disabled::before{display:none}
+
+    .playing-season-badge{font-size:9px;background:rgba(230,57,70,0.2);color:#e63946;padding:1px 6px;border-radius:4px;font-weight:600;margin-left:6px}
+
+    @media(max-width:1023px){
+      .video-wrap{border-radius:0;aspect-ratio:auto;height:56.25vw}
+    }
+    @media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+
+    #aw-miniplayer #aw-mp-video-wrap{height:200px;position:relative;overflow:hidden;transition:height 0.3s ease,opacity 0.3s ease}
+    #aw-miniplayer #aw-mp-video-wrap img,#aw-miniplayer #aw-mp-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    #aw-miniplayer #aw-mp-play-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);cursor:pointer;font-size:2rem;color:#fff;z-index:2}
+    #aw-miniplayer #aw-mp-info{padding:10px 14px 6px}
+    #aw-miniplayer #aw-mp-title{font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f0f0f0}
+    #aw-miniplayer #aw-mp-ep{font-size:0.75rem;color:#8a8a8a;margin-top:2px}
+    #aw-miniplayer #aw-mp-controls{display:flex;gap:4px;padding:4px 8px 8px;justify-content:flex-end}
+    #aw-miniplayer #aw-mp-controls button{width:32px;height:32px;border:none;border-radius:6px;background:#2a2a2a;color:#f0f0f0;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    #aw-miniplayer #aw-mp-controls button:hover{background:#e63946}
+    #aw-miniplayer #aw-mp-progress{height:3px;background:#2a2a2a}
+    #aw-miniplayer #aw-mp-bar{height:100%;background:#e63946;transition:width 0.3s ease;width:0}
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Background Orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/90 backdrop-blur-xl border-b border-aw-border">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+      <button onclick="history.back()" class="back-btn w-9 h-9 flex items-center justify-center rounded-full shrink-0" title="Go back">
+        <i class="fas fa-arrow-left text-aw-muted text-sm"></i>
+      </button>
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-lg object-cover">
+        <span class="font-display text-aw-fg text-base hidden sm:block">AnimeWave</span>
+      </a>
+      <div class="flex-1 min-w-0">
+        <h1 id="navTitle" class="text-sm font-medium text-aw-fg truncate"></h1>
+      </div>
+      <button id="saveBtnNav" onclick="handleSave()" class="shrink-0 w-9 h-9 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors" title="Save">
+        <i class="fas fa-bookmark text-aw-muted"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="pt-14 max-w-[1600px] mx-auto relative z-[1]">
+    <div class="grid lg:grid-cols-[1fr_360px]">
+      <!-- Player Area -->
+      <div class="fade-in">
+        <div class="video-wrap show-controls" id="videoWrap">
+          <video id="mainVideo" playsinline style="display:none"></video>
+          <iframe id="mainIframe"
+            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"
+            referrerpolicy="no-referrer"
+            style="display:none;width:100%;height:100%;border:none;position:absolute;inset:0;z-index:1">
+          </iframe>
+          <div class="big-play" id="bigPlay">
+            <div class="big-play-circle"><i class="fas fa-play text-white text-xl ml-1"></i></div>
+          </div>
+          <div class="controls-overlay" id="controlsOverlay">
+            <div class="progress-bar" id="progressBar">
+              <div class="progress-buffer" id="progressBuffer" style="width:0%"></div>
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 sm:gap-3">
+                <button id="btnPlayPause" class="text-white text-base w-9 h-9 flex items-center justify-center hover:text-aw-accentL transition-colors"><i class="fas fa-play"></i></button>
+                <button id="btnPrev" class="text-white/60 text-sm w-8 h-8 flex items-center justify-center hover:text-white transition-colors" title="Previous (P)"><i class="fas fa-step-backward"></i></button>
+                <button id="btnNext" class="text-white/60 text-sm w-8 h-8 flex items-center justify-center hover:text-white transition-colors" title="Next (N)"><i class="fas fa-step-forward"></i></button>
+                <div class="hidden sm:flex items-center gap-2 ml-1">
+                  <button id="btnVol" class="text-white/60 text-sm hover:text-white transition-colors"><i class="fas fa-volume-up"></i></button>
+                  <input type="range" id="volSlider" min="0" max="1" step="0.05" value="1" class="w-20 accent-[#e63946] h-1 cursor-pointer">
+                </div>
+                <span id="timeDisplay" class="text-white/50 text-xs ml-1 font-mono hidden sm:inline">0:00 / 0:00</span>
+              </div>
+              <div class="flex items-center gap-1.5 sm:gap-2">
+                <select id="speedSelect" class="bg-transparent text-white/60 text-xs border border-white/15 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none hidden sm:block">
+                  <option value="0.5">0.5x</option><option value="0.75">0.75x</option>
+                  <option value="1" selected>1x</option><option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option><option value="2">2x</option>
+                </select>
+                <button id="btnFullscreen" class="text-white/60 text-sm hover:text-white transition-colors" title="Fullscreen (F)"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+          <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none" style="display:none">
+            <div class="flex flex-col items-center gap-3">
+              <i class="fas fa-spinner fa-spin text-2xl text-aw-accent"></i>
+              <span class="text-white/50 text-xs">Loading...</span>
+            </div>
+          </div>
+          <div id="errorOverlay" class="absolute inset-0 flex items-center justify-center bg-black/80 pointer-events-none" style="display:none">
+            <div class="text-center px-4">
+              <i class="fas fa-exclamation-triangle text-3xl text-aw-accent mb-3"></i>
+              <p class="text-white/80 text-sm mb-1">Failed to load video</p>
+              <p class="text-white/40 text-xs">Check the URL or try another episode</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info below player -->
+        <div class="p-4 sm:p-5">
+          <div class="glow-line mb-5"></div>
+          <div class="flex items-start justify-between gap-4 mb-3">
+            <div class="min-w-0">
+              <h2 id="epTitle" class="font-display text-lg sm:text-xl text-aw-fg mb-1 truncate"></h2>
+              <div id="epMeta" class="flex flex-wrap items-center gap-2 text-xs text-aw-muted"></div>
+            </div>
+            <a id="detailLink" href="#" class="action-btn shrink-0 inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-4 py-2 rounded-lg text-xs">
+              <i class="fas fa-info-circle"></i> <span class="hidden sm:inline">Details</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Episode Sidebar -->
+      <aside class="border-l border-aw-border bg-aw-bg2 hidden lg:flex flex-col">
+        <div class="sticky top-14 max-h-[calc(100vh-56px)] flex flex-col">
+          <div class="shrink-0 border-b border-aw-border">
+            <div class="p-4 pb-3 flex items-center justify-between">
+              <h3 class="font-display text-base text-aw-fg">Episodes</h3>
+              <span id="epCountDesktop" class="text-xs text-aw-muted bg-aw-bg px-2.5 py-0.5 rounded-full"></span>
+            </div>
+            <div id="seasonDrawerDesktop" class="px-4 pb-3" style="display:none">
+              <button class="season-drawer-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('desktop')">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-layer-group text-aw-accent text-xs"></i>
+                  <span id="seasonDrawerLabelDesktop" class="text-sm font-medium text-aw-fg"></span>
+                </div>
+                <i id="seasonDrawerChevronDesktop" class="fas fa-chevron-down text-aw-muted text-xs transition-transform duration-300"></i>
+              </button>
+              <div id="seasonDrawerPanelDesktop" class="season-drawer-panel mt-1.5 rounded-lg border border-aw-border bg-aw-bg overflow-hidden">
+                <div id="seasonDrawerOptionsDesktop" class="py-1"></div>
+              </div>
+            </div>
+          </div>
+          <div class="shrink-0 p-3 flex gap-2 border-b border-aw-border">
+            <button id="epNavPrevDesktop" onclick="goEpSidebar(-1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+              <i class="fas fa-chevron-left text-[10px]"></i> Previous
+            </button>
+            <button id="epNavNextDesktop" onclick="goEpSidebar(1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+              Next <i class="fas fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+          <div class="p-2 flex-1 overflow-y-auto" id="epList"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Mobile Episode Section -->
+    <div class="lg:hidden border-t border-aw-border bg-aw-bg2">
+      <div class="sticky top-14 z-10 bg-aw-bg2 border-b border-aw-border">
+        <div class="p-4 pb-2 flex items-center justify-between">
+          <h3 class="font-display text-base text-aw-fg">Episodes</h3>
+          <span id="epCountMobile" class="text-xs text-aw-muted bg-aw-bg px-2.5 py-0.5 rounded-full"></span>
+        </div>
+        <div id="seasonDrawerMobile" class="px-4 pb-2" style="display:none">
+          <button class="season-drawer-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('mobile')">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-layer-group text-aw-accent text-xs"></i>
+              <span id="seasonDrawerLabelMobile" class="text-sm font-medium text-aw-fg"></span>
+            </div>
+            <i id="seasonDrawerChevronMobile" class="fas fa-chevron-down text-aw-muted text-xs transition-transform duration-300"></i>
+          </button>
+          <div id="seasonDrawerPanelMobile" class="season-drawer-panel mt-1.5 rounded-lg border border-aw-border bg-aw-bg overflow-hidden">
+            <div id="seasonDrawerOptionsMobile" class="py-1"></div>
+          </div>
+        </div>
+        <div class="px-4 pb-3 flex gap-2">
+          <button id="epNavPrevMobile" onclick="goEpSidebar(-1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+            <i class="fas fa-chevron-left text-[10px]"></i> Previous
+          </button>
+          <button id="epNavNextMobile" onclick="goEpSidebar(1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+            Next <i class="fas fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="epListMobile" class="p-3 pb-24 grid grid-cols-1 gap-2"></div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toastContainer" class="fixed top-16 right-4 z-[10000] flex flex-col gap-2"></div>
+
+  <script>
+    /* Security */
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('copy', e => { if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') e.preventDefault(); });
+    document.addEventListener('selectstart', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return; e.preventDefault(); });
+    document.addEventListener('dragstart', e => e.preventDefault());
+
+    /* Toast */
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-circle-xmark' };
+      const colors = { info: 'border-aw-accent', success: 'border-green-500', error: 'border-red-500' };
+      t.className = `toast border-l-4 ${colors[type] || colors.info} bg-aw-card rounded-lg px-4 py-3 text-sm text-aw-fg shadow-2xl max-w-xs flex items-center gap-3`;
+      t.innerHTML = `<i class="fas ${icons[type] || icons.info} ${type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-aw-accent'} text-base shrink-0"></i><span>${msg}</span>`;
+      c.appendChild(t);
+      setTimeout(() => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 300); }, 2800);
+    }
+
+    function fmt(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ':' + (sec < 10 ? '0' : '') + sec; }
+
+    /* Saved */
+    function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch { return []; } }
+    function isSaved(id) { return getSaved().includes(id); }
+    function toggleSave(id, name) {
+      let s = getSaved();
+      if (s.includes(id)) { s = s.filter(x => x !== id); showToast(`Removed "${name}"`, 'info'); }
+      else { s.push(id); showToast(`Saved "${name}"`, 'success'); }
+      localStorage.setItem('aw_saved', JSON.stringify(s));
+      return s.includes(id);
+    }
+
+    /* Watch History */
+    function addToHistory(id, season, episode) {
+      try {
+        let h = JSON.parse(localStorage.getItem('aw_history') || '[]');
+        h = h.filter(x => x.id !== id);
+        h.unshift({ id, ts: Date.now(), s: season || 1, e: episode || 1 });
+        if (h.length > 50) h = h.slice(0, 50);
+        localStorage.setItem('aw_history', JSON.stringify(h));
+      } catch (e) {}
+    }
+
+    /* Progress — per season */
+    function getProgress(animeId, s) {
+      try { return parseInt(localStorage.getItem('aw_prog_' + animeId + '_s' + s) || '0'); } catch { return 0; }
+    }
+    function setProgress(animeId, epNum, s) {
+      const key = 'aw_prog_' + animeId + '_s' + s;
+      try {
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        if (epNum > prev) localStorage.setItem(key, String(epNum));
+      } catch (e) { }
+    }
+
+    /* Data */
+    let allAnime = [];
+    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","altName":"異世界失格","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","genre":["Adventure","Comedy","Fantasy","Isekai"],"seasons":["Season 1"],"episodeLinks":{"s1":{"e1":"https://as-cdn21.top/video/88a839f2f6f1427879fc33ee4acf4f66","e2":"https://as-cdn21.top/video/f8e59f4b2fe7c5705bf878bbd494ccdf","e3":"https://as-cdn21.top/video/9978b7063e297d84bb2ac8e46c1c845f","e4":"https://as-cdn21.top/video/7bc1ec1d9c3426357e69acd5bf320061","e5":"https://as-cdn21.top/video/d1a21da7bca4abff8b0b61b87597de73","e6":"https://as-cdn21.top/video/491442df5f88c6aa018e86dac21d3606","e7":"https://as-cdn21.top/video/fb2fcd534b0ff3bbed73cc51df620323","e8":"https://as-cdn21.top/video/b571ecea16a9824023ee1af16897a582","e9":"https://as-cdn21.top/video/211c1e0b83b9c69fa9c4bdede203c1e3","e10":"https://as-cdn21.top/video/0234c510bc6d908b28c70ff313743079","e11":"https://as-cdn21.top/video/bb1662b7c5f22a0f905fd59e718ca05e","e12":"https://as-cdn21.top/video/5d79099fcdf499f12b79770834c0164a"}},"rating":7,"episodes":12,"studio":"Atelier Pontdarc","year":2024,"state":"watched"}];
+
+    let anime = null, videoUrl = '';
+    /* playSeason/playEp = what is currently playing (loaded in the video player) */
+    let playSeason = 1, playEp = 1;
+    /* viewSeason = which season's episodes are shown in the sidebar */
+    let viewSeason = 1;
+    let hlsInstance = null, saveTimer = null, controlsTimeout = null;
+    let seasonDrawerOpen = { desktop: false, mobile: false };
+    let channel = null;
+    try { channel = new BroadcastChannel('aw_player_sync'); } catch (e) { }
+
+    function broadcastState(action) {
+      if (!channel || !anime) return;
+      const v = document.getElementById('mainVideo');
+      channel.postMessage({
+        type: action, state: {
+          active: action !== 'stop', animeId: anime.id, animeName: anime.name,
+          animeImage: anime.image, season: playSeason, episode: playEp,
+          videoUrl: videoUrl, currentTime: v ? v.currentTime : 0, duration: v ? v.duration : 0
+        }
+      });
+    }
+
+    /* ── Season Drawer ── */
+    function toggleSeasonDrawer(prefix) {
+      seasonDrawerOpen[prefix] = !seasonDrawerOpen[prefix];
+      const panel = document.getElementById('seasonDrawerPanel' + capitalize(prefix));
+      const chevron = document.getElementById('seasonDrawerChevron' + capitalize(prefix));
+      if (seasonDrawerOpen[prefix]) {
+        panel.classList.add('open');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.remove('open');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function renderSeasonDrawer() {
+      const keys = getSeasonKeys();
+      const hasMultiple = keys.length > 1;
+
+      /* Build option HTML (shared for desktop & mobile) */
+      function buildOptions() {
+        return keys.map(sk => {
+          const num = parseInt(sk.replace('s', ''));
+          const count = Object.keys(anime.episodeLinks[sk]).length;
+          const isViewing = num === viewSeason;
+          const isPlaying = num === playSeason;
+          let activeClass = isViewing ? 'active font-semibold' : 'text-aw-muted';
+          let playingBadge = '';
+          if (isPlaying && !isViewing) {
+            playingBadge = '<span class="playing-season-badge">Now Playing</span>';
+          }
+          return `<button class="season-option w-full flex items-center justify-between px-4 py-2.5 text-sm ${activeClass}" onclick="switchViewSeason(${num})">
+            <span class="flex items-center">Season ${num}${playingBadge}</span>
+            <span class="text-xs ${isViewing ? 'text-aw-accent' : 'text-aw-border'}">${count} ep${count !== 1 ? 's' : ''}</span>
+          </button>`;
+        }).join('');
+      }
+
+      /* Desktop */
+      const dd = document.getElementById('seasonDrawerDesktop');
+      if (dd) {
+        dd.style.display = hasMultiple ? 'block' : 'none';
+        if (hasMultiple) {
+          const label = 'Season ' + viewSeason + (viewSeason !== playSeason ? ' (Playing S' + playSeason + ')' : '');
+          document.getElementById('seasonDrawerLabelDesktop').textContent = label;
+          document.getElementById('seasonDrawerOptionsDesktop').innerHTML = buildOptions();
+        }
+      }
+
+      /* Mobile */
+      const dm = document.getElementById('seasonDrawerMobile');
+      if (dm) {
+        dm.style.display = hasMultiple ? 'block' : 'none';
+        if (hasMultiple) {
+          const label = 'Season ' + viewSeason + (viewSeason !== playSeason ? ' (Playing S' + playSeason + ')' : '');
+          document.getElementById('seasonDrawerLabelMobile').textContent = label;
+          document.getElementById('seasonDrawerOptionsMobile').innerHTML = buildOptions();
+        }
+      }
+
+      /* Reset drawer open state */
+      seasonDrawerOpen = { desktop: false, mobile: false };
+      ['Desktop', 'Mobile'].forEach(p => {
+        const panel = document.getElementById('seasonDrawerPanel' + p);
+        const chevron = document.getElementById('seasonDrawerChevron' + p);
+        if (panel) panel.classList.remove('open');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      });
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('details.json');
+        if (!res.ok) throw new Error();
+        allAnime = await res.json();
+        if (!Array.isArray(allAnime)) allAnime = [allAnime];
+      } catch (e) { allAnime = FALLBACK; }
+      initPlayer();
+    }
+
+    function getSeasonKeys() {
+      if (!anime || !anime.episodeLinks) return [];
+      return Object.keys(anime.episodeLinks).filter(sk => {
+        const eps = anime.episodeLinks[sk];
+        return eps && typeof eps === 'object' && Object.keys(eps).length > 0;
+      });
+    }
+
+    function getSortedEpNums(s) {
+      const sk = 's' + s;
+      const eps = anime.episodeLinks && anime.episodeLinks[sk] ? anime.episodeLinks[sk] : {};
+      return Object.keys(eps).map(k => parseInt(k.replace('e', ''))).sort((a, b) => a - b);
+    }
+
+    function initPlayer() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const s = parseInt(params.get('s') || '1');
+      const e = parseInt(params.get('e') || '1');
+      anime = allAnime.find(a => a.id === id);
+      if (!anime) { window.location.href = 'index.html'; return; }
+
+      /* Both play and view start at the URL season/episode */
+      playSeason = s;
+      playEp = e;
+      viewSeason = s;
+
+      const sk = 's' + playSeason;
+      const ek = 'e' + playEp;
+      videoUrl = (anime.episodeLinks && anime.episodeLinks[sk] && anime.episodeLinks[sk][ek]) || '';
+
+      document.title = `${anime.name} S${playSeason}E${playEp} — AnimeWave`;
+      document.getElementById('navTitle').textContent = `${anime.name} · Season ${playSeason} · Episode ${playEp}`;
+      document.getElementById('epTitle').textContent = `Season ${playSeason} · Episode ${playEp}`;
+
+      const metaParts = [];
+      if (anime.rating) metaParts.push(`<span><i class="fas fa-star text-yellow-500 mr-1"></i>${anime.rating}</span>`);
+      if (anime.studio) metaParts.push(`<span>${anime.studio}</span>`);
+      if (anime.year) metaParts.push(`<span>${anime.year}</span>`);
+      if (anime.episodes) metaParts.push(`<span>${anime.episodes} Episodes</span>`);
+      document.getElementById('epMeta').innerHTML = metaParts.join('<span class="text-aw-border">&middot;</span>');
+
+      document.getElementById('detailLink').href = `anime.html?id=${encodeURIComponent(anime.id)}`;
+      updateSaveBtn();
+      loadVideo(videoUrl);
+      renderSeasonDrawer();
+      renderEpList();
+      updateEpNavButtons();
+      bindControls();
+      setProgress(anime.id, playEp, playSeason);
+      addToHistory(anime.id, playSeason, playEp);
+      broadcastState('play');
+    }
+
+    function updateSaveBtn() {
+      const btn = document.getElementById('saveBtnNav');
+      const saved = isSaved(anime.id);
+      btn.innerHTML = `<i class="fas fa-bookmark ${saved ? 'text-aw-accent' : 'text-aw-muted'}"></i>`;
+    }
+
+    function handleSave() {
+      if (!anime) return;
+      toggleSave(anime.id, anime.name);
+      updateSaveBtn();
+    }
+
+    /* ── Season switching (sidebar only, does NOT change playing video) ── */
+    function switchViewSeason(num) {
+      if (num === viewSeason) return;
+      viewSeason = num;
+      renderSeasonDrawer();
+      renderEpList();
+      updateEpNavButtons();
+    }
+
+    /* ── Episode Navigation ── */
+    function updateEpNavButtons() {
+      const nums = getSortedEpNums(viewSeason);
+      /* Determine the "current" episode in the viewed season for nav purposes */
+      const currentInView = (viewSeason === playSeason) ? playEp : (nums.length > 0 ? nums[0] : 0);
+      const idx = nums.indexOf(currentInView);
+      const hasPrev = idx > 0;
+      const hasNext = idx < nums.length - 1;
+
+      const pd = document.getElementById('epNavPrevDesktop');
+      const nd = document.getElementById('epNavNextDesktop');
+      if (pd) pd.disabled = !hasPrev;
+      if (nd) nd.disabled = !hasNext;
+
+      const pm = document.getElementById('epNavPrevMobile');
+      const nm = document.getElementById('epNavNextMobile');
+      if (pm) pm.disabled = !hasPrev;
+      if (nm) nm.disabled = !hasNext;
+    }
+
+    /* Sidebar prev/next: navigates within the VIEWED season */
+    function goEpSidebar(delta) {
+      const nums = getSortedEpNums(viewSeason);
+      const currentInView = (viewSeason === playSeason) ? playEp : (nums.length > 0 ? nums[0] : 0);
+      const idx = nums.indexOf(currentInView);
+      const target = nums[idx + delta];
+      if (target !== undefined) {
+        window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${target}`;
+      } else {
+        showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
+      }
+    }
+
+    /* Player controls prev/next: navigates within the PLAYING season */
+    function goEpPlayer(delta) {
+      const nums = getSortedEpNums(playSeason);
+      const idx = nums.indexOf(playEp);
+      const target = nums[idx + delta];
+      if (target !== undefined) {
+        window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${playSeason}&e=${target}`;
+      } else {
+        showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
+      }
+    }
+
+    /* ── Video Loading ── */
+    function isDirectMedia(url) {
+      try {
+        const u = new URL(url);
+        const path = u.pathname.toLowerCase();
+        if (/\.(mp4|webm|ogg|ogv|mov|mkv|m3u8|ts)(\?|$)/.test(path)) return true;
+        if (/\/(stream|hls|media|video\.m3u8|master\.m3u8)/.test(path)) return true;
+        return false;
+      } catch { return false; }
+    }
+
+    function loadVideo(url) {
+      const v       = document.getElementById('mainVideo');
+      const iframe  = document.getElementById('mainIframe');
+      const spinner = document.getElementById('loadingSpinner');
+      const bigPlay = document.getElementById('bigPlay');
+      const wrap    = document.getElementById('videoWrap');
+      const errorOv = document.getElementById('errorOverlay');
+      const ctrlOverlay = document.getElementById('controlsOverlay');
+
+      errorOv.style.display = 'none';
+      spinner.style.display = 'flex';
+      wrap.classList.add('show-controls');
+
+      if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+      v.style.display = 'none';
+      v.pause();
+      v.removeAttribute('src');
+      v.load();
+      iframe.style.display = 'none';
+      iframe.removeAttribute('src');
+      ctrlOverlay.style.display = '';
+
+      if (!url) {
+        spinner.style.display = 'none';
+        errorOv.style.display = 'flex';
+        showToast('No video URL for this episode', 'error');
+        return;
+      }
+
+      /* IFRAME PATH */
+      if (!isDirectMedia(url)) {
+        bigPlay.classList.add('hidden');
+        ctrlOverlay.style.display = 'none';
+        iframe.style.display = 'block';
+        iframe.onload = () => { spinner.style.display = 'none'; };
+        iframe.onerror = () => { spinner.style.display = 'none'; errorOv.style.display = 'flex'; showToast('Failed to load video', 'error'); };
+        iframe.src = url;
+        setTimeout(() => { spinner.style.display = 'none'; }, 8000);
+        return;
+      }
+
+      /* NATIVE / HLS PATH */
+      v.style.display = 'block';
+      bigPlay.classList.remove('hidden');
+
+      function onReady() { spinner.style.display = 'none'; }
+      function onError() {
+        spinner.style.display = 'none';
+        errorOv.style.display = 'flex';
+        showToast('Failed to load video', 'error');
+      }
+
+      if (url.includes('.m3u8')) {
+        if (Hls.isSupported()) {
+          hlsInstance = new Hls({ enableWorker: true, maxBufferLength: 30 });
+          hlsInstance.loadSource(url);
+          hlsInstance.attachMedia(v);
+          hlsInstance.on(Hls.Events.MANIFEST_PARSED, onReady);
+          hlsInstance.on(Hls.Events.ERROR, (ev, data) => {
+            if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hlsInstance.startLoad();
+              else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hlsInstance.recoverMediaError();
+              else onError();
+            }
+          });
+        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+          v.addEventListener('loadedmetadata', onReady, { once: true });
+          v.addEventListener('error', onError, { once: true });
+          v.src = url;
+        } else {
+          showToast('HLS not supported in this browser', 'error');
+          spinner.style.display = 'none';
+          errorOv.style.display = 'flex';
+        }
+      } else {
+        v.addEventListener('canplay', onReady, { once: true });
+        v.addEventListener('error', onError, { once: true });
+        v.src = url;
+        v.load();
+      }
+    }
+
+    /* ── Episode List ── */
+    function renderEpList() {
+      if (!anime) return;
+      const sk = 's' + viewSeason;
+      const eps = anime.episodeLinks && anime.episodeLinks[sk] ? anime.episodeLinks[sk] : {};
+      const entries = Object.entries(eps);
+      /* Progress is per-season now */
+      const progress = getProgress(anime.id, viewSeason);
+      const allEps = entries.map(([ek]) => parseInt(ek.replace('e', ''))).sort((a, b) => a - b);
+      const totalEps = allEps.length;
+      const isViewingPlayingSeason = (viewSeason === playSeason);
+
+      /* Ep count badges */
+      const dc = document.getElementById('epCountDesktop');
+      if (dc) dc.textContent = totalEps + ' ep' + (totalEps !== 1 ? 's' : '');
+      const mc = document.getElementById('epCountMobile');
+      if (mc) mc.textContent = totalEps + ' ep' + (totalEps !== 1 ? 's' : '');
+
+      /* Desktop list */
+      const list = document.getElementById('epList');
+      if (list) {
+        list.innerHTML = entries.map(([ek, url]) => {
+          const en = parseInt(ek.replace('e', ''));
+          const active = isViewingPlayingSeason && en === playEp;
+          const isWatched = en <= progress && !active;
+          const isCurrent = en === progress + 1 && progress < totalEps && !active;
+
+          let cls = '';
+          if (active) cls = 'active';
+          else if (isWatched) cls = 'watched';
+          else if (isCurrent) cls = 'current';
+
+          let statusIcon = '';
+          if (isWatched) statusIcon = '<i class="fas fa-check text-green-400 text-[9px]"></i>';
+          else if (isCurrent) statusIcon = '<div class="ep-current-dot"></div>';
+
+          return `<a href="watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${en}" class="ep-item flex items-center gap-3 px-3 py-2.5 rounded-lg ${cls} group">
+            <div class="ep-num">${isWatched ? '<i class="fas fa-check text-[10px]"></i>' : en}</div>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm ${active ? 'text-aw-accentL font-medium' : 'text-aw-fg'}">Episode ${en}</span>
+              <p class="text-[10px] text-aw-muted mt-0.5">${isWatched ? 'Watched' : isCurrent ? 'Up next' : active ? 'Playing' : ''}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${statusIcon}
+              ${active ? '<i class="fas fa-play text-aw-accent text-[10px]"></i>' : '<i class="fas fa-play text-aw-border text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>'}
+            </div>
+          </a>`;
+        }).join('');
+      }
+
+      /* Mobile list */
+      const mobile = document.getElementById('epListMobile');
+      if (mobile) {
+        mobile.innerHTML = entries.map(([ek, url]) => {
+          const en = parseInt(ek.replace('e', ''));
+          const active = isViewingPlayingSeason && en === playEp;
+          const isWatched = en <= progress && !active;
+          const isCurrent = en === progress + 1 && progress < totalEps && !active;
+
+          let cls = 'bg-aw-card';
+          if (active) cls = 'active';
+          else if (isWatched) cls += ' watched';
+
+          let indicator = '';
+          if (isWatched) indicator = '<i class="fas fa-check text-green-400 text-[10px]"></i>';
+          else if (isCurrent) indicator = '<div class="ep-current-dot"></div>';
+
+          return `<a href="watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${en}" class="mep-card flex items-center gap-3 px-3 py-3 rounded-xl ${cls} group">
+            <div class="ep-num mep-num">${isWatched ? '<i class="fas fa-check text-[10px]"></i>' : en}</div>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm ${active ? 'text-aw-accentL font-medium' : 'text-aw-fg'}">Episode ${en}</span>
+              <p class="text-[10px] text-aw-muted mt-0.5">${isWatched ? 'Watched' : isCurrent ? 'Up next' : active ? 'Playing' : ''}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${indicator}
+              ${active ? '<i class="fas fa-play text-aw-accent text-xs"></i>' : '<i class="fas fa-play text-aw-border text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>'}
+            </div>
+          </a>`;
+        }).join('');
+      }
+    }
+
+    /* ── Controls ── */
+    function bindControls() {
+      const v = document.getElementById('mainVideo');
+      const wrap = document.getElementById('videoWrap');
+      const bigPlay = document.getElementById('bigPlay');
+      const btnPP = document.getElementById('btnPlayPause');
+      const bar = document.getElementById('progressBar');
+      const fill = document.getElementById('progressFill');
+      const buffer = document.getElementById('progressBuffer');
+      const timeDisp = document.getElementById('timeDisplay');
+      const volSlider = document.getElementById('volSlider');
+      const btnVol = document.getElementById('btnVol');
+      const speedSel = document.getElementById('speedSelect');
+      const btnFS = document.getElementById('btnFullscreen');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+
+      function isNativeMode() { return document.getElementById('mainVideo').style.display !== 'none'; }
+
+      function updatePlayUI() {
+        if (!isNativeMode()) return;
+        const paused = v.paused;
+        wrap.classList.toggle('show-controls', paused);
+        bigPlay.classList.toggle('hidden', !paused);
+        btnPP.innerHTML = paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+      }
+
+      function togglePlay() {
+        if (!isNativeMode()) return;
+        if (v.paused) v.play().catch(() => { });
+        else v.pause();
+      }
+
+      function resetControlsTimer() {
+        wrap.classList.add('show-controls');
+        clearTimeout(controlsTimeout);
+        if (!v.paused) controlsTimeout = setTimeout(() => wrap.classList.remove('show-controls'), 3000);
+      }
+
+      bigPlay.onclick = togglePlay;
+      btnPP.onclick = togglePlay;
+      v.onclick = togglePlay;
+      wrap.addEventListener('mousemove', resetControlsTimer);
+
+      v.addEventListener('play', () => { updatePlayUI(); addToHistory(anime.id, playSeason, playEp); broadcastState('play'); });
+      v.addEventListener('pause', () => { updatePlayUI(); broadcastState('pause'); });
+      v.addEventListener('waiting', () => { document.getElementById('loadingSpinner').style.display = 'flex'; });
+      v.addEventListener('canplay', () => { document.getElementById('loadingSpinner').style.display = 'none'; });
+
+      v.addEventListener('progress', () => {
+        if (v.buffered.length > 0 && v.duration) {
+          buffer.style.width = (v.buffered.end(v.buffered.length - 1) / v.duration * 100) + '%';
+        }
+      });
+
+      v.addEventListener('timeupdate', () => {
+        if (!v.duration) return;
+        fill.style.width = (v.currentTime / v.duration * 100) + '%';
+        timeDisp.textContent = fmt(v.currentTime) + ' / ' + fmt(v.duration);
+      });
+
+      v.addEventListener('ended', () => {
+        updatePlayUI();
+        broadcastState('stop');
+      });
+
+      /* Progress bar seek */
+      let isSeeking = false;
+      bar.addEventListener('mousedown', (e) => { isSeeking = true; seekTo(e); });
+      bar.addEventListener('mousemove', (e) => { if (isSeeking) seekTo(e); });
+      document.addEventListener('mouseup', () => { isSeeking = false; });
+      bar.addEventListener('touchstart', (e) => { isSeeking = true; seekToTouch(e); }, { passive: true });
+      bar.addEventListener('touchmove', (e) => { if (isSeeking) seekToTouch(e); }, { passive: true });
+      bar.addEventListener('touchend', () => { isSeeking = false; });
+
+      function seekTo(e) {
+        const r = bar.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        if (v.duration) v.currentTime = pct * v.duration;
+      }
+      function seekToTouch(e) {
+        const r = bar.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.touches[0].clientX - r.left) / r.width));
+        if (v.duration) v.currentTime = pct * v.duration;
+      }
+
+      v.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        btnFS.click();
+      });
+
+      /* Volume */
+      volSlider.oninput = () => { if (!isNativeMode()) return; v.volume = parseFloat(volSlider.value); if (v.muted) v.muted = false; updateVolIcon(); };
+      btnVol.onclick = () => { if (!isNativeMode()) return; v.muted = !v.muted; updateVolIcon(); };
+      function updateVolIcon() {
+        const ico = (!isNativeMode() || v.muted || v.volume === 0) ? 'fa-volume-xmark' : v.volume < 0.5 ? 'fa-volume-low' : 'fa-volume-up';
+        btnVol.innerHTML = `<i class="fas ${ico}"></i>`;
+      }
+
+      /* Speed */
+      speedSel.onchange = () => { if (!isNativeMode()) return; v.playbackRate = parseFloat(speedSel.value); };
+
+      /* Fullscreen */
+      btnFS.onclick = () => {
+        const target = isNativeMode() ? wrap : (document.getElementById('mainIframe') || wrap);
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
+        else target.requestFullscreen().catch(() => wrap.requestFullscreen().catch(() => {}));
+      };
+      document.addEventListener('fullscreenchange', () => {
+        btnFS.innerHTML = document.fullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+      });
+
+      /* Player prev/next — uses PLAYING season */
+      btnPrev.onclick = () => goEpPlayer(-1);
+      btnNext.onclick = () => goEpPlayer(1);
+
+      /* Broadcast timer */
+      saveTimer = setInterval(() => broadcastState('update'), 3000);
+      window.addEventListener('beforeunload', () => broadcastState('stop'));
+
+      /* Keyboard */
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+        switch (e.key) {
+          case ' ': case 'k': e.preventDefault(); togglePlay(); resetControlsTimer(); break;
+          case 'ArrowLeft': if (!isNativeMode()) break; e.preventDefault(); v.currentTime = Math.max(0, v.currentTime - 10); resetControlsTimer(); break;
+          case 'ArrowRight': if (!isNativeMode()) break; e.preventDefault(); v.currentTime = Math.min(v.duration || 0, v.currentTime + 10); resetControlsTimer(); break;
+          case 'ArrowUp': if (!isNativeMode()) break; e.preventDefault(); v.volume = Math.min(1, v.volume + 0.1); volSlider.value = v.volume; updateVolIcon(); resetControlsTimer(); break;
+          case 'ArrowDown': if (!isNativeMode()) break; e.preventDefault(); v.volume = Math.max(0, v.volume - 0.1); volSlider.value = v.volume; updateVolIcon(); resetControlsTimer(); break;
+          case 'f': case 'F': e.preventDefault(); btnFS.click(); break;
+          /* Keyboard N/P use PLAYING season */
+          case 'n': case 'N': goEpPlayer(1); break;
+          case 'p': case 'P': goEpPlayer(-1); break;
+          case 'Escape':
+            if (document.fullscreenElement) document.exitFullscreen();
+            break;
+        }
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

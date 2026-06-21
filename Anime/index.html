@@ -1,0 +1,2847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src * data: blob:; media-src * blob:; font-src https: data:; style-src 'self' 'unsafe-inline' https:; connect-src *;">
+  <title>AnimeWave — Your Anime Universe</title>
+  <link rel="icon" href="logo.PNG" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'aw': { bg:'#0a0a0a', bg2:'#141414', card:'#1a1a1a', border:'#2a2a2a', fg:'#f0f0f0', muted:'#8a8a8a', accent:'#e63946', accentL:'#ff6b6b', accentD:'#c1121f' }
+          },
+          fontFamily: { display:['"Dela Gothic One"','cursive'], body:['"Outfit"','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    .no-select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+    button,a,.mnav-btn,.scroll-arrow,.genre-chip,.hcard,.poster-card,.search-suggestion,.hero-arrow,.hero-dot{touch-action:manipulation}
+    input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden}
+    ::-webkit-scrollbar{width:8px}
+    ::-webkit-scrollbar-track{background:#0a0a0a}
+    ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:#3a3a3a}
+
+    #loadingScreen{transition:opacity 0.6s ease,visibility 0.6s ease}
+    #loadingScreen.hide{opacity:0;visibility:hidden}
+    @keyframes loadPulse{0%,100%{transform:scale(1);opacity:0.7}50%{transform:scale(1.05);opacity:1}}
+    @keyframes loadBar{0%{width:0;margin-left:0}50%{width:70%;margin-left:15%}100%{width:0;margin-left:100%}}
+
+    .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:0.12;pointer-events:none;z-index:0}
+    .bg-orb-1{width:500px;height:500px;background:#e63946;top:-150px;left:-150px;animation:orbFloat1 22s ease-in-out infinite}
+    .bg-orb-2{width:400px;height:400px;background:#ff6b6b;bottom:-100px;right:-100px;animation:orbFloat2 28s ease-in-out infinite}
+    .bg-orb-3{width:300px;height:300px;background:#c1121f;top:50%;left:50%;transform:translate(-50%,-50%);animation:orbFloat3 18s ease-in-out infinite}
+    @keyframes orbFloat1{0%,100%{transform:translate(0,0)}33%{transform:translate(120px,180px)}66%{transform:translate(-60px,100px)}}
+    @keyframes orbFloat2{0%,100%{transform:translate(0,0)}33%{transform:translate(-100px,-120px)}66%{transform:translate(80px,-60px)}}
+    @keyframes orbFloat3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-30%,-60%) scale(1.2)}}
+    @media(prefers-reduced-motion:reduce){
+      .bg-orb,.skeleton,.inf-spinner,.hero-progress-bar,.glow-line,.save-dirty-dot{animation:none!important}
+      *{transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+      .hero-slide{transition:opacity 0.01ms!important}
+      .hero-slide.active .hero-anim-item,.hero-slide.active .hero-poster-wrap{transition:none!important}
+    }
+
+    .hero-slide{position:absolute;inset:0;opacity:0;z-index:1;will-change:transform,opacity}
+    .hero-slide.active{opacity:1;transform:translateX(0) scale(1);transition:opacity 1.2s cubic-bezier(0.4,0,0.2,1),transform 1.2s cubic-bezier(0.4,0,0.2,1);z-index:2}
+    .hero-slide.leaving-left{opacity:0;transform:translateX(-7%) scale(0.96);transition:opacity 1.2s cubic-bezier(0.4,0,0.2,1),transform 1.2s cubic-bezier(0.4,0,0.2,1);z-index:1}
+    .hero-slide.leaving-right{opacity:0;transform:translateX(7%) scale(0.96);transition:opacity 1.2s cubic-bezier(0.4,0,0.2,1),transform 1.2s cubic-bezier(0.4,0,0.2,1);z-index:1}
+    .hero-slide.entering-right{transform:translateX(7%) scale(1.04);opacity:0}
+    .hero-slide.entering-left{transform:translateX(-7%) scale(1.04);opacity:0}
+    .hero-anim-item{opacity:0;transform:translateY(22px);transition:opacity 0.65s var(--d,0s) cubic-bezier(0.25,0.1,0.25,1),transform 0.65s var(--d,0s) cubic-bezier(0.25,0.1,0.25,1)}
+    .hero-slide.active .hero-anim-item{opacity:1;transform:translateY(0)}
+    .hero-poster-wrap{opacity:0;transform:translateY(28px) scale(0.9);transition:opacity 0.9s 0.25s cubic-bezier(0.25,0.1,0.25,1),transform 0.9s 0.25s cubic-bezier(0.25,0.1,0.25,1);perspective:800px;transform-style:preserve-3d}
+    .hero-slide.active .hero-poster-wrap{opacity:1;transform:translateY(0) scale(1)}
+    .hero-gradient{background:linear-gradient(135deg,rgba(230,57,70,0.22) 0%,rgba(10,10,10,0.88) 50%,rgba(10,10,10,1) 100%)}
+    .hero-bottom{background:linear-gradient(to top,#0a0a0a 0%,transparent 100%)}
+    @keyframes heroProgressFill{from{width:0%}to{width:100%}}
+    .hero-progress-bar{animation:heroProgressFill 8s linear forwards}
+    .hero-arrow{transition:all 0.25s ease;opacity:0}
+    .hero-slider-wrap:hover .hero-arrow{opacity:1}
+    .hero-arrow:hover{transform:translateY(-50%) scale(1.12)!important;background:rgba(230,57,70,0.85)!important;border-color:rgba(230,57,70,0.5)!important}
+    .hero-arrow:active{transform:translateY(-50%) scale(0.95)!important}
+    .hero-dot{transition:all 0.3s ease}
+    .hero-dot.active{width:1.5rem;background:#e63946}
+
+    .poster-card{transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s ease;border:1px solid transparent;-webkit-tap-highlight-color:transparent}
+    .poster-card:active{transform:scale(0.97)!important}
+    @media(hover:hover){.poster-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 16px 48px rgba(230,57,70,0.12),0 0 0 1px rgba(230,57,70,0.15);border-color:rgba(230,57,70,0.2)}.poster-card:hover .card-overlay{opacity:1}.poster-card:hover .card-play{transform:scale(1);opacity:1}}
+    .poster-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 16px 48px rgba(230,57,70,0.12),0 0 0 1px rgba(230,57,70,0.15);border-color:rgba(230,57,70,0.2)}
+    .poster-card:hover .card-overlay{opacity:1}
+    .poster-card:hover .card-play{transform:scale(1);opacity:1}
+    .poster-card .poster-img{aspect-ratio:5/7;width:100%;object-fit:cover;display:block;border-radius:0.75rem 0.75rem 0 0;transition:opacity 0.3s ease}
+    .poster-card .poster-img[loading="lazy"]{opacity:0}
+    .poster-card .poster-img.loaded{opacity:1}
+    .card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.2) 40%,transparent 60%);opacity:0;transition:opacity 0.3s ease;border-radius:0.75rem 0.75rem 0 0}
+    .card-play{transform:scale(0.5);opacity:0;transition:all 0.3s ease}
+
+    .hcard{transition:transform 0.3s ease,box-shadow 0.3s ease,border-color 0.3s ease;flex-shrink:0;border:1px solid transparent}
+    .hcard:hover{transform:translateY(-5px) scale(1.03);box-shadow:0 12px 36px rgba(230,57,70,0.12),0 0 0 1px rgba(230,57,70,0.15);border-color:rgba(230,57,70,0.2)}
+    .hcard:hover .hcard-overlay{opacity:1}
+    .hcard:hover .hcard-play{transform:scale(1);opacity:1}
+    .hcard-img{aspect-ratio:5/7;width:100%;object-fit:cover;display:block;border-radius:0.625rem}
+    .hcard-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.15) 45%,transparent 65%);opacity:0;transition:opacity 0.3s ease;border-radius:0.625rem}
+    .hcard-play{transform:scale(0.5);opacity:0;transition:all 0.3s ease}
+    .hscroll-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:8px;cursor:grab}
+    .hscroll-row .hcard{scroll-snap-align:start}
+    .hscroll-row.dragging{cursor:grabbing;scroll-behavior:auto}
+
+    /* Desktop horizontal scrollbar - always visible */
+    @media(hover:hover){
+      .hscroll-row,.drag-scroll-row{
+        scrollbar-width:thin;
+        scrollbar-color:#e63946 transparent;
+      }
+      .hscroll-row::-webkit-scrollbar,.drag-scroll-row::-webkit-scrollbar{
+        height:6px;
+      }
+      .hscroll-row::-webkit-scrollbar-track,.drag-scroll-row::-webkit-scrollbar-track{
+        background:rgba(42,42,42,0.5);
+        border-radius:3px;
+        margin:0 8px;
+      }
+      .hscroll-row::-webkit-scrollbar-thumb,.drag-scroll-row::-webkit-scrollbar-thumb{
+        background:linear-gradient(90deg,#e63946,#ff6b6b);
+        border-radius:3px;
+        border:none;
+        transition:background 0.2s ease;
+      }
+      .hscroll-row::-webkit-scrollbar-thumb:hover,.drag-scroll-row::-webkit-scrollbar-thumb:hover{
+        background:linear-gradient(90deg,#ff6b6b,#e63946);
+      }
+    }
+
+    /* Hide scrollbar on mobile/touch devices */
+    @media(hover:none){
+      .hscroll-row,.drag-scroll-row{
+        -ms-overflow-style:none;
+        scrollbar-width:none;
+      }
+      .hscroll-row::-webkit-scrollbar,.drag-scroll-row::-webkit-scrollbar{
+        display:none;
+      }
+    }
+
+    /* Hide scrollbar while dragging */
+    .hscroll-row.dragging,.drag-scroll-row.dragging{
+      scrollbar-width:none!important;
+      -ms-overflow-style:none!important;
+    }
+    .hscroll-row.dragging::-webkit-scrollbar,.drag-scroll-row.dragging::-webkit-scrollbar{
+      display:none!important;
+    }
+
+    .scroll-arrow{width:34px;height:34px;border-radius:50%;border:1px solid #2a2a2a;background:rgba(26,26,26,0.9);color:#f0f0f0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.75rem;transition:all 0.2s ease;backdrop-filter:blur(8px)}
+    .scroll-arrow:hover{background:#e63946;border-color:#e63946;transform:scale(1.08)}
+    .scroll-arrow:active{transform:scale(0.95)}
+    @media(max-width:1023px){.scroll-arrow{display:none!important}}
+    .drag-scroll-row{scroll-behavior:auto}
+    .drag-scroll-row.dragging{cursor:grabbing}
+    @media(hover:none){.hscroll-row,.drag-scroll-row{cursor:auto}}
+    @media(hover:hover){.hscroll-row:hover,.drag-scroll-row:hover{cursor:grab}}
+
+    .genre-chip{transition:all 0.2s ease}
+    .genre-chip:hover,.genre-chip.active{background:#e63946;color:#fff;border-color:#e63946}
+    .genre-chip:active{transform:scale(0.95)}
+    .genre-chip .gc-count{font-size:0.65rem;padding:0px 5px;border-radius:9999px;background:rgba(255,255,255,0.08);margin-left:4px;line-height:1.5;transition:background 0.2s}
+    .genre-chip:hover .gc-count,.genre-chip.active .gc-count{background:rgba(255,255,255,0.2)}
+
+    .skeleton{background:linear-gradient(90deg,#1a1a1a 25%,#252525 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    .toast{animation:slideIn 0.3s ease forwards}
+    @keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast-out{animation:slideOut 0.3s ease forwards}
+    @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+
+    .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulse 3s ease infinite}
+    @keyframes glowPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    .search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:100;border-radius:12px;background:#1a1a1a;border:1px solid #2a2a2a;box-shadow:0 20px 50px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.03);overflow:hidden;max-height:420px;overflow-y:auto;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease}
+    .search-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+    .search-dropdown::-webkit-scrollbar{width:5px}
+    .search-dropdown::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+    .search-suggestion{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background 0.15s ease;min-height:56px}
+    @media(max-width:1023px){.search-suggestion{padding:14px 16px;min-height:60px;gap:14px}.search-suggestion img{width:64px;height:42px;border-radius:8px}.search-suggestion .sg-name{font-size:0.95rem}.search-suggestion .sg-meta{font-size:0.75rem}}
+    .search-suggestion:hover,.search-suggestion.highlighted{background:#252525}
+    .search-suggestion.touched{background:#2a2a2a;transform:scale(0.98);transition:all 0.1s ease}
+    html.light .search-suggestion.touched{background:#e8e8e8}
+    .search-suggestion img{width:56px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0}
+    .search-suggestion .sg-name{font-size:0.875rem;font-weight:500;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .search-suggestion .sg-name mark{background:none;color:#e63946;font-weight:700}
+    .search-suggestion .sg-meta{font-size:0.7rem;color:#8a8a8a;margin-top:2px}
+    .search-suggestion .sg-icon{margin-left:auto;color:#8a8a8a;font-size:0.75rem;flex-shrink:0}
+    .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#2a2a2a;color:#8a8a8a;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:0.65rem;transition:all 0.2s;z-index:10}
+    .search-clear:hover{background:#e63946;color:#fff}
+    .search-clear.show{display:flex}
+    .search-hint{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#3a3a3a;font-size:0.7rem;pointer-events:none;transition:opacity 0.2s}
+    .search-hint.hide{opacity:0}
+
+    .sort-dropdown{position:absolute;top:calc(100% + 6px);right:0;z-index:60;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,0.5);overflow:hidden;min-width:190px;opacity:0;transform:translateY(-8px) scale(0.96);pointer-events:none;transition:all 0.2s ease}
+    .sort-dropdown.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+    .sort-option{width:100%;text-align:left;padding:10px 16px;font-size:0.8rem;color:#8a8a8a;background:none;border:none;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px}
+    .sort-option:hover{background:#252525;color:#f0f0f0}
+    .sort-option.active{color:#e63946}
+    .sort-option.active::before{content:'';width:4px;height:4px;border-radius:50%;background:#e63946;flex-shrink:0}
+
+    .scroll-reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s cubic-bezier(0.25,0.1,0.25,1),transform 0.7s cubic-bezier(0.25,0.1,0.25,1)}
+    .scroll-reveal.visible{opacity:1;transform:translateY(0)}
+    .scroll-reveal:nth-child(2){transition-delay:0.05s}
+    .scroll-reveal:nth-child(3){transition-delay:0.1s}
+    @media(max-width:767px){
+      .scroll-reveal{opacity:1;transform:none;transition:none}
+      .scroll-reveal.visible{opacity:1;transform:none}
+    }
+
+    .stat-card{position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease}
+    .stat-card:hover{transform:translateY(-2px);border-color:rgba(230,57,70,0.3)}
+    .stat-card::after{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(230,57,70,0.06) 0%,transparent 70%);pointer-events:none}
+
+    #backToTop{transition:opacity 0.3s ease,transform 0.3s ease}
+    #backToTop.show{opacity:1!important;pointer-events:auto!important;transform:translateY(0)!important}
+    #backToTop:not(.show){transform:translateY(20px)!important}
+    @media(max-width:1023px){#backToTop{bottom:5rem}}
+
+    #mobileNavBar{position:fixed;bottom:0;left:0;right:0;z-index:998;background:rgba(10,10,10,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #2a2a2a;padding-bottom:env(safe-area-inset-bottom)}
+    .mnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1;padding:8px 0 6px;cursor:pointer;transition:all 0.2s ease;-webkit-tap-highlight-color:transparent}
+    .mnav-btn:active{transform:scale(0.88)}
+    .mnav-btn .mnav-icon{font-size:1.1rem;color:#8a8a8a;transition:color 0.2s}
+    .mnav-btn .mnav-label{font-size:9px;font-weight:600;color:#8a8a8a;transition:color 0.2s;letter-spacing:0.02em}
+    .mnav-btn.active .mnav-icon{color:#e63946}
+    .mnav-btn.active .mnav-label{color:#e63946}
+    .mnav-btn:not(.active):hover .mnav-icon,.mnav-btn:not(.active):hover .mnav-label{color:#f0f0f0}
+    @media(min-width:1024px){#mobileNavBar{display:none!important}}
+    @media(max-width:1023px){footer{padding-bottom:5rem!important}}
+
+    #mobileSearchOverlay{position:fixed;inset:0;z-index:10000;background:#0a0a0a;visibility:hidden;pointer-events:none;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0.35s;display:flex;flex-direction:column}
+    #mobileSearchOverlay.open{visibility:visible;pointer-events:auto;transform:translateY(0);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0s}
+    .ms-head{display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid #2a2a2a;flex-shrink:0}
+    .ms-back{width:44px;height:44px;border-radius:50%;border:none;background:none;color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background 0.15s;touch-action:manipulation}
+    .ms-back:active{background:#1a1a1a}
+    .ms-field{position:relative;flex:1}
+    .ms-field input{width:100%;background:#141414;border:1px solid #2a2a2a;border-radius:24px;padding:12px 38px 12px 36px;font-size:16px;color:#f0f0f0;outline:none;font-family:'Outfit',sans-serif;transition:border-color 0.2s;-webkit-appearance:none;appearance:none}
+    .ms-field input:focus{border-color:#e63946}
+    .ms-field input::placeholder{color:#8a8a8a}
+    .ms-field .ms-x{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;background:#2a2a2a;color:#8a8a8a;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:12px;transition:all 0.2s;touch-action:manipulation}
+    .ms-field .ms-x.show{display:flex}
+    .ms-field .ms-x:hover{background:#e63946;color:#fff}
+    .ms-field .ms-si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8a8a8a;font-size:13px;pointer-events:none}
+    .ms-sugs{flex-shrink:0;max-height:40vh;overflow-y:auto;border-bottom:1px solid #2a2a2a;-webkit-overflow-scrolling:touch}
+    .ms-sugs:empty{display:none;border-bottom:none}
+    .ms-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+    @media(min-width:1024px){#mobileSearchOverlay{display:none!important}}
+
+    #settingsOverlay{position:fixed;inset:0;z-index:10000;background:#0a0a0a;visibility:hidden;pointer-events:none;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0.35s;display:flex;flex-direction:column}
+    #settingsOverlay.open{visibility:visible;pointer-events:auto;transform:translateY(0);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0s}
+    .st-head{display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid #2a2a2a;flex-shrink:0}
+    .st-head h2{font-family:'Dela Gothic One',cursive;font-size:1.1rem;color:#f0f0f0}
+    .st-back{width:44px;height:44px;border-radius:50%;border:none;background:none;color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background 0.15s;touch-action:manipulation}
+    .st-back:active{background:#1a1a1a}
+    .st-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px}
+    .st-group{margin-bottom:20px}
+    .st-group-title{font-size:10px;font-weight:700;color:#8a8a8a;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-left:2px}
+    .st-item{display:flex;align-items:center;gap:14px;padding:14px;background:#141414;border:1px solid #2a2a2a;border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+    .st-item:active{transform:scale(0.98);background:#1a1a1a}
+    .st-item.danger{border-color:rgba(230,57,70,0.2)}
+    .st-item.danger:active{background:rgba(230,57,70,0.08)}
+    .st-item-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .st-item-icon.red{background:rgba(230,57,70,0.12);color:#e63946}
+    .st-item-icon.blue{background:rgba(56,189,248,0.12);color:#38bdf8}
+    .st-item-icon.gray{background:rgba(138,138,138,0.1);color:#8a8a8a}
+    .st-item-icon.green{background:rgba(34,197,94,0.12);color:#22c55e}
+    .st-item-text{flex:1;min-width:0}
+    .st-item-title{font-size:0.875rem;font-weight:600;color:#f0f0f0}
+    .st-item-desc{font-size:0.7rem;color:#8a8a8a;margin-top:2px;line-height:1.4}
+    .st-item-arrow{color:#3a3a3a;font-size:0.7rem;flex-shrink:0;transition:color 0.2s}
+    .st-item:active .st-item-arrow{color:#8a8a8a}
+    .st-item.danger .st-item-title{color:#ff6b6b}
+    .st-about{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:18px;text-align:center}
+    .st-about img{width:52px;height:52px;border-radius:14px;margin-bottom:10px}
+    .st-about h3{font-family:'Dela Gothic One',cursive;font-size:1rem;color:#f0f0f0;margin-bottom:4px}
+    .st-about p{font-size:0.75rem;color:#8a8a8a;line-height:1.5}
+    .st-about .st-ver{display:inline-block;margin-top:10px;font-size:0.65rem;color:#3a3a3a;border:1px solid #2a2a2a;border-radius:99px;padding:3px 12px}
+    .st-item-normal{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+    .st-item-confirm{display:none;align-items:center;gap:10px;flex:1;animation:slideIn 0.15s ease}
+    .st-item.confirming .st-item-normal{display:none}
+    .st-item.confirming .st-item-confirm{display:flex}
+    .st-item.confirming{border-color:rgba(230,57,70,0.3);background:rgba(230,57,70,0.06)}
+    .st-item-confirm p{flex:1;font-size:0.8rem;color:#ff6b6b}
+    .st-item-confirm button{padding:6px 14px;border-radius:8px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s}
+    .st-item-confirm .st-yes{background:#e63946;color:#fff}
+    .st-item-confirm .st-yes:active{background:#c1121f}
+    .st-item-confirm .st-no{background:#2a2a2a;color:#f0f0f0}
+    .st-item-confirm .st-no:active{background:#3a3a3a}
+    #csBackdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity 0.3s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+    #csBackdrop.show{opacity:1;pointer-events:auto}
+    @media(max-width:1023px){#csBackdrop{display:none!important}}
+    #csOverlay{position:fixed;inset:0;z-index:10000;background:#0a0a0a;visibility:hidden;pointer-events:none;transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0.35s;display:flex;flex-direction:column}
+    #csOverlay.open{visibility:visible;pointer-events:auto;transform:translateX(0);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0s}
+    @media(min-width:1024px){
+      #csOverlay{inset:auto;right:0;top:0;bottom:0;left:auto;width:420px;transform:translateX(100%);border-left:1px solid #2a2a2a;border-radius:20px 0 0 20px;box-shadow:-20px 0 60px rgba(0,0,0,0.5)}
+      #csOverlay.open{transform:translateX(0)}
+      #csOverlay .st-head{padding-top:16px;border-radius:20px 0 0 0}
+      #csOverlay .st-body{padding:20px 24px}
+    }
+    @media(max-width:1023px){#csOverlay{display:none!important}}
+    html.light #csBackdrop{background:rgba(0,0,0,0.15)}
+    html.light #csOverlay{border-color:#e0e0e0;box-shadow:-20px 0 60px rgba(0,0,0,0.06)}
+    #settingsBackdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity 0.3s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+    #settingsBackdrop.show{opacity:1;pointer-events:auto}
+    @media(max-width:1023px){#settingsBackdrop{display:none!important}}
+    @media(min-width:1024px){
+      #settingsOverlay{left:auto;right:0;top:0;bottom:0;width:420px;transform:translateX(100%);border-left:1px solid #2a2a2a;border-radius:20px 0 0 20px;box-shadow:-20px 0 60px rgba(0,0,0,0.5)}
+      #settingsOverlay.open{transform:translateX(0)}
+      #settingsOverlay .st-head{padding-top:16px;border-radius:20px 0 0 0}
+      #settingsOverlay .st-body{padding:20px 24px}
+      #settingsOverlay .st-group{margin-bottom:24px}
+      #settingsOverlay .st-about{padding:24px}
+    }
+    html.light #settingsBackdrop{background:rgba(0,0,0,0.15)}
+    html.light #settingsOverlay{border-color:#e0e0e0;box-shadow:-20px 0 60px rgba(0,0,0,0.06)}
+    .st-random-confirm{display:none;align-items:center;gap:10px;flex:1;animation:slideIn 0.15s ease}
+    .st-item.confirming.random-active .st-item-normal{display:none}
+    .st-item.confirming.random-active .st-random-confirm{display:flex}
+    .st-item.confirming.random-active{border-color:rgba(56,189,248,0.3);background:rgba(56,189,248,0.06)}
+    .st-random-confirm p{flex:1;font-size:0.8rem;color:#38bdf8}
+    .st-random-confirm button{padding:6px 14px;border-radius:8px;border:none;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.15s}
+    .st-random-confirm .st-yes{background:#38bdf8;color:#fff}
+    .st-random-confirm .st-yes:active{background:#0ea5e9}
+    .st-random-confirm .st-no{background:#2a2a2a;color:#f0f0f0}
+    .st-random-confirm .st-no:active{background:#3a3a3a}
+    html.light .st-item.confirming.random-active{background:rgba(56,189,248,0.04);border-color:rgba(56,189,248,0.2)}
+    html.light .st-random-confirm .st-no{background:#e0e0e0;color:#111}
+    #shortsOverlay{position:fixed;inset:0;z-index:10000;background:#0a0a0a;visibility:hidden;pointer-events:none;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0.35s;display:flex;flex-direction:column}
+    #shortsOverlay.open{visibility:visible;pointer-events:auto;transform:translateY(0);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),visibility 0s 0s}
+    @media(min-width:1024px){#shortsOverlay{display:none!important}}
+    html.light #shortsOverlay{background:#f5f5f5}
+
+    .modal-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s ease}
+    .modal-backdrop.open{opacity:1;pointer-events:auto}
+    .modal-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:1rem;padding:2rem;max-width:380px;width:90%;text-align:center;transform:scale(0.9);transition:transform 0.25s ease;box-shadow:0 25px 60px rgba(0,0,0,0.5)}
+    .modal-backdrop.open .modal-box{transform:scale(1)}
+    html.light .modal-backdrop{background:rgba(0,0,0,0.3)}
+    html.light .modal-box{background:#fff;border-color:#e0e0e0;box-shadow:0 25px 60px rgba(0,0,0,0.1)}
+    .st-toggle{position:relative;width:44px;height:24px;border-radius:12px;background:#2a2a2a;border:none;cursor:pointer;transition:background 0.25s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+    .st-toggle.active{background:#e63946}
+    .st-toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+    .st-toggle.active::after{transform:translateX(20px)}
+
+    html.light body{background:#f5f5f5;color:#111}
+    html.light ::-webkit-scrollbar-track{background:#f5f5f5}
+    html.light ::-webkit-scrollbar-thumb{background:#d0d0d0}
+    html.light ::-webkit-scrollbar-thumb:hover{background:#b0b0b0}
+    html.light .bg-aw-bg{background-color:#f5f5f5!important}
+    html.light .bg-aw-bg\/80{background-color:rgba(245,245,245,0.85)!important}
+    html.light .bg-aw-bg2{background-color:#eeeeee!important}
+    html.light .bg-aw-card{background-color:#ffffff!important}
+    html.light .border-aw-border{border-color:#e0e0e0!important}
+    html.light .text-aw-fg{color:#111111!important}
+    html.light .text-aw-muted{color:#666666!important}
+    html.light .text-aw-fg\/75{color:rgba(17,17,17,0.75)!important}
+    html.light nav{background:rgba(245,245,245,0.85)!important}
+    html.light #mobileNavBar{background:rgba(245,245,245,0.92)!important}
+    html.light #mobileSearchOverlay,html.light #settingsOverlay{background:#f5f5f5}
+    html.light .ms-field input{background:#eee;border-color:#e0e0e0;color:#111}
+    html.light .ms-field input::placeholder{color:#888}
+    html.light .ms-field .ms-si{color:#888}
+    html.light .ms-field .ms-x{background:#e0e0e0;color:#666}
+    html.light .search-dropdown{background:#fff;border-color:#e0e0e0;box-shadow:0 20px 50px rgba(0,0,0,0.1)}
+    html.light .search-suggestion:hover,html.light .search-suggestion.highlighted{background:#f0f0f0}
+    html.light .sort-dropdown{background:#fff;border-color:#e0e0e0;box-shadow:0 16px 48px rgba(0,0,0,0.08)}
+    html.light .sort-option:hover{background:#f0f0f0}
+    html.light .st-item{background:#fff;border-color:#e0e0e0}
+    html.light .st-item.danger{border-color:rgba(230,57,70,0.15)}
+    html.light .st-head{border-color:#e0e0e0}
+    html.light .st-body{background:#f5f5f5}
+    html.light .st-about{background:#fff;border-color:#e0e0e0}
+    html.light .toast{background:#fff}
+    html.light .skeleton{background:linear-gradient(90deg,#e8e8e8 25%,#f0f0f0 50%,#e8e8e8 75%);background-size:200% 100%}
+    html.light #searchInput{background:#eee;border-color:#e0e0e0;color:#111}
+    html.light #searchInput::placeholder{color:#888}
+    html.light .search-wrap i{color:#888}
+    html.light .hero-bottom{background:linear-gradient(to top,#f5f5f5 0%,transparent 100%)}
+    html.light .hero-gradient{background:linear-gradient(135deg,rgba(230,57,70,0.12) 0%,rgba(245,245,245,0.88) 50%,rgba(245,245,245,1) 100%)}
+    html.light .st-item.confirming{background:rgba(230,57,70,0.04);border-color:rgba(230,57,70,0.2)}
+    html.light .bg-orb{opacity:0.05}
+    html.light #loadingScreen{background:#f5f5f5}
+    html.light .scroll-arrow{background:rgba(255,255,255,0.9);border-color:#e0e0e0;color:#111}
+    html.light .search-hint{color:#bbb}
+    html.light .search-clear{background:#e0e0e0;color:#666}
+    html.light .genre-chip{border-color:#e0e0e0}
+    html.light .genre-chip .gc-count{background:rgba(0,0,0,0.06)}
+    html.light .stat-card::after{background:radial-gradient(circle,rgba(230,57,70,0.03) 0%,transparent 70%)}
+    html.light .st-item-icon.red{background:rgba(230,57,70,0.08)}
+    html.light .st-item-icon.gray{background:rgba(0,0,0,0.05)}
+    html.light .st-ver{color:#bbb;border-color:#e0e0e0}
+    html.light .st-item-confirm .st-no{background:#e0e0e0;color:#111}
+    html.light .hcard{background:#fff}
+    html.light .poster-card{background:#fff}
+
+    /* Light theme scrollbar */
+    @media(hover:hover){
+      html.light .hscroll-row,html.light .drag-scroll-row{
+        scrollbar-color:#e63946 #f0f0f0;
+      }
+      html.light .hscroll-row::-webkit-scrollbar-track,html.light .drag-scroll-row::-webkit-scrollbar-track{
+        background:#f0f0f0;
+      }
+      html.light .hscroll-row::-webkit-scrollbar-thumb,html.light .drag-scroll-row::-webkit-scrollbar-thumb{
+        background:linear-gradient(90deg,#e63946,#ff6b6b);
+      }
+    }
+
+    html.light .glow-line{opacity:0.4}
+    html.light .hero-arrow{background:rgba(255,255,255,0.7)!important;border-color:rgba(0,0,0,0.1)!important;color:#111!important}
+    html.light .hero-arrow:hover{background:rgba(230,57,70,0.85)!important;border-color:rgba(230,57,70,0.5)!important;color:#fff!important}
+    html.light footer{border-color:#e0e0e0}
+    html.light .mnav-btn .mnav-icon{color:#999}
+    html.light .mnav-btn .mnav-label{color:#999}
+    html.light .mnav-btn.active .mnav-icon{color:#e63946}
+    html.light .mnav-btn.active .mnav-label{color:#e63946}
+    html.light .hero-dot:not(.active){background:rgba(0,0,0,0.15)!important}
+    html.light .hero-dot:not(.active):hover{background:rgba(0,0,0,0.3)!important}
+    html.light #heroProgressBar{background:linear-gradient(to right,rgba(0,0,0,0.1),rgba(0,0,0,0.1))}
+    html.light #heroProgressBar.hero-progress-bar{animation-name:heroProgressFillLight}
+    @keyframes heroProgressFillLight{from{width:0%}to{width:100%}}
+html.light .hero-progress-bar{background:linear-gradient(to right,rgba(230,57,70,0.6),rgba(230,57,70,0.8))!important}
+    html.light .hcard-play>div,html.light .card-play>div{box-shadow:0 8px 24px rgba(230,57,70,0.2)}
+
+    #aw-miniplayer #aw-mp-video-wrap{height:200px;position:relative;overflow:hidden;transition:height 0.3s ease,opacity 0.3s ease}
+    #aw-miniplayer #aw-mp-video-wrap img,#aw-miniplayer #aw-mp-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    #aw-miniplayer #aw-mp-play-overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);cursor:pointer;font-size:2rem;color:#fff;z-index:2}
+    #aw-miniplayer #aw-mp-info{padding:10px 14px 6px}
+    #aw-miniplayer #aw-mp-title{font-weight:600;font-size:0.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f0f0f0}
+    #aw-miniplayer #aw-mp-ep{font-size:0.75rem;color:#8a8a8a;margin-top:2px}
+    #aw-miniplayer #aw-mp-controls{display:flex;gap:4px;padding:4px 8px 8px;justify-content:flex-end}
+    #aw-miniplayer #aw-mp-controls button{width:32px;height:32px;border:none;border-radius:6px;background:#2a2a2a;color:#f0f0f0;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    #aw-miniplayer #aw-mp-controls button:hover{background:#e63946}
+    #aw-miniplayer #aw-mp-progress{height:3px;background:#2a2a2a}
+    #aw-miniplayer #aw-mp-bar{height:100%;background:#e63946;transition:width 0.3s ease;width:0}
+
+    kbd{display:inline-block;padding:1px 6px;border-radius:4px;background:#2a2a2a;border:1px solid #3a3a3a;font-family:'Outfit',sans-serif;font-size:0.7rem;color:#8a8a8a;line-height:1.6}
+
+    #sbToggle{width:36px;height:36px;border-radius:8px;border:none;background:none;cursor:pointer;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;padding:9px;transition:background 0.2s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+    #sbToggle:hover{background:#1a1a1a}
+    #sbToggle span{display:block;width:18px;height:2px;background:#f0f0f0;border-radius:1px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);transform-origin:center}
+    #sbToggle.active span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+    #sbToggle.active span:nth-child(2){opacity:0;transform:scaleX(0)}
+    #sbToggle.active span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+    @media(min-width:1024px){#sbToggle{display:flex}}
+
+    #sidebar{position:fixed;top:64px;left:0;bottom:0;width:60px;z-index:998;background:rgba(10,10,10,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-right:1px solid #2a2a2a;display:flex;flex-direction:column;align-items:center;padding:10px 0;overflow-y:auto;overflow-x:hidden;transition:width 0.25s cubic-bezier(0.4,0,0.2,1)}
+    #sidebar::-webkit-scrollbar{width:0}
+    #sidebar.expanded{width:200px;align-items:stretch}
+    .sb-btn{width:44px;height:44px;border-radius:12px;border:none;background:none;color:#8a8a8a;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;transition:all 0.2s ease;position:relative;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+    .sb-btn:hover{background:#1a1a1a;color:#f0f0f0}
+    .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.1)}
+    .sb-btn:active{transform:scale(0.9)}
+    .sb-btn .sb-tip{position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#1a1a1a;border:1px solid #2a2a2a;color:#f0f0f0;padding:5px 10px;border-radius:8px;font-size:0.75rem;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s ease;box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:10;font-family:'Outfit',sans-serif}
+    .sb-btn:hover .sb-tip{opacity:1}
+    .sb-label{display:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.85rem;font-weight:500;color:inherit}
+    #sidebar.expanded .sb-btn{width:100%;justify-content:flex-start;padding:0 12px;gap:14px;border-radius:10px;height:42px}
+    #sidebar.expanded .sb-btn i{width:20px;text-align:center;flex-shrink:0;font-size:1rem}
+    #sidebar.expanded .sb-label{display:inline}
+    #sidebar.expanded .sb-tip{display:none!important}
+    #sidebar.expanded .sb-sep{width:calc(100% - 24px);margin:6px 12px}
+    .sb-sep{width:28px;height:1px;background:#2a2a2a;margin:6px 0;flex-shrink:0}
+    @media(max-width:1023px){#sidebar{display:none!important}}
+    #mainWrap{transition:margin-left 0.25s cubic-bezier(0.4,0,0.2,1)}
+    @media(min-width:1024px){body.sb-expanded #mainWrap{margin-left:200px!important}}
+    html.light #sbToggle:hover{background:#eee}
+    html.light #sbToggle span{background:#111}
+    html.light #sidebar{background:rgba(245,245,245,0.95);border-color:#e0e0e0}
+    html.light .sb-btn:hover{background:#eee;color:#111}
+    html.light .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.08)}
+    html.light .sb-tip{background:#fff;border-color:#e0e0e0;color:#111;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+    html.light .sb-sep{background:#e0e0e0}
+
+    .save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1;animation:dirtyPulse 2s ease infinite}
+    .save-dirty-dot.show{display:flex}
+    @keyframes dirtyPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+    @keyframes sentinelSpin{to{transform:rotate(360deg)}}
+    .inf-spinner{width:28px;height:28px;border:3px solid #2a2a2a;border-top-color:#e63946;border-radius:50%;animation:sentinelSpin 0.7s linear infinite}
+
+    /* ── What's New Overlay ─────────────────────────────── */
+    #whatsNewOverlay{position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);visibility:hidden;pointer-events:none;opacity:0;transition:opacity 0.35s ease,visibility 0s 0.35s;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;overflow-x:hidden}
+    #whatsNewOverlay.open{visibility:visible;pointer-events:auto;opacity:1;transition:opacity 0.35s ease,visibility 0s 0s}
+    .wn-header{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:460px;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top));flex-shrink:0}
+    .wn-header-title{font-family:'Dela Gothic One',cursive;font-size:1.15rem;color:#f0f0f0;letter-spacing:0.02em}
+    .wn-close{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    .wn-close:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.3)}
+    .wn-close:active{transform:scale(0.88)}
+    .wn-container{position:relative;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;flex:1;min-height:0}
+    .wn-story{width:100%;opacity:0;transform:translateY(14px) scale(0.97);transition:opacity 0.38s cubic-bezier(0.22,1,0.36,1),transform 0.38s cubic-bezier(0.22,1,0.36,1);pointer-events:none;display:none}
+    .wn-story.active{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;display:block}
+    .wn-story.leaving{opacity:0;transform:translateY(-10px) scale(0.97);transition:opacity 0.25s ease,transform 0.25s ease;display:block}
+    .wn-story-img{width:100%;height:auto;max-height:calc(100dvh - 220px);object-fit:contain;display:block;background:#0a0a0a}
+    .wn-story-img-wrap{width:100%;position:relative;overflow:hidden;border-radius:18px;background:#1a1a1a;box-shadow:0 24px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center}
+    .wn-story-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.25) 45%,transparent 70%);pointer-events:none}
+    .wn-tap-prev{position:absolute;top:0;left:0;width:40%;height:100%;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .wn-tap-next{position:absolute;top:0;right:0;width:60%;height:100%;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .wn-story-content{position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:4}
+    .wn-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+    .wn-badge.new-badge{background:rgba(230,57,70,0.9);color:#fff;box-shadow:0 0 12px rgba(230,57,70,0.4)}
+    .wn-badge.improved-badge{background:rgba(56,189,248,0.9);color:#fff;box-shadow:0 0 12px rgba(56,189,248,0.3)}
+    .wn-badge.fast-badge{background:rgba(34,197,94,0.9);color:#fff;box-shadow:0 0 12px rgba(34,197,94,0.3)}
+    .wn-story-title{font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 8px rgba(0,0,0,0.5)}
+    .wn-desc{font-size:0.8rem;color:rgba(255,255,255,0.75);line-height:1.45;text-shadow:0 1px 4px rgba(0,0,0,0.6)}
+    .wn-progress{display:flex;gap:5px;margin-top:14px;width:100%;max-width:380px}
+    .wn-dot{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,0.2);overflow:hidden;position:relative}
+    .wn-dot-fill{position:absolute;inset:0;border-radius:99px;background:#fff;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease}
+    .wn-dot.filled .wn-dot-fill{transform:scaleX(1)}
+    .wn-dot.active .wn-dot-fill{transform:scaleX(1)}
+    .wn-counter{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:6px;letter-spacing:0.05em;font-variant-numeric:tabular-nums}
+    .wn-nav-left{position:absolute;left:-20px;top:50%;transform:translateY(-50%);z-index:5}
+    .wn-nav-btn{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.08);color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all 0.2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;backdrop-filter:blur(8px)}
+    .wn-nav-right{position:absolute;right:-20px;top:50%;transform:translateY(-50%);z-index:5}
+    .wn-nav-btn:hover{background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.35);transform:scale(1.06)}
+    .wn-nav-btn:active{transform:scale(0.88)}
+    .wn-nav-btn:disabled{opacity:0.25;cursor:not-allowed;transform:none}
+    @media(min-width:1024px){
+      .wn-container{max-width:420px}
+      .wn-progress{max-width:420px}
+      .wn-story-img-wrap{border-radius:22px;max-height:calc(100vh - 260px);display:flex;align-items:center;justify-content:center}
+      .wn-story-content{padding:24px}
+      .wn-story-title{font-size:1.15rem}
+      .wn-desc{font-size:0.85rem}
+    }
+    @media(max-width:1023px){
+      .wn-header{padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top))}
+      .wn-container{max-width:320px}
+      .wn-progress{max-width:320px}
+      .wn-story-img-wrap{border-radius:14px}
+      .wn-story-content{padding:14px}
+      .wn-story-title{font-size:0.95rem}
+      .wn-desc{font-size:0.75rem}
+      .wn-nav-btn{width:46px;height:46px;font-size:17px}
+    }
+    html.light #whatsNewOverlay{background:rgba(0,0,0,0.8)}
+    html.light .wn-badge.new-badge{background:rgba(230,57,70,0.95)}
+    html.light .wn-badge.improved-badge{background:rgba(2,132,199,0.95)}
+    html.light .wn-badge.fast-badge{background:rgba(22,163,74,0.95)}
+    html.light .wn-nav-btn{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff}
+    html.light .wn-counter{color:rgba(255,255,255,0.4)}
+    html.light .wn-progress .wn-dot{background:rgba(255,255,255,0.2)}
+    @media(prefers-reduced-motion:reduce){
+      .wn-story{transition:opacity 0.01ms!important;transform:none!important}
+      .wn-story.leaving{transition:opacity 0.01ms!important}
+      .wn-dot.active .wn-dot-fill{animation:none!important;transform:scaleX(1)!important}
+    }
+
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="fixed inset-0 z-[9999] bg-aw-bg flex flex-col items-center justify-center">
+    <img src="logo.PNG" alt="Loading" class="w-16 h-16 rounded-2xl mb-5" style="animation:loadPulse 1.8s ease-in-out infinite">
+    <div class="w-36 h-1 bg-aw-bg2 rounded-full overflow-hidden">
+      <div class="h-full bg-aw-accent rounded-full" style="animation:loadBar 1.5s ease-in-out infinite"></div>
+    </div>
+    <p class="text-aw-muted text-xs mt-4 tracking-widest uppercase">Loading your universe</p>
+  </div>
+
+  <!-- Background Orbs -->
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+      <button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+        <span class="font-display text-aw-fg text-lg">AnimeWave</span>
+      </a>
+      <div class="hidden lg:flex lg:flex-1 lg:max-w-xl lg:mx-auto relative" id="searchWrap">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-aw-muted text-sm z-10"></i>
+        <input id="searchInput" type="text" placeholder="Search animes..." autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border border-aw-border rounded-full pl-10 pr-16 py-2 text-sm text-aw-fg placeholder-aw-muted focus:outline-none focus:border-aw-accent focus:ring-1 focus:ring-aw-accent/30 transition-all">
+        <span id="searchHint" class="search-hint">/</span>
+        <button id="searchClear" class="search-clear" aria-label="Clear search"><i class="fas fa-xmark"></i></button>
+        <div id="searchDropdown" class="search-dropdown"></div>
+      </div>
+      <button id="randomBtn" class="hidden shrink-0 w-10 h-10 items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Random Anime (R)">
+        <i class="fas fa-dice text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+      </button>
+      <button id="mobileNavSearchBtn" class="hidden lg:hidden shrink-0 w-10 h-10 items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()">
+        <i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+      </button>
+      <button id="mobileRandomBtn" class="hidden lg:hidden shrink-0 w-10 h-10 items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Random Anime (R)" onclick="goRandom()">
+        <i class="fas fa-dice text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+      </button>
+      <button id="notifBtn" onclick="window.location.href='notification.html'" class="ml-auto shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">
+        <i class="fas fa-bell text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        <span id="notifDot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-aw-accent rounded-full"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="flex flex-col gap-1 w-full px-2">
+      <button class="sb-btn active" data-sb="home" onclick="window.scrollTo({top:0,behavior:'smooth'});setSbActive(this)" title="Home (H)">
+        <i class="fas fa-house"></i><span class="sb-label">Home</span><span class="sb-tip">Home (H)</span>
+      </button>
+      <button class="sb-btn" data-sb="search" onclick="document.getElementById('searchInput').focus();setSbActive(this)" title="Search">
+        <i class="fas fa-magnifying-glass"></i><span class="sb-label">Search</span><span class="sb-tip">Search</span>
+      </button>
+      <button class="sb-btn" data-sb="shorts" onclick="handleSbShorts(this)" title="Shorts">
+        <i class="fas fa-clapperboard"></i><span class="sb-label">Shorts</span><span class="sb-tip">Shorts</span>
+      </button>
+      <button class="sb-btn" data-sb="random" onclick="goRandom();setSbActive(this)" title="Random (R)">
+        <i class="fas fa-dice"></i><span class="sb-label">Random</span><span class="sb-tip">Random</span>
+      </button>
+      <button class="sb-btn" data-sb="saved" onclick="clearSaveDirty();window.location.href='save.html';setSbActive(this)" title="Saved (S)">
+        <i class="fas fa-bookmark"></i><span class="sb-label">Saved</span><span class="sb-tip">Saved (S)</span>
+        <span class="save-dirty-dot" id="sbSaveDirty"></span>
+      </button>
+      <button class="sb-btn" data-sb="profile" onclick="openComingSoon('Profile','fa-user','Profile','Your profile page is currently under development. Stay tuned for updates!');setSbActive(this)" title="Profile">
+        <i class="fas fa-user"></i><span class="sb-label">Profile</span><span class="sb-tip">Profile</span>
+      </button>
+      <div class="sb-sep"></div>
+    </div>
+    <div class="flex-1"></div>
+    <div class="flex flex-col gap-1 w-full px-2 pb-2">
+      <div class="sb-sep"></div>
+      <button class="sb-btn" data-sb="notif" onclick="window.location.href='notification.html'" title="Notifications (N)" id="sbNotifBtn" style="display:none">
+        <i class="fas fa-bell"></i><span class="sb-label">Notifications</span><span class="sb-tip">Notifications (N)</span>
+        <span id="sbNotifDot" class="hidden absolute top-1 right-1 w-2 h-2 bg-aw-accent rounded-full"></span>
+      </button>
+      <button class="sb-btn" data-sb="settings" onclick="openSettings();setSbActive(this)" title="Settings">
+        <i class="fas fa-gear"></i><span class="sb-label">Settings</span><span class="sb-tip">Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrap -->
+  <div id="mainWrap" class="lg:ml-[60px]">
+
+  <!-- Hero -->
+  <section id="heroSection" class="pt-16 relative z-[1]">
+    <div id="heroContent" class="relative w-full" style="min-height:480px"></div>
+  </section>
+
+  <div class="glow-line max-w-[1600px] mx-auto relative z-[1]"></div>
+
+  <!-- Stats Bar -->
+  <section id="statsSection" class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 relative z-[1] scroll-reveal">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="statsGrid"></div>
+  </section>
+
+  <!-- Continue Watching (History) -->
+  <section id="historySection" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-2 relative z-[1] hidden scroll-reveal">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-6 bg-sky-500 rounded-full"></div>
+        <h2 class="font-display text-xl sm:text-2xl text-aw-fg">History</h2>
+        <i class="fas fa-history text-sky-500/70 text-xs"></i>
+        <span id="historyCount" class="text-aw-muted text-xs ml-1"></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="historyEditBtn" onclick="toggleHistoryEdit()" class="text-[11px] text-aw-muted hover:text-sky-400 transition-colors px-2 py-1 rounded hover:bg-aw-card" title="Edit history"><i class="fas fa-pen-to-square mr-1"></i>Edit</button>
+        <button onclick="clearHistory()" class="text-[11px] text-aw-muted hover:text-aw-accent transition-colors px-2 py-1 rounded hover:bg-aw-card" title="Clear history"><i class="fas fa-trash-can mr-1"></i>Clear</button>
+        <button class="scroll-arrow" onclick="scrollRow('historyRow',-1)" aria-label="Scroll left"><i class="fas fa-chevron-left"></i></button>
+        <button class="scroll-arrow" onclick="scrollRow('historyRow',1)" aria-label="Scroll right"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div id="historyRow" class="hscroll-row"></div>
+  </section>
+
+  <!-- Running -->
+  <section id="runningSection" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-2 relative z-[1] hidden scroll-reveal">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-6 bg-aw-accent rounded-full"></div>
+        <h2 class="font-display text-xl sm:text-2xl text-aw-fg">Running</h2>
+        <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-aw-accent opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-aw-accent"></span></span>
+        <span id="runningCount" class="text-aw-muted text-xs ml-1"></span>
+      </div>
+      <div class="flex gap-2">
+        <button class="scroll-arrow" onclick="scrollRow('runningRow',-1)" aria-label="Scroll left"><i class="fas fa-chevron-left"></i></button>
+        <button class="scroll-arrow" onclick="scrollRow('runningRow',1)" aria-label="Scroll right"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div id="runningRow" class="hscroll-row"></div>
+  </section>
+
+  <!-- Upcoming -->
+  <section id="upcomingSection" class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-4 pb-2 relative z-[1] hidden scroll-reveal">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-6 bg-yellow-500 rounded-full"></div>
+        <h2 class="font-display text-xl sm:text-2xl text-aw-fg">Upcoming</h2>
+        <i class="fas fa-clock text-yellow-500/70 text-xs"></i>
+        <span id="upcomingCount" class="text-aw-muted text-xs ml-1"></span>
+      </div>
+      <div class="flex gap-2">
+        <button class="scroll-arrow" onclick="scrollRow('upcomingRow',-1)" aria-label="Scroll left"><i class="fas fa-chevron-left"></i></button>
+        <button class="scroll-arrow" onclick="scrollRow('upcomingRow',1)" aria-label="Scroll right"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div id="upcomingRow" class="hscroll-row"></div>
+  </section>
+
+  <!-- Top Rated -->
+  <section id="topRatedSection" class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-4 pb-2 relative z-[1] hidden scroll-reveal">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-1 h-6 bg-amber-400 rounded-full"></div>
+        <h2 class="font-display text-xl sm:text-2xl text-aw-fg">Top Rated</h2>
+        <i class="fas fa-trophy text-amber-400/70 text-xs"></i>
+        <span id="topRatedCount" class="text-aw-muted text-xs ml-1"></span>
+      </div>
+      <div class="flex gap-2">
+        <button class="scroll-arrow" onclick="scrollRow('topRatedRow',-1)" aria-label="Scroll left"><i class="fas fa-chevron-left"></i></button>
+        <button class="scroll-arrow" onclick="scrollRow('topRatedRow',1)" aria-label="Scroll right"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+    <div id="topRatedRow" class="hscroll-row"></div>
+  </section>
+
+    <!-- Genre Filters -->
+  <section class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-6 pb-2 relative z-[1] scroll-reveal">
+    <div id="genreFilters" class="flex gap-2 overflow-x-auto pb-2 drag-scroll-row" style="-ms-overflow-style:none;scrollbar-width:none;cursor:grab"></div>
+  </section>
+  
+  <!-- Anime Grid -->
+  <main id="allAnimesSection" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-20 relative z-[1]">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-display text-2xl sm:text-3xl text-aw-fg">All Animes</h2>
+      <div class="flex items-center gap-3">
+        <span id="animeCount" class="text-aw-muted text-sm"></span>
+        <div class="relative shrink-0 hidden lg:block" id="sortWrap">
+          <button id="sortBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-aw-card border border-aw-border text-sm text-aw-muted hover:text-aw-fg hover:border-aw-accent/40 transition-all whitespace-nowrap">
+            <i class="fas fa-arrow-down-wide-short text-xs"></i>
+            <span id="sortLabel" class="hidden sm:inline">Shuffled</span>
+            <i class="fas fa-chevron-down text-[9px]"></i>
+          </button>
+          <div id="sortDropdown" class="sort-dropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4"></div>
+
+    <div id="infSentinel" class="hidden flex flex-col items-center py-10 gap-3">
+      <div class="inf-spinner"></div>
+      <span class="text-aw-muted text-xs">Loading more...</span>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-20">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-aw-card border border-aw-border mb-5">
+        <i class="fas fa-ghost text-3xl text-aw-border"></i>
+      </div>
+      <p class="text-aw-muted text-lg mb-2">No animes found</p>
+      <p class="text-aw-muted/60 text-sm mb-5">Try a different search term or genre filter</p>
+      <button onclick="clearFilters()" class="px-5 py-2 rounded-lg bg-aw-accent text-white text-sm font-medium hover:bg-aw-accentD transition-colors">Clear Filters</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-aw-border relative z-[1] mt-8">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="sm:col-span-2 lg:col-span-1">
+          <div class="flex items-center gap-2 mb-3">
+            <img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-lg">
+            <span class="font-display text-lg text-aw-fg">AnimeWave</span>
+          </div>
+          <p class="text-aw-muted text-sm leading-relaxed max-w-xs">Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-2">
+          <h4 class="font-semibold text-aw-fg mb-3 text-sm uppercase tracking-wider">About</h4>
+          <p class="text-aw-muted text-sm leading-relaxed">AnimeWave is a fan-made anime catalog and tracker. All anime images and data belong to their respective owners. *We cannot support piracy!</p>
+        </div>
+      </div>
+      <div class="border-t border-aw-border mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-aw-muted text-xs">
+        <p>AnimeWave &copy; 2025 — Built for anime lovers</p>
+        <p class="flex items-center gap-1.5">Made with <i class="fas fa-heart text-aw-accent text-[10px]"></i> for the community</p>
+      </div>
+    </div>
+  </footer>
+
+  </div><!-- end #mainWrap -->
+
+  <!-- Back to Top -->
+  <button id="backToTop" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-full bg-aw-accent text-white flex items-center justify-center shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-110 active:scale-95" aria-label="Back to top">
+    <i class="fas fa-arrow-up text-sm"></i>
+  </button>
+
+  <!-- Mobile Bottom Nav -->
+  <div id="mobileNavBar">
+    <div class="flex items-stretch max-w-[500px] mx-auto">
+      <button class="mnav-btn active no-select" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Home" aria-label="Home">
+        <i class="fas fa-house mnav-icon"></i>
+        <span class="mnav-label">Home</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openMobileSearch()" title="Search" aria-label="Search">
+        <i class="fas fa-magnifying-glass mnav-icon"></i>
+        <span class="mnav-label">Search</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openShortsPanel()" title="Shorts" aria-label="Shorts">
+        <i class="fas fa-clapperboard mnav-icon"></i>
+        <span class="mnav-label">Shorts</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
+        <i class="fas fa-bookmark mnav-icon"></i>
+        <span class="mnav-label">Save</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openSettings()" title="Settings" aria-label="Settings">
+        <i class="fas fa-gear mnav-icon"></i>
+        <span class="mnav-label">Settings</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Search Overlay -->
+  <div id="mobileSearchOverlay">
+    <div class="ms-head">
+      <button class="ms-back" onclick="closeMobileSearch()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <div class="ms-field">
+        <i class="fas fa-search ms-si"></i>
+        <input id="mobileSearchInput" type="text" placeholder="Search animes... (Enter to search)" autocomplete="off" spellcheck="false">
+        <button id="mobileSearchClear" class="ms-x" aria-label="Clear"><i class="fas fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="mobileSearchSugs" class="ms-sugs"></div>
+    <div id="mobileSearchBody" class="ms-body">
+      <div id="mobileSearchEmpty" class="text-center py-16 px-6">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-aw-card border border-aw-border mb-5">
+          <i class="fas fa-magnifying-glass text-3xl text-aw-border"></i>
+        </div>
+        <p class="text-aw-fg text-base font-semibold mb-2">Find Your Anime</p>
+        <p class="text-aw-muted text-sm leading-relaxed">Search by title, genre, studio, or year</p>
+        <p class="text-aw-border text-xs mt-2"><i class="fas fa-keyboard mr-1"></i></p>
+        <div class="mt-8 text-left max-w-sm mx-auto">
+          <p class="text-[10px] font-bold text-aw-muted uppercase tracking-widest mb-3">Popular Searches</p>
+          <div id="mobilePopularTags" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+      <div id="mobileSearchGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+    </div>
+  </div>
+
+  <!-- Coming Soon Overlay (Desktop) -->
+  <div id="csBackdrop"></div>
+  <div id="csOverlay">
+    <div class="st-head">
+      <button class="st-back" onclick="closeComingSoon()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <h2 id="csTitle">Coming Soon</h2>
+    </div>
+    <div class="st-body flex flex-col items-center justify-center text-center px-8">
+      <div class="w-20 h-20 rounded-2xl bg-aw-card border border-aw-border flex items-center justify-center mb-5">
+        <i class="fas fa-clapperboard text-3xl text-aw-border" id="csIcon"></i>
+      </div>
+      <h3 class="font-display text-xl text-aw-fg mb-2" id="csHeading">Coming Soon</h3>
+      <p class="text-aw-muted text-sm mb-6 max-w-xs leading-relaxed" id="csDesc">This feature is currently under development. Stay tuned for updates!</p>
+      <span class="inline-block px-4 py-1.5 rounded-full bg-aw-bg2 border border-aw-border text-[10px] font-bold text-aw-muted uppercase tracking-widest">In Development</span>
+    </div>
+  </div>
+
+  <!-- Settings Backdrop (Desktop) -->
+  <div id="settingsBackdrop"></div>
+
+  <!-- Settings Overlay -->
+  <div id="settingsOverlay">
+    <div class="st-head">
+      <button class="st-back" onclick="closeSettings()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <h2>Settings</h2>
+    </div>
+    <div class="st-body">
+      <div class="grid grid-cols-2 gap-3 mb-5" id="settingsStatsGrid"></div>
+      <div class="st-group">
+        <div class="st-group-title">Data</div>
+        <div class="st-item" onclick="showStConfirm(this,'Clear all watch history?',confirmClearHistory)">
+          <div class="st-item-normal">
+            <div class="st-item-icon red"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Clear Watch History</div>
+              <div class="st-item-desc">Remove all recently watched anime</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-item-confirm">
+            <p>Clear all watch history?</p>
+            <button class="st-no" onclick="event.stopPropagation();hideStConfirm(this)">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+        <div class="st-item danger" onclick="showStConfirm(this,'Clear all saved animes?',confirmClearSaved)">
+          <div class="st-item-normal">
+            <div class="st-item-icon red"><i class="fas fa-bookmark"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Clear Saved List</div>
+              <div class="st-item-desc">Remove all bookmarked animes</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-item-confirm">
+            <p>Clear all saved animes?</p>
+            <button class="st-no" onclick="event.stopPropagation();hideStConfirm(this)">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+      </div>
+      <div class="st-group">
+        <div class="st-group-title">Personalization</div>
+        <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-sun"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Light Mode</div>
+            <div class="st-item-desc">Switch to light theme</div>
+          </div>
+          <button class="st-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+        </div>
+        <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray"><i class="fas fa-magnifying-glass"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Search Button</div>
+            <div class="st-item-desc">Show search shortcut in <span class="hidden lg:inline">sidebar</span><span class="lg:hidden">top bar</span></div>
+          </div>
+          <button class="st-toggle" id="navSearchToggle" onclick="toggleNavSearch()"></button>
+        </div>
+        <div class="st-item" id="notifSettingsItem" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray"><i class="fas fa-bell"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Notification!</div>
+            <div class="st-item-desc">Show notification in top bar.</div>
+          </div>
+          <button class="st-toggle" id="notifToggle" onclick="toggleNotifPos()"></button>
+        </div>
+        <div class="st-item" id="randomSettingsItem" onpointerdown="startRandomLongPress(event)" onpointerup="cancelRandomLongPress()" onpointerleave="cancelRandomLongPress()" onclick="if(!randomConfirming)goRandom()">
+          <div class="st-item-normal">
+            <div class="st-item-icon blue"><i class="fas fa-dice"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Random Anime</div>
+              <div class="st-item-desc">Discover a random title</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-random-confirm">
+            <p>Add Random button to top bar?</p>
+            <button class="st-no" onclick="event.stopPropagation();cancelRandomLongPress();hideRandomConfirm()">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+      </div>
+      <div class="st-group">
+        <div class="st-group-title">About</div>
+        <div class="st-about">
+          <img src="logo.PNG" alt="AnimeWave">
+          <h3>AnimeWave</h3>
+          <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
+          <span class="st-ver">v1.15.x34</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shorts Overlay -->
+  <div id="shortsOverlay">
+    <div class="st-head">
+      <button class="st-back" onclick="closeShortsPanel()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <h2>Shorts</h2>
+    </div>
+    <div class="st-body flex flex-col items-center justify-center text-center px-8">
+      <div class="w-20 h-20 rounded-2xl bg-aw-card border border-aw-border flex items-center justify-center mb-5">
+        <i class="fas fa-clapperboard text-3xl text-aw-border"></i>
+      </div>
+      <h3 class="font-display text-xl text-aw-fg mb-2">Coming Soon</h3>
+      <p class="text-aw-muted text-sm mb-6 max-w-xs leading-relaxed">Short-form anime clips are currently under development. Stay tuned for updates!</p>
+      <span class="inline-block px-4 py-1.5 rounded-full bg-aw-bg2 border border-aw-border text-[10px] font-bold text-aw-muted uppercase tracking-widest">In Development</span>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- What's New Overlay -->
+  <div id="whatsNewOverlay">
+    <div class="wn-header">
+      <h2 class="wn-header-title">What's New ✦</h2>
+      <button class="wn-close" id="wnClose" onclick="closeWhatsNew()" aria-label="Close" style="visibility:hidden"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="wn-container">
+      <div class="wn-story" id="wnStory">
+        <div class="wn-story-img-wrap">
+          <img class="wn-story-img" id="wnImg" src="" alt="">
+          <div class="wn-story-overlay"></div>
+          <div class="wn-tap-prev" onclick="wnPrevSlide()" aria-label="Previous"></div>
+          <div class="wn-tap-next" onclick="wnNextSlide()" aria-label="Next"></div>
+          <button class="wn-nav-btn wn-nav-left" id="wnPrev" onclick="wnPrevSlide()" disabled aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+          <button class="wn-nav-btn wn-nav-right" id="wnNext" onclick="wnNextSlide()" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+          <div class="wn-story-content">
+            <span class="wn-badge" id="wnBadge"></span>
+            <h3 class="wn-story-title" id="wnTitle"></h3>
+            <p class="wn-desc" id="wnDesc"></p>
+          </div>
+        </div>
+      </div>
+      <div class="wn-progress" id="wnProgress"></div>
+      <div class="wn-counter" id="wnCounter"></div>
+    </div>
+  </div>
+
+  <script>
+
+    // Block right-click on entire page
+    document.addEventListener('contextmenu', e => { 
+      e.preventDefault(); 
+      return false; 
+    });
+
+    // Block text copy, cut, and select all
+    document.addEventListener('keydown', function(e) {
+      // Block Ctrl+C, Cmd+C (Copy)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        e.preventDefault();
+        return false;
+      }
+      // Block Ctrl+X, Cmd+X (Cut)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
+        e.preventDefault();
+        return false;
+      }
+      // Block Ctrl+A, Cmd+A (Select All)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        // Allow select all in input/textarea fields
+        var tag = document.activeElement ? document.activeElement.tagName : '';
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+          e.preventDefault();
+          return false;
+        }
+      }
+      // Block Ctrl+U (View Source)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+        e.preventDefault();
+        return false;
+      }
+      // Block Ctrl+S (Save)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        return false;
+      }
+      // Block Ctrl+P (Print)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        return false;
+      }
+      // Block F12 (DevTools)
+      if (e.key === 'F12') {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Block text selection via CSS
+    document.addEventListener('selectstart', function(e) {
+      // Allow selection in input/textarea fields
+      var tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') {
+        return true;
+      }
+      e.preventDefault();
+      return false;
+    });
+
+    // Block drag start (prevents drag-to-copy)
+    document.addEventListener('dragstart', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    // Block copy event
+    document.addEventListener('copy', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    // Block cut event
+    document.addEventListener('cut', function(e) {
+      e.preventDefault();
+      return false;
+    });
+
+    const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420' fill='%231a1a1a'%3E%3Crect width='300' height='420'/%3E%3Crect x='120' y='170' width='60' height='80' rx='4' fill='%232a2a2a'/%3E%3Ccircle cx='144' cy='190' r='8' fill='%23333'/%3E%3Cpolygon points='139,210 139,230 156,220' fill='%23333'/%3E%3Ctext x='150' y='280' text-anchor='middle' fill='%23333' font-family='sans-serif' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
+    
+    function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+    function escJS(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+    function debounce(fn, delay) {
+      let timer;
+      return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          try { fn.apply(this, args); }
+          catch(e) { console.error('Debounced function error:', e); }
+        }, delay);
+      };
+    }
+
+    function handleImgError(img) { 
+      if (!img.dataset.fallback) { 
+        img.dataset.fallback = '1'; 
+        img.src = IMG_FALLBACK;
+        img.onerror = function() { 
+          this.style.display = 'none';
+          this.onerror = null;
+        };
+      } 
+    }
+    document.addEventListener('click', function(e) {
+      var bm = e.target.closest('.bm-btn');
+      if (bm) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); handleBookmark(bm, bm.dataset.id); return false; }
+      var rh = e.target.closest('.rm-hist-btn');
+      if (rh) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); removeFromHistory(rh.dataset.id); return false; }
+    }, true);
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const existing = c.querySelectorAll('.toast:not(.toast-out)');
+      if (existing.length >= 3) existing[0].remove();
+      const t = document.createElement('div');
+      const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-circle-xmark' };
+      const colors = { info: 'border-aw-accent', success: 'border-green-500', error: 'border-red-500' };
+      t.className = `toast border-l-4 ${colors[type] || colors.info} bg-aw-card rounded-lg px-4 py-3 text-sm text-aw-fg shadow-2xl max-w-xs flex items-center gap-3`;
+      t.innerHTML = `<i class="fas ${icons[type] || icons.info} ${type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-aw-accent'} text-base shrink-0"></i><span>${msg}</span>`;
+      c.appendChild(t);
+      setTimeout(() => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 300); }, 2800);
+    }
+
+    function safeLocalStorage(action, key, value) {
+      try { return action(key, value); } catch(e) { console.warn('localStorage unavailable'); return null; }
+    }
+    function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch(e) { return []; } }
+    function setSaved(arr) { try { localStorage.setItem('aw_saved', JSON.stringify(arr)); } catch(e) { console.warn('localStorage unavailable'); } }
+    function isSaved(id) { return getSaved().includes(id); }
+    function toggleSave(id) {
+      var anime = allAnime.find(function(a){return a.id===id});
+      var name = anime ? anime.name : id;
+      let s = getSaved();
+      var idx = s.indexOf(id);
+      if (idx !== -1) { s.splice(idx, 1); showToast(`Removed "${name}" from saves`, 'info'); }
+      else { s.push(id); showToast(`Saved "${name}"`, 'success'); }
+      setSaved(s);
+      updateSaveBadge();
+      localStorage.setItem('aw_save_dirty', 'true');
+      updateSaveDirtyIndicator();
+      return s.indexOf(id) !== -1;
+    }
+    function updateSaveBadge() {
+      const b = document.getElementById('saveBadge');
+      if (!b) return;
+      const c = getSaved().length;
+      if (c > 0) { b.textContent = c > 99 ? '99+' : c; b.classList.remove('hidden'); b.classList.add('flex'); }
+      else { b.classList.add('hidden'); b.classList.remove('flex'); }
+    }
+
+    function updateSaveDirtyIndicator() {
+      var dirty = localStorage.getItem('aw_save_dirty') === 'true';
+      var sbDot = document.getElementById('sbSaveDirty');
+      var mnavDot = document.getElementById('mnavSaveDirty');
+      if (sbDot) sbDot.classList.toggle('show', dirty);
+      if (mnavDot) mnavDot.classList.toggle('show', dirty);
+    }
+
+    function clearSaveDirty() {
+      localStorage.removeItem('aw_save_dirty');
+      updateSaveDirtyIndicator();
+    }
+
+    function handleNotif() {
+      window.location.href = 'notification.html';
+    }
+
+    let allAnime = [];
+    let shuffledAnime = [];
+    let displayedAnime = [];
+    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","altName":"異世界失格","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","genre":["Adventure","Comedy","Drama","Fantasy","Isekai","Parody"],"date":"2026-05","season":"Season 1","language":"English Hindi Japanese Tamil Telugu","link":"","videoUrl":"","seasons":["Season 1"],"episodeLinks":{"s1":{"e1":"https://as-cdn21.top/video/88a839f2f6f1427879fc33ee4acf4f66"}},"details":"https://www.imdb.com/title/tt31186547/","state":"watched","sst":"","rank":null,"rating":7,"tear":"B+","episodes":12,"studio":"Atelier Pontdarc","year":2024,"review":"Pulled into an otherworldly adventure with cute sidekicks and superpowers.","tags":["Go","Watch","Good anime"]}];
+
+    function isRunning(a) { const s = (a.state || '').toLowerCase(); return s === 'watching' || s === 'running' || s === 'ongoing'; }
+    function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
+    function getStateTag(a) {
+      if (isRunning(a)) return { text: 'Running', cls: 'bg-aw-accent/90 text-white' };
+      if (isUpcoming(a)) return { text: 'Upcoming', cls: 'bg-yellow-500/90 text-black' };
+      if ((a.state || '').toLowerCase() === 'watched') return { text: 'Available', cls: 'bg-green-500/80 text-white' };
+      return null;
+    }
+
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+      return a;
+    }
+
+    async function loadData() {
+      showSkeletons();
+      try {
+        const res = await fetch('details.json');
+        if (!res.ok) throw new Error();
+        allAnime = await res.json();
+        if (!Array.isArray(allAnime)) allAnime = [allAnime];
+      } catch(e) {
+        allAnime = FALLBACK;
+        showToast('Using sample data — place details.json alongside index.html', 'error');
+      }
+      shuffledAnime = shuffleArray(allAnime);
+      displayedAnime = [...shuffledAnime];
+      renderAll();
+      setTimeout(() => document.getElementById('loadingScreen').classList.add('hide'), 300);
+    }
+
+    function showSkeletons() {
+      document.getElementById('animeGrid').innerHTML = Array(14).fill('').map(() => `
+        <div class="rounded-xl overflow-hidden bg-aw-card">
+          <div class="skeleton" style="aspect-ratio:5/7"></div>
+          <div class="p-2.5 space-y-2"><div class="skeleton h-3 rounded w-3/4"></div><div class="skeleton h-2.5 rounded w-1/2"></div></div>
+        </div>`).join('');
+    }
+
+    function renderStats() {
+      const totalAnime = allAnime.length;
+      const allGenres = new Set();
+      let totalEps = 0;
+      allAnime.forEach(a => {
+        (a.genre || []).forEach(g => allGenres.add(g));
+        totalEps += a.episodes || 0;
+      });
+      const availableCount = allAnime.filter(a => (a.state || '').toLowerCase() === 'watched').length;
+      const watchHours = Math.round(totalEps * 24 / 60);
+      const stats = [
+        { icon: 'fa-film', label: 'Total Animes', value: totalAnime },
+        { icon: 'fa-circle-check', label: 'Available', value: availableCount },
+        { icon: 'fa-play', label: 'Total Episodes', value: totalEps },
+        { icon: 'fa-clock', label: 'Watch Hours', value: watchHours }
+      ];
+      document.getElementById('settingsStatsGrid').innerHTML = stats.map(s => `
+        <div class="stat-card bg-aw-card border border-aw-border rounded-xl p-4 text-center">
+          <i class="fas ${s.icon} text-aw-accent/60 text-lg mb-2"></i>
+          <div class="text-2xl font-bold text-aw-fg" data-count="${s.value}">0</div>
+          <div class="text-[10px] sm:text-xs text-aw-muted mt-1 uppercase tracking-wide">${s.label}</div>
+        </div>`).join('');
+      animateCounters();
+    }
+
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        const duration = 1200;
+        const start = performance.now();
+        function tick(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(target * eased).toLocaleString();
+          if (progress < 1) requestAnimationFrame(tick);
+          else el.textContent = target.toLocaleString();
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+
+    function scrollRow(id, dir) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollBy({ left: dir * el.clientWidth * 0.7, behavior: 'smooth' });
+    }
+
+    function buildHCard(a) {
+      const tag = getStateTag(a);
+      const saved = isSaved(a.id);
+      const ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
+      return `
+        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer" onclick="window.location.href='anime.html?id=${encodeURIComponent(a.id)}'">
+          <div class="relative overflow-hidden">
+            <img src="${a.image}" alt="${a.name}" class="hcard-img" loading="lazy" onerror="handleImgError(this)">
+            <div class="hcard-overlay">
+              <div class="absolute bottom-2 left-2 right-2">
+                <div class="flex flex-wrap gap-1">${(a.genre||[]).slice(0,2).map(g=>`<span class="text-[8px] px-1 py-0.5 rounded bg-aw-accent/30 text-aw-accentL">${g}</span>`).join('')}</div>
+              </div>
+            </div>
+            <div class="hcard-play absolute inset-0 flex items-center justify-center">
+              <div class="w-9 h-9 rounded-full bg-aw-accent/90 flex items-center justify-center shadow-lg shadow-aw-accent/30"><i class="fas fa-play text-white text-xs ml-0.5"></i></div>
+            </div>
+            ${tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
+            ${a.rating ? `<div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold ${ratingColor} flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
+            <button class="bm-btn absolute top-1.5 right-1.5 w-5 h-5 rounded-full ${saved?'bg-aw-accent text-white':'bg-black/60 text-white/70 hover:text-white'} flex items-center justify-center text-[9px] transition-colors" style="pointer-events:auto;z-index:10" title="${saved?'Unsave':'Save'}" data-saved="${saved?'1':'0'}" 
+            data-id="${escAttr(a.id)}"><i class="${saved?'fas':'far'} fa-bookmark"></i></button>
+          </div>
+          <div class="p-2">
+            <h3 class="text-[11px] font-semibold text-aw-fg truncate mb-0.5 leading-tight" title="${escAttr(a.name)}">${escAttr(a.name)}</h3>
+            <div class="flex items-center gap-1 text-[9px] text-aw-muted leading-none">
+              <span>${a.year||''}</span>
+              ${a.episodes ? `<span>&middot;</span><span>${a.episodes} Ep</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function handleBookmark(btn, id) {
+      const nowSaved = toggleSave(id);
+      btn.dataset.saved = nowSaved ? '1' : '0';
+      btn.title = nowSaved ? 'Unsave' : 'Save';
+      const icon = btn.querySelector('i');
+      if (nowSaved) { icon.classList.replace('far', 'fas'); btn.classList.add('bg-aw-accent', 'text-white'); btn.classList.remove('bg-black/60', 'text-white/70'); }
+      else { icon.classList.replace('fas', 'far'); btn.classList.remove('bg-aw-accent', 'text-white'); btn.classList.add('bg-black/60', 'text-white/70'); }
+    }
+
+    // ── Watch History ──────────────────────────────────────────
+    let historyEditMode = false;
+    function getWatchHistory() {
+      try { return JSON.parse(localStorage.getItem('aw_history') || '[]'); } catch(e) { return []; }
+    }
+    function saveWatchHistory(arr) {
+      try { localStorage.setItem('aw_history', JSON.stringify(arr)); } catch(e) { console.warn('localStorage unavailable'); }
+    }
+    function addToHistory(id, season, episode) {
+      let h = getWatchHistory();
+      h = h.filter(x => x.id !== id);
+      h.unshift({ id, ts: Date.now(), s: season || 1, e: episode || 1 });
+      if (h.length > 50) h = h.slice(0, 50);
+      saveWatchHistory(h);
+    }
+    function removeFromHistory(id) {
+      saveWatchHistory(getWatchHistory().filter(x => x.id !== id));
+      renderHistory();
+      showToast('Removed from history', 'info');
+    }
+    function clearHistory() {
+      if (!getWatchHistory().length) return;
+      saveWatchHistory([]);
+      historyEditMode = false;
+      renderHistory();
+      showToast('Watch history cleared', 'info');
+    }
+    function toggleHistoryEdit() {
+      historyEditMode = !historyEditMode;
+      const btn = document.getElementById('historyEditBtn');
+      if (historyEditMode) {
+        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Done';
+        btn.classList.add('text-sky-400');
+        btn.classList.remove('text-aw-muted');
+      } else {
+        btn.innerHTML = '<i class="fas fa-pen-to-square mr-1"></i>Edit';
+        btn.classList.remove('text-sky-400');
+        btn.classList.add('text-aw-muted');
+      }
+      renderHistory();
+    }
+    function renderHistory() {
+      const h = getWatchHistory();
+      const section = document.getElementById('historySection');
+      const row = document.getElementById('historyRow');
+      const btn = document.getElementById('historyEditBtn');
+      if (!h.length) {
+        section.classList.add('hidden');
+        // Optionally show empty state elsewhere
+        historyEditMode = false;
+        if (btn) { btn.innerHTML = '<i class="fas fa-pen-to-square mr-1"></i>Edit'; btn.classList.remove('text-sky-400'); btn.classList.add('text-aw-muted'); }
+        return;
+      }
+      const items = h.map(entry => {
+        const a = allAnime.find(x => x.id === entry.id);
+        if (!a) return null;
+        return { ...a, _lastS: entry.s, _lastE: entry.e, _ts: entry.ts };
+      }).filter(Boolean);
+      if (!items.length) { section.classList.add('hidden'); saveWatchHistory([]); return; }
+      section.classList.remove('hidden');
+      document.getElementById('historyCount').textContent = items.length + ' anime' + (items.length !== 1 ? 's' : '');
+      row.innerHTML = items.map(a => buildHistoryCard(a)).join('');
+    }
+    function buildHistoryCard(a) {
+      var saved = isSaved(a.id);
+      var epLabel = a._lastS && a._lastE ? 'S' + a._lastS + ' E' + a._lastE : '';
+      var continueUrl = a._lastS && a._lastE
+        ? 'watch.html?id=' + encodeURIComponent(a.id) + '&s=' + a._lastS + '&e=' + a._lastE
+        : 'watch.html?id=' + encodeURIComponent(a.id) + '&s=1&e=1';
+      var progress = a.episodes ? Math.min((a._lastE / a.episodes) * 100, 95) : 30;
+      var idEsc = encodeURIComponent(a.id);
+      var curS = a._lastS || 1;
+      var curE = a._lastE || 0;
+      var nextEpKey = 'e' + (curE + 1);
+      var curSeasonLinks = a.episodeLinks && a.episodeLinks['s' + curS];
+      var hasNextEp = !!(curSeasonLinks && curSeasonLinks[nextEpKey]);
+      var nextSeasonNum = curS + 1;
+      var nextSeasonLinks = a.episodeLinks && a.episodeLinks['s' + nextSeasonNum];
+      var hasNextSeason = !!(nextSeasonLinks && Object.keys(nextSeasonLinks).length > 0);
+      var hasMore = hasNextEp || hasNextSeason;
+      var isNewSeason = !hasNextEp && hasNextSeason;
+      var nextEp = hasNextEp ? (curE + 1) : 1;
+      var nextUrl = hasMore
+        ? 'watch.html?id=' + encodeURIComponent(a.id) + '&s=' + (isNewSeason ? nextSeasonNum : curS) + '&e=' + nextEp
+        : null;
+
+      /* In edit mode: no link, dimmed, X always visible. Normal mode: clickable. */
+      if (historyEditMode) {
+        return '<div class="hcard w-[140px] sm:w-[155px] lg:w-[165px] rounded-xl overflow-hidden bg-aw-card relative" style="opacity:0.65;transition:opacity 0.2s">' +
+          '<div class="relative overflow-hidden">' +
+            '<img src="' + a.image + '" alt="' + a.name + '" class="hcard-img" loading="lazy" onerror="handleImgError(this)">' +
+            '<div class="absolute inset-0 bg-black/30 flex items-center justify-center z-10">' +
+              '<button class="rm-hist-btn w-10 h-10 rounded-full bg-red-500/90 hover:bg-red-500 text-white flex items-center justify-center text-sm shadow-lg shadow-red-500/30 transition-transform hover:scale-110 active:scale-95" title="Remove" data-id="' + a.id + '"><i class="fas fa-xmark"></i></button>' +
+            '</div>' +
+            '<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold bg-sky-500/90 text-white flex items-center gap-1"><i class="fas fa-play text-[6px]"></i>Continue</div>' +
+            (a.rating ? '<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold text-amber-400 flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>' + a.rating + '</div>' : '') +
+            '<div class="absolute bottom-0 left-0 right-0 h-1 bg-white/10"><div class="h-full bg-sky-500 rounded-r" style="width:' + progress + '%"></div></div>' +
+          '</div>' +
+          '<div class="p-2">' +
+            '<h3 class="text-[11px] font-semibold text-aw-fg truncate mb-0.5 leading-tight" title="' + a.name + '">' + a.name + '</h3>' +
+            '<div class="flex items-center gap-1 text-[9px] text-aw-muted leading-none">' +
+              (epLabel ? '<span class="text-sky-400 font-medium">' + epLabel + '</span><span>&middot;</span>' : '') +
+              '<span>' + (a.year || '') + '</span>' +
+              (a.episodes ? '<span>&middot;</span><span>' + a.episodes + ' Ep</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      return '<div class="hcard w-[140px] sm:w-[155px] lg:w-[165px] rounded-xl overflow-hidden bg-aw-card cursor-pointer group" onclick="window.location.href=\'' + continueUrl + '\'">' +
+        '<div class="relative overflow-hidden">' +
+          '<img src="' + a.image + '" alt="' + a.name + '" class="hcard-img" loading="lazy" onerror="handleImgError(this)">' +
+          '<div class="hcard-overlay">' +
+            '<div class="absolute bottom-2 left-2 right-2 flex items-end justify-between gap-2">' +
+              '<div class="flex-1 min-w-0">' +
+                '<div class="flex flex-wrap gap-1">' + (a.genre||[]).slice(0,2).map(function(g){ return '<span class="text-[8px] px-1 py-0.5 rounded bg-sky-500/30 text-sky-400">' + g + '</span>'; }).join('') + '</div>' +
+              '</div>' +
+              '<div class="w-9 h-9 rounded-full bg-sky-500 flex items-center justify-center shrink-0 shadow-lg shadow-sky-500/30"><i class="fas fa-play text-white text-xs ml-0.5"></i></div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="hcard-play absolute inset-0 flex items-center justify-center">' +
+            '<div class="w-10 h-10 rounded-full bg-sky-500/90 flex items-center justify-center shadow-lg shadow-sky-500/30"><i class="fas fa-play text-white text-xs ml-0.5"></i></div>' +
+          '</div>' +
+          '<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold bg-sky-500/90 text-white flex items-center gap-1"><i class="fas fa-play text-[6px]"></i>Continue</div>' +
+          (a.rating ? '<div class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold text-amber-400 flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>' + a.rating + '</div>' : '') +
+          '<button onclick="event.stopPropagation();removeFromHistory(\'' + idEsc + '\')" class="absolute top-7 left-1.5 w-5 h-5 rounded-full bg-black/60 text-white/60 hover:text-red-400 hover:bg-black/80 flex items-center justify-center text-[8px] transition-colors opacity-0 group-hover:opacity-100" title="Remove"><i class="fas fa-xmark"></i></button>' +
+          '<div class="absolute bottom-0 left-0 right-0 h-1 bg-white/10"><div class="h-full bg-sky-500 rounded-r" style="width:' + progress + '%"></div></div>' +
+        '</div>' +
+        '<div class="p-2">' +
+          '<h3 class="text-[11px] font-semibold text-aw-fg truncate mb-0.5 leading-tight" title="' + a.name + '">' + a.name + '</h3>' +
+          '<div class="flex items-center gap-1 text-[9px] text-aw-muted leading-none">' +
+            (epLabel ? '<span class="text-sky-400 font-medium">' + epLabel + '</span><span>&middot;</span>' : '') +
+            '<span>' + (a.year || '') + '</span>' +
+            (a.episodes ? '<span>&middot;</span><span>' + a.episodes + ' Ep</span>' : '') +
+          '</div>' +
+          (hasMore
+            ? '<a href="' + nextUrl + '" onclick="event.stopPropagation()" class="hist-next-btn mt-1.5 flex items-center gap-1 px-2 py-1 rounded-md bg-aw-accent/15 hover:bg-aw-accent/30 border border-aw-accent/25 text-[8px] font-bold text-aw-accentL transition-colors leading-none w-full justify-center">' +
+              '<i class="fas fa-circle-play text-[8px]"></i>' + (isNewSeason ? 'Season ' + nextSeasonNum + ' available' : 'Ep ' + nextEp + ' available') + '</a>'
+            : '') +
+        '</div>' +
+      '</div>';
+    }
+
+    function renderHorizontalRows() {
+      const running = shuffledAnime.filter(isRunning);
+      const upcoming = shuffledAnime.filter(isUpcoming);
+      const topRated = [...allAnime].filter(a => a.rating && a.rating >= 8).sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 20);
+
+      const rSection = document.getElementById('runningSection');
+      const uSection = document.getElementById('upcomingSection');
+      const tSection = document.getElementById('topRatedSection');
+
+      if (running.length) {
+        rSection.classList.remove('hidden');
+        document.getElementById('runningCount').textContent = running.length + ' anime' + (running.length !== 1 ? 's' : '');
+        document.getElementById('runningRow').innerHTML = running.map(a => buildHCard(a)).join('');
+      } else rSection.classList.add('hidden');
+
+      if (upcoming.length) {
+        uSection.classList.remove('hidden');
+        document.getElementById('upcomingCount').textContent = upcoming.length + ' anime' + (upcoming.length !== 1 ? 's' : '');
+        document.getElementById('upcomingRow').innerHTML = upcoming.map(a => buildHCard(a)).join('');
+      } else uSection.classList.add('hidden');
+
+      if (topRated.length) {
+        tSection.classList.remove('hidden');
+        document.getElementById('topRatedCount').textContent = topRated.length + ' anime' + (topRated.length !== 1 ? 's' : '');
+        document.getElementById('topRatedRow').innerHTML = topRated.map(a => buildHCard(a)).join('');
+      } else tSection.classList.add('hidden');
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+    const searchClear = document.getElementById('searchClear');
+    const searchHint = document.getElementById('searchHint');
+    let suggestTimer = null, highlightedIndex = -1, currentSuggestions = [];
+
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value;
+      searchClear.classList.toggle('show', val.length > 0);
+      searchHint.classList.toggle('hide', val.length > 0);
+      clearTimeout(suggestTimer);
+      suggestTimer = setTimeout(() => { showSuggestions(val); }, 150);
+    });
+
+    searchClear.addEventListener('mousedown', e => { e.preventDefault(); });
+    searchClear.addEventListener('click', e => {
+      e.stopPropagation();
+      searchInput.value = '';
+      searchClear.classList.remove('show');
+      searchHint.classList.remove('hide');
+      closeSuggestions();
+      applySortAndFilter();
+      searchInput.focus();
+    });
+
+    function highlightMatch(text, query) {
+      if (!query) return text;
+      const idx = text.toLowerCase().indexOf(query.toLowerCase());
+      if (idx === -1) return text;
+      return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+    }
+
+    function showSuggestions(query) {
+      if (!query || query.length < 1) { closeSuggestions(); return; }
+      const q = query.toLowerCase().trim();
+      const matches = allAnime.filter(a => {
+        const hay = [a.name, a.altName, a.studio, ...(a.genre||[]), ...(a.tags||[])].join(' ').toLowerCase();
+        return hay.includes(q);
+      }).slice(0, 8);
+      if (!matches.length) { closeSuggestions(); return; }
+      currentSuggestions = matches;
+      highlightedIndex = -1;
+      searchDropdown.innerHTML = matches.map((a, i) => {
+        const displayName = a.name.length > 50 ? a.name.slice(0, 50) + '...' : a.name;
+        const metaParts = [];
+        if (a.year) metaParts.push(a.year);
+        if (a.genre && a.genre.length) metaParts.push(a.genre[0]);
+        if (a.episodes) metaParts.push(a.episodes + ' Ep');
+        return `
+          <div class="search-suggestion" data-index="${i}" data-id="${a.id}" data-name="${a.name.replace(/"/g, '&quot;')}">
+            <img src="${a.image}" alt="" loading="lazy" onerror="handleImgError(this)">
+            <div class="flex-1 min-w-0">
+              <div class="sg-name">${highlightMatch(displayName, q)}</div>
+              <div class="sg-meta">${metaParts.join(' · ')}</div>
+            </div>
+            <span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span>
+          </div>`;
+      }).join('');
+      searchDropdown.classList.add('open');
+      searchDropdown.querySelectorAll('.search-suggestion').forEach(el => {
+        el.addEventListener('mousedown', e => { e.preventDefault(); });
+        el.addEventListener('click', e => {
+          e.stopPropagation();
+          closeSuggestions();
+          window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.id);
+        });
+      });
+    }
+
+    function closeSuggestions() { searchDropdown.classList.remove('open'); highlightedIndex = -1; currentSuggestions = []; }
+
+    function updateHighlight() {
+      searchDropdown.querySelectorAll('.search-suggestion').forEach((el, i) => { el.classList.toggle('highlighted', i === highlightedIndex); if (i === highlightedIndex) el.scrollIntoView({ block: 'nearest' }); });
+    }
+
+    searchInput.addEventListener('keydown', e => {
+      const isOpen = searchDropdown.classList.contains('open');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!isOpen) { showSuggestions(searchInput.value); return; }
+        highlightedIndex = (highlightedIndex + 1) % currentSuggestions.length;
+        updateHighlight();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!isOpen) return;
+        highlightedIndex = (highlightedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+        updateHighlight();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (isOpen && highlightedIndex >= 0 && currentSuggestions[highlightedIndex]) {
+          closeSuggestions();
+          window.location.href = 'anime.html?id=' + encodeURIComponent(currentSuggestions[highlightedIndex].id);
+          return;
+        }
+        closeSuggestions();
+        doSearch();
+      } else if (e.key === 'Escape') { searchInput.blur(); closeSuggestions(); }
+    });
+
+    searchInput.addEventListener('focus', () => { if (searchInput.value.trim().length > 0) showSuggestions(searchInput.value); });
+    document.addEventListener('click', e => { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
+
+    function doSearch() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { 
+        applySortAndFilter(); 
+        setTimeout(() => {
+          document.getElementById('allAnimesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }, 100);
+    }
+    let searchTimer;
+
+    let currentSort = 'default';
+    const sortOptions = [
+      { value: 'default', label: 'Shuffled', icon: 'fa-shuffle' },
+      { value: 'az', label: 'Name: A → Z', icon: 'fa-arrow-down-a-z' },
+      { value: 'za', label: 'Name: Z → A', icon: 'fa-arrow-up-z-a' },
+      { value: 'rating-desc', label: 'Rating: High → Low', icon: 'fa-arrow-down-wide-short' },
+      { value: 'rating-asc', label: 'Rating: Low → High', icon: 'fa-arrow-up-wide-short' },
+      { value: 'year-desc', label: 'Year: Newest', icon: 'fa-calendar-arrow-down' },
+      { value: 'year-asc', label: 'Year: Oldest', icon: 'fa-calendar-arrow-up' },
+      { value: 'eps-desc', label: 'Episodes: Most', icon: 'fa-list-ol' }
+    ];
+
+    function initSort() {
+      const dd = document.getElementById('sortDropdown');
+      dd.innerHTML = sortOptions.map(o => `<button class="sort-option ${o.value === currentSort ? 'active' : ''}" data-sort="${o.value}"><i class="fas ${o.icon} text-xs w-4 text-center"></i>${o.label}</button>`).join('');
+      dd.querySelectorAll('.sort-option').forEach(btn => btn.addEventListener('click', () => {
+        currentSort = btn.dataset.sort;
+        if (currentSort === 'default') shuffledAnime = shuffleArray(allAnime);
+        document.getElementById('sortLabel').textContent = btn.textContent.trim();
+        dd.querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.sort === currentSort));
+        dd.classList.remove('open');
+        applySortAndFilter();
+      }));
+      document.getElementById('sortBtn').addEventListener('click', e => {
+        e.stopPropagation();
+        dd.classList.toggle('open');
+      });
+      document.addEventListener('click', e => { if (!document.getElementById('sortWrap').contains(e.target)) dd.classList.remove('open'); });
+    }
+
+    function sortAnime(list) {
+      const sorted = [...list];
+      switch (currentSort) {
+        case 'az': sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
+        case 'za': sorted.sort((a, b) => b.name.localeCompare(a.name)); break;
+        case 'rating-desc': sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+        case 'rating-asc': sorted.sort((a, b) => (a.rating || 0) - (b.rating || 0)); break;
+        case 'year-desc': sorted.sort((a, b) => (b.year || 0) - (a.year || 0)); break;
+        case 'year-asc': sorted.sort((a, b) => (a.year || 0) - (b.year || 0)); break;
+        case 'eps-desc': sorted.sort((a, b) => (b.episodes || 0) - (a.episodes || 0)); break;
+        default: break;
+      }
+      return sorted;
+    }
+
+    let activeGenre = 'All';
+
+    function getSortedGenresWithCounts() {
+      const counts = {};
+      allAnime.forEach(a => (a.genre || []).forEach(g => { counts[g] = (counts[g] || 0) + 1; }));
+      return [{ name: 'All', count: allAnime.length }, ...Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(e => ({ name: e[0], count: e[1] }))];
+    }
+
+    function renderGenreFilters() {
+      var el = document.getElementById('genreFilters');
+      var prevScroll = el.scrollLeft;
+      const genres = getSortedGenresWithCounts();
+      el.innerHTML = genres.map(g =>
+        `<button class="genre-chip shrink-0 px-4 py-1.5 rounded-full border border-aw-border text-sm text-aw-muted flex items-center gap-0 ${g.name === activeGenre ? 'active' : ''}" data-genre="${g.name}">${g.name}<span class="gc-count">${g.count}</span></button>`
+      ).join('');
+      el.scrollLeft = prevScroll;
+      el.querySelectorAll('button').forEach(b => { 
+        b.addEventListener('click', function(e) {
+          // Don't trigger if parent was being dragged
+          if (el.classList.contains('dragging')) return;
+          activeGenre = b.dataset.genre;
+          renderGenreFilters();
+          applySortAndFilter();
+        });
+      });
+    }
+
+    function clearFilters() {
+      activeGenre = 'All';
+      searchInput.value = '';
+      searchClear.classList.remove('show');
+      searchHint.classList.remove('hide');
+      currentSort = 'default';
+      document.getElementById('sortLabel').textContent = 'Shuffled';
+      document.getElementById('sortDropdown').querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.value === 'default'));
+      renderGenreFilters();
+      applySortAndFilter();
+    }
+
+    let loadedCount = 0;
+    let isLoadingMore = false;
+    let sentinelObserver = null;
+    const BATCH_ROWS = 3;
+
+    function getItemsPerRow() {
+      const w = window.innerWidth;
+      if (w >= 1536) return 7;
+      if (w >= 1280) return 6;
+      if (w >= 1024) return 5;
+      if (w >= 768)  return 4;
+      if (w >= 640)  return 3;
+      return 2;
+    }
+
+    function getBatchSize() { return getItemsPerRow() * BATCH_ROWS; }
+    function getInitialBatchSize() { return getItemsPerRow() * 6; }
+
+    function resetLoaded() {
+      loadedCount = 0;
+      isLoadingMore = false;
+    }
+
+    function loadMoreBatch() {
+      if (isLoadingMore) return;
+      isLoadingMore = true;
+
+      const prevScrollY = window.scrollY;
+      const prevScrollH = document.documentElement.scrollHeight;
+
+      loadedCount = Math.min(loadedCount + getBatchSize(), displayedAnime.length);
+      appendNewCards();
+
+      const newScrollH = document.documentElement.scrollHeight;
+      if (newScrollH > prevScrollH) {
+        window.scrollTo(0, prevScrollY);
+      }
+
+      isLoadingMore = false;
+      updateSentinel();
+    }
+
+    function applySortAndFilter() {
+      const query = (searchInput.value || '').trim().toLowerCase();
+      let filtered = shuffledAnime.filter(a => {
+        if (activeGenre !== 'All' && !(a.genre || []).includes(activeGenre)) return false;
+        if (query) {
+          const hay = [a.name, a.altName, a.studio, a.year, ...(a.genre||[]), ...(a.tags||[])].join(' ').toLowerCase();
+          if (!hay.includes(query)) return false;
+        }
+        return true;
+      });
+      displayedAnime = sortAnime(filtered);
+      resetLoaded();
+      renderGridFull();
+    }
+
+    function buildCardHTML(a) {
+      const saved = isSaved(a.id);
+      const tag = getStateTag(a);
+      const ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
+      return `
+        <article class="poster-card rounded-xl overflow-hidden bg-aw-card">
+          <a href="anime.html?id=${encodeURIComponent(a.id)}" class="block relative overflow-hidden">
+            <img src="${a.image}" alt="${a.name}" class="poster-img" loading="lazy" onerror="handleImgError(this)">
+            <div class="card-overlay">
+              <div class="absolute bottom-0 left-0 right-0 p-2.5">
+                <div class="flex flex-wrap gap-1 mb-1">${(a.genre||[]).slice(0,2).map(g=>`<span class="text-[9px] px-1.5 py-0.5 rounded bg-aw-accent/30 text-aw-accentL">${g}</span>`).join('')}</div>
+              </div>
+            </div>
+            <div class="card-play absolute inset-0 flex items-center justify-center">
+              <div class="w-11 h-11 rounded-full bg-aw-accent/90 flex items-center justify-center shadow-lg shadow-aw-accent/30"><i class="fas fa-play text-white text-sm ml-0.5"></i></div>
+            </div>
+            ${tag ? `<div class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
+            ${a.tear ? `<div class="absolute top-2 right-9 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold text-aw-accentL border border-aw-accent/30">${a.tear}</div>` : ''}
+            <button class="bm-btn absolute top-2 right-2 w-6 h-6 rounded-full ${saved?'bg-aw-accent text-white':'bg-black/60 text-white/70 hover:text-white'} flex items-center justify-center text-[10px] transition-colors" style="pointer-events:auto;z-index:10" title="${saved?'Unsave':'Save'}" data-saved="${saved?'1':'0'}" data-id="${escAttr(a.id)}"><i class="${saved?'fas':'far'} fa-bookmark"></i></button>
+            ${a.rating ? `<div class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/70 text-[10px] font-bold ${ratingColor} flex items-center gap-1"><i class="fas fa-star text-[8px]"></i>${a.rating}</div>` : ''}
+          </a>
+          <div class="p-2.5">
+            <h3 class="text-xs font-semibold text-aw-fg truncate mb-1 leading-tight" title="${a.name}">${a.name}</h3>
+            <div class="flex items-center gap-1.5 text-[10px] text-aw-muted leading-none">
+              <span>${a.year || ''}</span>
+              ${a.episodes ? `<span>&middot;</span><span>${a.episodes} Ep</span>` : ''}
+              ${a.studio ? `<span class="hidden sm:inline">&middot;</span><span class="hidden sm:inline truncate max-w-[80px]" title="${a.studio}">${a.studio}</span>` : ''}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function renderGridFull() {
+      const total = displayedAnime.length;
+      const grid = document.getElementById('animeGrid');
+      const empty = document.getElementById('emptyState');
+      const sentinel = document.getElementById('infSentinel');
+
+      if (!total) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        sentinel.classList.add('hidden');
+        document.getElementById('animeCount').textContent = '0 animes';
+        disconnectSentinel();
+        return;
+      }
+      empty.classList.add('hidden');
+
+      loadedCount = Math.min(getInitialBatchSize(), total);
+      grid.innerHTML = displayedAnime.slice(0, loadedCount).map(a => buildCardHTML(a)).join('');
+
+      const remaining = total - loadedCount;
+      document.getElementById('animeCount').textContent = remaining > 0
+        ? `${loadedCount} of ${total} animes`
+        : `${total} anime${total !== 1 ? 's' : ''}`;
+
+      updateSentinel();
+    }
+
+    function appendNewCards() {
+      const total = displayedAnime.length;
+      const grid = document.getElementById('animeGrid');
+      const prevCount = loadedCount - getBatchSize();
+      const newItems = displayedAnime.slice(prevCount, loadedCount);
+
+      const fragment = document.createDocumentFragment();
+      const temp = document.createElement('div');
+      temp.innerHTML = newItems.map(a => buildCardHTML(a)).join('');
+      while (temp.firstChild) {
+        fragment.appendChild(temp.firstChild);
+      }
+      grid.appendChild(fragment);
+
+      const remaining = total - loadedCount;
+      document.getElementById('animeCount').textContent = remaining > 0
+        ? `${loadedCount} of ${total} animes`
+        : `${total} anime${total !== 1 ? 's' : ''}`;
+    }
+
+    function updateSentinel() {
+      const sentinel = document.getElementById('infSentinel');
+      if (loadedCount < displayedAnime.length) {
+        sentinel.classList.remove('hidden');
+        observeSentinel();
+      } else {
+        sentinel.classList.add('hidden');
+        disconnectSentinel();
+      }
+    }
+
+    function observeSentinel() {
+      disconnectSentinel();
+      const sentinel = document.getElementById('infSentinel');
+      if (!sentinel || sentinel.classList.contains('hidden')) return;
+      sentinelObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !isLoadingMore) {
+          loadMoreBatch();
+        }
+      }, { rootMargin: '400px 0px' });
+      sentinelObserver.observe(sentinel);
+    }
+
+    function disconnectSentinel() {
+      if (sentinelObserver) { sentinelObserver.disconnect(); sentinelObserver = null; }
+    }
+
+    let heroSlides = [], heroIndex = 0, heroTimer = null, heroPaused = false, isTransitioning = false;
+    const HERO_INTERVAL = 8000, TRANSITION_MS = 1200;
+
+    function shortestDir(from, to, total) {
+      return ((to - from + total) % total) <= ((from - to + total) % total) ? 'next' : 'prev';
+    }
+
+    function buildSlideHTML(a, idx) {
+      return `
+        <div class="hero-slide ${idx === 0 ? 'active' : ''}" data-slide="${idx}">
+          <img src="${a.image}" alt="" class="absolute inset-0 w-full h-full object-cover object-center" onerror="handleImgError(this)">
+          <div class="hero-gradient absolute inset-0"></div>
+          <div class="hero-bottom absolute bottom-0 left-0 right-0 h-44"></div>
+          <div class="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col justify-end h-full pb-16 lg:pr-[300px] xl:pr-[360px] 2xl:pr-[400px]" style="min-height:520px">
+            <div class="max-w-2xl">
+              <div class="hero-anim-item" style="--d:0.18s">
+                <div class="flex items-center gap-3 mb-3 flex-wrap">
+                  ${a.tear ? `<span class="px-2.5 py-0.5 bg-aw-accent/20 text-aw-accentL text-xs font-bold rounded-md border border-aw-accent/30">TIER ${a.tear}</span>` : ''}
+                  <span class="text-aw-muted text-sm"><i class="fas fa-star text-yellow-500 mr-1"></i>${a.rating || 'N/A'}</span>
+                  <span class="text-aw-muted text-sm">${a.year || ''}</span>
+                  ${a.episodes ? `<span class="text-aw-muted text-sm">${a.episodes} Ep</span>` : ''}
+                  ${a.studio ? `<span class="text-aw-muted text-sm hidden sm:inline">${a.studio}</span>` : ''}
+                </div>
+              </div>
+              <div class="hero-anim-item" style="--d:0.28s">
+                <h1 class="font-display text-3xl sm:text-5xl xl:text-6xl text-aw-fg mb-2 leading-tight" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${a.name}</h1>
+              </div>
+              ${a.altName ? `<div class="hero-anim-item" style="--d:0.38s"><p class="text-aw-muted text-sm mb-3">${a.altName}</p></div>` : ''}
+              <div class="hero-anim-item" style="--d:0.48s">
+                <p class="text-aw-fg/75 text-sm sm:text-base mb-6 line-clamp-2 sm:line-clamp-3 leading-relaxed">${a.review || ''}</p>
+              </div>
+              <div class="hero-anim-item" style="--d:0.58s">
+                <div class="flex gap-3 flex-wrap">
+                  <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1" class="inline-flex items-center gap-2 bg-aw-accent hover:bg-aw-accentD text-white font-semibold px-6 py-2.5 rounded-lg transition-colors shadow-lg shadow-aw-accent/25"><i class="fas fa-play text-sm"></i> Watch Now</a>
+                  <a href="anime.html?id=${encodeURIComponent(a.id)}" class="inline-flex items-center gap-2 bg-aw-bg2/80 hover:bg-aw-card border border-aw-border text-aw-fg font-medium px-6 py-2.5 rounded-lg transition-colors backdrop-blur-sm"><i class="fas fa-info-circle text-sm"></i> Details</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-poster-wrap hidden lg:block absolute right-5 xl:right-12 2xl:right-16 bottom-16 z-10 w-52 xl:w-60 2xl:w-64" id="heroPoster${idx}">
+            <div class="relative rounded-2xl overflow-hidden border border-white/[0.08]" style="aspect-ratio:2/3;box-shadow:0 30px 70px -15px rgba(0,0,0,0.75),0 0 0 1px rgba(255,255,255,0.04) inset,0 0 50px -10px rgba(230,57,70,0.08)">
+              <img src="${a.image}" alt="${a.name}" class="w-full h-full object-cover" onerror="handleImgError(this)">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none"></div>
+              <div class="absolute inset-0 rounded-2xl pointer-events-none" style="box-shadow:inset 0 1px 0 rgba(255,255,255,0.06)"></div>
+            </div>
+            <div class="absolute -bottom-4 left-1/2 -translate-x-1/2 w-4/5 h-8 bg-aw-accent/10 blur-2xl rounded-full pointer-events-none"></div>
+          </div>
+        </div>`;
+    }
+
+    function renderHero() {
+      const heroEligible = allAnime.filter(a => isRunning(a) || (a.state || '').toLowerCase() === 'watched');
+      heroSlides = shuffleArray(heroEligible).slice(0, Math.min(10, heroEligible.length));
+      heroIndex = 0;
+      if (!heroSlides.length) return;
+      document.getElementById('heroContent').innerHTML = `
+        <div class="hero-slider-wrap relative w-full overflow-hidden" style="min-height:520px" id="heroSliderWrap">
+          <div id="heroSlider" class="relative w-full" style="min-height:520px">
+            ${heroSlides.map((a, i) => buildSlideHTML(a, i)).join('')}
+          </div>
+          <button id="heroPrev" class="hero-arrow absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/50 text-white flex items-center justify-center text-base sm:text-lg border border-white/10 backdrop-blur-sm" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+          <button id="heroNext" class="hero-arrow absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/50 text-white flex items-center justify-center text-base sm:text-lg border border-white/10 backdrop-blur-sm" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+          <div id="heroDots" class="absolute bottom-7 left-4 sm:left-6 z-30 flex items-center gap-2">
+            ${heroSlides.map((_, i) => `<button class="hero-dot h-2 rounded-full ${i === 0 ? 'active w-6 bg-aw-accent' : 'w-2 bg-white/30 hover:bg-white/50'} transition-all" data-i="${i}" aria-label="Slide ${i + 1}"></button>`).join('')}
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10 z-30">
+            <div id="heroProgressBar" class="h-full bg-aw-accent hero-progress-bar"></div>
+          </div>
+        </div>`;
+      bindHeroEvents();
+      startHeroTimer();
+    }
+
+    function goToSlide(idx, dir) {
+      if (idx === heroIndex || isTransitioning) return;
+      if (!dir) dir = shortestDir(heroIndex, idx, heroSlides.length);
+      isTransitioning = true;
+      const slides = document.querySelectorAll('.hero-slide');
+      slides[heroIndex].classList.remove('active');
+      slides[heroIndex].classList.add(dir === 'next' ? 'leaving-left' : 'leaving-right');
+      const incoming = slides[idx];
+      incoming.classList.add(dir === 'next' ? 'entering-right' : 'entering-left');
+      void incoming.offsetHeight;
+      incoming.classList.add('active');
+      incoming.classList.remove(dir === 'next' ? 'entering-right' : 'entering-left');
+      const oldIndex = heroIndex;
+      heroIndex = idx;
+      updateDots();
+      resetProgressBar();
+      setTimeout(() => { slides[oldIndex].classList.remove('leaving-left', 'leaving-right'); isTransitioning = false; }, TRANSITION_MS);
+    }
+
+    function nextSlide() { goToSlide((heroIndex + 1) % heroSlides.length, 'next'); }
+    function prevSlide() { goToSlide((heroIndex - 1 + heroSlides.length) % heroSlides.length, 'prev'); }
+
+    function updateDots() {
+      document.querySelectorAll('.hero-dot').forEach((d, i) => {
+        if (i === heroIndex) { d.classList.add('active', 'w-6', 'bg-aw-accent'); d.classList.remove('w-2', 'bg-white/30'); }
+        else { d.classList.remove('active', 'w-6', 'bg-aw-accent'); d.classList.add('w-2', 'bg-white/30'); }
+      });
+    }
+
+    function resetProgressBar() {
+      const bar = document.getElementById('heroProgressBar');
+      if (!bar) return;
+      bar.style.animation = 'none';
+      bar.offsetHeight;
+      bar.style.animation = 'heroProgressFill 8s linear forwards';
+    }
+
+    function startHeroTimer() { stopHeroTimer(); resetProgressBar(); heroTimer = setInterval(() => { if (!heroPaused && !isTransitioning) nextSlide(); }, HERO_INTERVAL); }
+    function stopHeroTimer() { if (heroTimer) { clearInterval(heroTimer); heroTimer = null; } }
+
+    function bindHeroEvents() {
+      const wrap = document.getElementById('heroSliderWrap');
+      document.getElementById('heroPrev').addEventListener('click', e => { e.stopPropagation(); prevSlide(); startHeroTimer(); });
+      document.getElementById('heroNext').addEventListener('click', e => { e.stopPropagation(); nextSlide(); startHeroTimer(); });
+      document.querySelectorAll('.hero-dot').forEach(d => d.addEventListener('click', () => { goToSlide(parseInt(d.dataset.i)); startHeroTimer(); }));
+
+      wrap.addEventListener('mousemove', e => {
+        const rect = wrap.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        const poster = document.getElementById('heroPoster' + heroIndex);
+        if (poster) {
+          poster.style.transform = `translate(${x * 15}px, ${y * 10}px) rotateY(${x * 6}deg) rotateX(${-y * 4}deg)`;
+          poster.style.transition = 'transform 0.15s ease-out';
+        }
+      });
+      wrap.addEventListener('mouseleave', () => {
+        const poster = document.getElementById('heroPoster' + heroIndex);
+        if (poster) { poster.style.transform = ''; poster.style.transition = 'transform 0.5s ease-out'; }
+      });
+
+      wrap.addEventListener('mouseenter', () => { heroPaused = true; });
+      wrap.addEventListener('mouseleave', () => { heroPaused = false; });
+
+      let touchStartX = 0, touchStartY = 0, touchMoved = false;
+      wrap.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; touchMoved = false; heroPaused = true; }, { passive: true });
+      wrap.addEventListener('touchmove', e => { const dx = e.touches[0].clientX - touchStartX; const dy = e.touches[0].clientY - touchStartY; if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) touchMoved = true; }, { passive: true });
+      wrap.addEventListener('touchend', e => { heroPaused = false; if (!touchMoved) return; const dx = e.changedTouches[0].clientX - touchStartX; if (Math.abs(dx) < 40) return; dx < 0 ? nextSlide() : prevSlide(); startHeroTimer(); }, { passive: true });
+
+      wrap.setAttribute('tabindex', '0');
+      wrap.addEventListener('keydown', e => { if (e.key === 'ArrowRight') { nextSlide(); startHeroTimer(); } if (e.key === 'ArrowLeft') { prevSlide(); startHeroTimer(); } });
+    }
+
+    function goRandom() {
+      if (!allAnime.length) return;
+      const pool = allAnime.filter(a => { const s = (a.state || '').toLowerCase(); return s !== 'planned' && s !== 'upcoming' && s !== 'plan_to_watch' && s !== 'plan'; });
+      if (!pool.length) {
+        showToast('No anime data available', 'error');
+        return;
+      }
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      showToast(`Random pick: ${a.name}`, 'info');
+      setTimeout(() => { window.location.href = 'anime.html?id=' + encodeURIComponent(a.id); }, 600);
+    }
+    document.getElementById('randomBtn').addEventListener('click', goRandom);
+
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', debounce(() => {
+      backToTop.classList.toggle('show', window.scrollY > 600);
+    }, 50), { passive: true });
+    backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+    document.addEventListener('keydown', function(e) {
+      // Check if any overlay is open
+      var settingsOpen = document.getElementById('settingsOverlay').classList.contains('open');
+      var mobileSearchOpen = document.getElementById('mobileSearchOverlay').classList.contains('open');
+      var sortOpen = document.getElementById('sortDropdown').classList.contains('open');
+      var csOpen = document.getElementById('csOverlay').classList.contains('open');
+      var shortsOpen = document.getElementById('shortsOverlay').classList.contains('open');
+      var overlayOpen = settingsOpen || mobileSearchOpen || sortOpen || csOpen || shortsOpen;
+      
+      if (overlayOpen) {
+        if (e.key === 'Escape') {
+          if (settingsOpen) closeSettings();
+          else if (mobileSearchOpen) closeMobileSearch();
+          else if (csOpen) closeComingSoon();
+          else if (shortsOpen) closeShortsPanel();
+          else if (sortOpen) document.getElementById('sortDropdown').classList.remove('open');
+        }
+        return;
+      }
+      
+      // Check if typing in input/textarea
+      var tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') {
+        if (e.key === 'Escape') { 
+          document.activeElement.blur(); 
+          closeSuggestions(); 
+        }
+        return;
+      }
+      
+      var key = e.key;
+      
+      // Slash - Focus search (desktop only)
+      if (key === '/') {
+        e.preventDefault();
+        if (searchInput && window.innerWidth >= 1024) {
+          searchInput.focus();
+        } else if (window.innerWidth < 1024) {
+          openMobileSearch();
+        }
+        return;
+      }
+      
+      // Escape - Close suggestions/clear search
+      if (key === 'Escape') {
+        closeSuggestions();
+        if (searchInput && searchInput.value) {
+          searchInput.value = '';
+          searchClear.classList.remove('show');
+          searchHint.classList.remove('hide');
+          applySortAndFilter();
+        }
+        return;
+      }
+      
+      // Letter shortcuts - Desktop only with Alt modifier to avoid conflicts
+      if (window.innerWidth < 1024 || !e.altKey) return;
+      
+      if (key === 'r' || key === 'R') { 
+        e.preventDefault();
+        goRandom(); 
+      } 
+      else if (key === 'm' || key === 'M') { 
+        e.preventDefault();
+        toggleSidebar(); 
+      }
+      else if (key === 'n' || key === 'N') { 
+        e.preventDefault();
+        handleNotif(); 
+      }
+      else if (key === 'h' || key === 'H') { 
+        e.preventDefault();
+        window.scrollTo({top:0,behavior:'smooth'}); 
+        document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active')}); 
+        var hb = document.querySelector('.sb-btn[data-sb="home"]'); 
+        if(hb) hb.classList.add('active'); 
+      }
+      else if (key === 's' || key === 'S') { 
+        e.preventDefault();
+        window.location.href = 'save.html'; 
+      }
+    });
+
+    function initScrollReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+    }
+
+    function renderAll() {
+      renderHero();
+      renderStats();
+      renderHistory();
+      renderHorizontalRows();
+      renderGenreFilters();
+      initSort();
+      applySortAndFilter();
+      updateSaveBadge();
+      updateSaveDirtyIndicator();
+      initNavRandomBtn();
+      requestAnimationFrame(() => requestAnimationFrame(initScrollReveal));
+    }
+
+    // ── Mobile Search ──────────────────────────────────────────
+    (function(){
+      var msTimer=null,msHlIdx=-1,msSugs_arr=[];
+      var msInput=document.getElementById('mobileSearchInput');
+      var msClear=document.getElementById('mobileSearchClear');
+      var msSugsEl=document.getElementById('mobileSearchSugs');
+      var msEmpty=document.getElementById('mobileSearchEmpty');
+      var msGrid=document.getElementById('mobileSearchGrid');
+      var msOverlay=document.getElementById('mobileSearchOverlay');
+
+      window.openMobileSearch=function(){
+        msOverlay.classList.add('open');
+        document.body.style.overflow='hidden';
+        setTimeout(function(){msInput.focus()},350);
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===1)});
+        history.pushState({overlay:'search'},'');
+      };
+      window.closeMobileSearch=function(){
+        if(isClosingOverlay)return;
+        isClosingOverlay=true;
+        msOverlay.classList.remove('open');
+        document.body.style.overflow='';
+        history.back();
+        setTimeout(function(){
+          msInput.value='';msClear.classList.remove('show');msSugsEl.innerHTML='';
+          msEmpty.classList.remove('hidden');msGrid.innerHTML='';
+          msSugs_arr=[];msHlIdx=-1;
+          document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+          isClosingOverlay=false;
+        },350);
+      };
+
+      function msFilter(){
+        clearTimeout(msTimer);
+        msTimer=setTimeout(function(){
+          var q=msInput.value.trim().toLowerCase();
+          msSugsEl.innerHTML='';
+          if(!q){msEmpty.classList.remove('hidden');msGrid.innerHTML='';return}
+          msEmpty.classList.add('hidden');
+          msGrid.innerHTML='<div class="col-span-full flex flex-col items-center py-16"><div class="inf-spinner mb-3"></div><span class="text-aw-muted text-xs">Searching...</span></div>';
+          var f=allAnime.filter(function(a){
+            var h=[a.name,a.altName,a.studio,a.year].concat(a.genre||[],a.tags||[]).join(' ').toLowerCase();
+            return h.includes(q);
+          });
+          if(!f.length){msGrid.innerHTML='<div class="col-span-full text-center py-16 px-6"><div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-aw-card border border-aw-border mb-5"><i class="fas fa-ghost text-3xl text-aw-border"></i></div><p class="text-aw-fg text-base font-semibold mb-2">No Results</p><p class="text-aw-muted text-sm">Try different keywords or check spelling</p></div>';return}
+          msGrid.innerHTML=f.map(function(a){return buildCardHTML(a)}).join('');
+        },150);
+      }
+
+      function msShowSugs(q){
+        if(!q||q.length<1){msSugsEl.innerHTML='';msSugs_arr=[];msHlIdx=-1;return}
+        var lq=q.toLowerCase().trim();
+        var m=allAnime.filter(function(a){
+          var h=[a.name,a.altName,a.studio].concat(a.genre||[],a.tags||[]).join(' ').toLowerCase();
+          return h.includes(lq);
+        }).slice(0,8);
+        if(!m.length){msSugsEl.innerHTML='';msSugs_arr=[];return}
+        msSugs_arr=m;msHlIdx=-1;
+        msSugsEl.innerHTML=m.map(function(a,i){
+          var dn=a.name.length>50?a.name.slice(0,50)+'...':a.name;
+          var mp=[];
+          if(a.year)mp.push(a.year);
+          if(a.genre&&a.genre.length)mp.push(a.genre[0]);
+          if(a.episodes)mp.push(a.episodes+' Ep');
+          return '<div class="search-suggestion" data-msi="'+i+'" data-msid="'+a.id+'"><img src="'+a.image+'" alt="" loading="lazy" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">'+highlightMatch(dn,lq)+'</div><div class="sg-meta">'+mp.join(' · ')+'</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+        }).join('');
+        msSugsEl.querySelectorAll('.search-suggestion').forEach(function(el){
+          el.addEventListener('mousedown',function(e){e.preventDefault()});
+          el.addEventListener('touchstart',function(e){
+            el.classList.add('touched');
+          },{passive:true});
+          el.addEventListener('touchend',function(e){
+            el.classList.remove('touched');
+            closeMobileSearch();
+            window.location.href='anime.html?id='+encodeURIComponent(el.dataset.msid);
+          });
+          el.addEventListener('click',function(e){
+            closeMobileSearch();
+            window.location.href='anime.html?id='+encodeURIComponent(el.dataset.msid);
+          });
+        });
+      }
+
+      function msUpdateHl(){
+        msSugsEl.querySelectorAll('.search-suggestion').forEach(function(el,i){
+          el.classList.toggle('highlighted',i===msHlIdx);
+          if(i===msHlIdx)el.scrollIntoView({block:'nearest'});
+        });
+      }
+
+      msInput.addEventListener('input',function(){
+        var v=msInput.value;
+        msClear.classList.toggle('show',v.length>0);
+        clearTimeout(msTimer);
+        msTimer=setTimeout(function(){msShowSugs(v)},150);
+      });
+      msClear.addEventListener('mousedown',function(e){e.preventDefault()});
+      msClear.addEventListener('click',function(){
+        msInput.value='';msClear.classList.remove('show');msSugsEl.innerHTML='';
+        msEmpty.classList.remove('hidden');msGrid.innerHTML='';msInput.focus();
+        msSugs_arr=[];msHlIdx=-1;
+      });
+      function renderMobilePopularTags(){
+        var tags=['Action','Romance','Fantasy','Comedy','Isekai','Adventure','Drama'];
+        var el=document.getElementById('mobilePopularTags');
+        if(!el)return;
+        el.innerHTML=tags.map(function(t){
+          return '<button class="px-3 py-1.5 rounded-full bg-aw-card border border-aw-border text-xs text-aw-muted active:bg-aw-accent active:text-white active:border-aw-accent transition-colors" onclick="document.getElementById(\'mobileSearchInput\').value=\''+t+'\';document.getElementById(\'mobileSearchInput\').dispatchEvent(new Event(\'input\'))">'+t+'</button>';
+        }).join('');
+      }
+      renderMobilePopularTags();
+
+      document.getElementById('mobileSearchBody').addEventListener('touchstart',function(e){
+        if(document.activeElement===msInput){
+          msInput.blur();
+        }
+      },{passive:true});
+
+      msInput.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){
+          e.preventDefault();
+          if(msHlIdx>=0&&msSugs_arr[msHlIdx]){closeMobileSearch();window.location.href='anime.html?id='+encodeURIComponent(msSugs_arr[msHlIdx].id);return}
+          msSugsEl.innerHTML='';
+          msEmpty.classList.add('hidden');
+          msFilter();
+        }else if(e.key==='Escape'){closeMobileSearch()}
+        else if(e.key==='ArrowDown'){e.preventDefault();if(msSugs_arr.length){msHlIdx=(msHlIdx+1)%msSugs_arr.length;msUpdateHl()}}
+        else if(e.key==='ArrowUp'){e.preventDefault();if(msSugs_arr.length){msHlIdx=(msHlIdx-1+msSugs_arr.length)%msSugs_arr.length;msUpdateHl()}}
+      });
+    })();
+
+    function handleSbShorts(btn){
+      if(window.innerWidth>=1024){
+        openComingSoon('Shorts','fa-clapperboard','Shorts','Short-form anime clips are currently under development. Stay tuned for updates!');
+        setSbActive(btn);
+      }else{
+        openShortsPanel();
+        setSbActive(btn);
+      }
+    }
+    (function(){
+      var overlay=document.getElementById('csOverlay');
+      var backdrop=document.getElementById('csBackdrop');
+      window.openComingSoon=function(title,icon,heading,desc){
+        document.getElementById('csTitle').textContent=title||'Coming Soon';
+        document.getElementById('csIcon').className='fas '+(icon||'fa-clapperboard')+' text-3xl text-aw-border';
+        document.getElementById('csHeading').textContent=heading||'Coming Soon';
+        document.getElementById('csDesc').textContent=desc||'This feature is currently under development. Stay tuned for updates!';
+        overlay.classList.add('open');
+        backdrop.classList.add('show');
+        document.body.style.overflow='hidden';
+        history.pushState({overlay:'comingsoon'},'');
+        trapFocus(overlay);
+      };
+      window.closeComingSoon=function(){
+        if(isClosingOverlay)return;
+        isClosingOverlay=true;
+        try {
+          overlay.classList.remove('open');
+          backdrop.classList.remove('show');
+          document.body.style.overflow='';
+          history.back();
+        } finally {
+          setTimeout(function(){
+            document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+            isClosingOverlay=false;
+          },350);
+        }
+      };
+      backdrop.addEventListener('click',function(){closeComingSoon()});
+    })();
+    (function(){
+      var overlay=document.getElementById('settingsOverlay');
+      var backdrop=document.getElementById('settingsBackdrop');
+      window.openSettings=function(){
+        overlay.classList.add('open');
+        backdrop.classList.add('show');
+        document.body.style.overflow='hidden';
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===4)});
+        history.pushState({overlay:'settings'},'');
+        animateCounters();
+        trapFocus(overlay);
+      };
+      window.closeSettings=function(){
+        if(isClosingOverlay)return;
+        isClosingOverlay=true;
+        try {
+          overlay.classList.remove('open');
+          backdrop.classList.remove('show');
+          document.body.style.overflow='';
+          document.querySelectorAll('.st-item.confirming').forEach(function(i){i.classList.remove('confirming')});
+          history.back();
+        } finally {
+          setTimeout(function(){
+            document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+            isClosingOverlay=false;
+          },350);
+        }
+      };
+      backdrop.addEventListener('click',function(){closeSettings()});
+      window.showStConfirm=function(el,msg,action){
+        document.querySelectorAll('.st-item.confirming').forEach(function(i){i.classList.remove('confirming')});
+        el.classList.add('confirming');
+        el.querySelector('.st-item-confirm p').textContent=msg;
+        el.querySelector('.st-item-confirm .st-yes').onclick=function(e){e.stopPropagation();el.classList.remove('confirming');action()};
+      };
+      window.hideStConfirm=function(btn){
+        btn.closest('.st-item').classList.remove('confirming');
+      };
+      window.confirmClearHistory=function(){
+        saveWatchHistory([]);
+        historyEditMode=false;
+        renderHistory();
+        showToast('Watch history cleared','success');
+      };
+      window.confirmClearSaved=function(){
+        setSaved([]);
+        updateSaveBadge();
+        showToast('Saved list cleared','success');
+      };
+    })();
+
+    var randomLPTimer=null,randomConfirming=false;
+    var randomLPStartX=0,randomLPStartY=0;
+    function startRandomLongPress(e){
+      if(e.button!==0)return;
+      randomConfirming=false;
+      randomLPStartX=e.clientX;
+      randomLPStartY=e.clientY;
+      var isAdded=isRandomAdded();
+      randomLPTimer=setTimeout(function(){
+        randomConfirming=true;
+        var item=document.getElementById('randomSettingsItem');
+        item.classList.add('confirming','random-active');
+        var confirmP=item.querySelector('.st-random-confirm p');
+        confirmP.textContent=isAdded?'Remove Shortcut?':'Add Shortcut?';
+        item.querySelector('.st-yes').onclick=function(ev){
+          ev.stopPropagation();
+          this.dataset.clicked='1';
+          hideRandomConfirm();
+          if(isAdded){
+            localStorage.removeItem(rKey());
+            hideNavRandomBtn();
+            showToast('Random button removed','info');
+          }else{
+            localStorage.setItem(rKey(),'true');
+            showNavRandomBtn();
+            showToast('Random button added','success');
+          }
+        };
+      },500);
+    }
+    function cancelRandomLongPress(){
+      clearTimeout(randomLPTimer);
+    }
+    function hideRandomConfirm(){
+      randomConfirming=false;
+      var item=document.getElementById('randomSettingsItem');
+      if(item){
+        item.classList.remove('confirming','random-active');
+        var yesBtn=item.querySelector('.st-yes');
+        if(yesBtn)delete yesBtn.dataset.clicked;
+      }
+    }
+    function showNavRandomBtn(){
+      var btn=document.getElementById('mobileRandomBtn');
+      if(btn)btn.classList.remove('hidden');
+      var sbBtn=document.querySelector('#sidebar .sb-btn[data-sb="random"]');
+      if(sbBtn)sbBtn.style.display='';
+    }
+    function hideNavRandomBtn(){
+      var btn=document.getElementById('mobileRandomBtn');
+      if(btn)btn.classList.add('hidden');
+      var sbBtn=document.querySelector('#sidebar .sb-btn[data-sb="random"]');
+      if(sbBtn)sbBtn.style.display='none';
+    }
+    function isDesktop(){return window.innerWidth>=1024}
+    function rKey(){return 'aw_nav_random'}
+    function rDef(){return false}
+    function isRandomAdded(){
+      var stored=localStorage.getItem(rKey());
+      if(stored===null)return rDef();
+      return stored==='true';
+    }
+    function initNavRandomBtn(){
+      if(isRandomAdded())showNavRandomBtn();else hideNavRandomBtn();
+    }
+
+    (function(){
+      var toggle=document.getElementById('themeToggle');
+      var icon=document.getElementById('themeIcon');
+      var desc=document.querySelector('.st-item-text .st-item-desc');
+
+      var themeMeta=document.querySelector('meta[name="theme-color"]');
+      function applyTheme(light){
+        if(light){
+          document.documentElement.classList.add('light');
+          toggle.classList.add('active');
+          icon.innerHTML='<i class="fas fa-moon"></i>';
+          if(desc)desc.textContent='Switch to dark theme';
+          if(themeMeta)themeMeta.setAttribute('content','#ffffff');
+        }else{
+          document.documentElement.classList.remove('light');
+          toggle.classList.remove('active');
+          icon.innerHTML='<i class="fas fa-sun"></i>';
+          if(desc)desc.textContent='Switch to light theme';
+          if(themeMeta)themeMeta.setAttribute('content','#0a0a0a');
+        }
+      }
+
+      function getTheme(){
+        var stored=localStorage.getItem('aw_theme');
+        if(stored)return stored==='light';
+        return false;
+      }
+
+      applyTheme(getTheme());
+
+      window.toggleTheme=function(){
+        var isLight=document.documentElement.classList.contains('light');
+        var next=!isLight;
+        localStorage.setItem('aw_theme',next?'light':'dark');
+        applyTheme(next);
+        showToast(next?'Light mode enabled':'Dark mode enabled','info');
+      };
+    })();
+
+    (function(){
+      var toggle=document.getElementById('navSearchToggle');
+      var btn=document.getElementById('mobileNavSearchBtn');
+      var sbBtn=document.querySelector('#sidebar .sb-btn[data-sb="search"]');
+
+      function isDesktop(){return window.innerWidth>=1024}
+      function sKey(){return isDesktop()?'aw_nav_search_d':'aw_nav_search_m'}
+      function sDef(){return isDesktop()?false:true}
+
+      function applyNavSearch(show){
+        if(show){
+          toggle.classList.add('active');
+          if(btn)btn.classList.remove('hidden');
+          if(sbBtn)sbBtn.style.display='';
+        }else{
+          toggle.classList.remove('active');
+          if(btn)btn.classList.add('hidden');
+          if(sbBtn)sbBtn.style.display='none';
+        }
+      }
+
+      function getNavSearch(){
+        var stored=localStorage.getItem(sKey());
+        if(stored===null)return sDef();
+        return stored==='true';
+      }
+
+      applyNavSearch(getNavSearch());
+
+      window.toggleNavSearch=function(){
+        var current=getNavSearch();
+        var next=!current;
+        localStorage.setItem(sKey(),next?'true':'false');
+        applyNavSearch(next);
+        showToast(next?'Search button shown':'Search button hidden','info');
+      };
+    })();
+
+    (function(){
+      var toggle=document.getElementById('notifToggle');
+      var navBtn=document.getElementById('notifBtn');
+      var sbBtn=document.getElementById('sbNotifBtn');
+
+      function isDesktop(){return window.innerWidth>=1024}
+      function nKey(){return 'aw_notif_top'}
+      function nDef(){return true}
+
+      function applyNotifPos(onTop){
+        var item=document.getElementById('notifSettingsItem');
+        if(!isDesktop()){
+          if(navBtn)navBtn.style.display='';
+          if(sbBtn)sbBtn.style.display='none';
+          if(toggle)toggle.classList.add('active');
+          if(item)item.style.display='none';
+          return;
+        }
+        if(item)item.style.display='';
+        if(onTop){
+          if(navBtn)navBtn.style.display='';
+          if(sbBtn)sbBtn.style.display='none';
+          if(toggle)toggle.classList.add('active');
+        }else{
+          if(navBtn)navBtn.style.display='none';
+          if(sbBtn)sbBtn.style.display='';
+          if(toggle)toggle.classList.remove('active');
+        }
+      }
+
+      function getNotifPos(){
+        var stored=localStorage.getItem(nKey());
+        if(stored===null)return nDef();
+        return stored==='true';
+      }
+
+      applyNotifPos(getNotifPos());
+
+      window.toggleNotifPos=function(){
+        var current=getNotifPos();
+        var next=!current;
+        localStorage.setItem(nKey(),next?'true':'false');
+        applyNotifPos(next);
+        showToast(next?'Notification moved to top bar':'Notification moved to sidebar','info');
+      };
+
+      window.addEventListener('resize',function(){
+        applyNotifPos(getNotifPos());
+      });
+    })();
+
+    (function(){
+      var overlay=document.getElementById('shortsOverlay');
+      window.openShortsPanel=function(){
+        overlay.classList.add('open');
+        document.body.style.overflow='hidden';
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===2)});
+        history.pushState({overlay:'shorts'},'');
+        trapFocus(overlay);
+      };
+      window.closeShortsPanel=function(){
+        if(isClosingOverlay)return;
+        isClosingOverlay=true;
+        try {
+          overlay.classList.remove('open');
+          document.body.style.overflow='';
+          history.back();
+        } finally {
+          setTimeout(function(){
+            document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+            isClosingOverlay=false;
+          },350);
+        }
+      };
+    })();
+
+    var isClosingOverlay=false;
+    function trapFocus(container) {
+      var focusable = container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      container.addEventListener('keydown', function(e) {
+        if (e.key !== 'Tab') return;
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      });
+    }
+    window.addEventListener('popstate',function(e){
+      if(isClosingOverlay)return;
+      var wn=document.getElementById('whatsNewOverlay');
+      var st=document.getElementById('settingsOverlay');
+      var ms=document.getElementById('mobileSearchOverlay');
+      if(wn && wn.classList.contains('open')){
+        wn.classList.remove('open');document.body.style.overflow='';
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+      }else if(document.getElementById('csOverlay').classList.contains('open')){
+        document.getElementById('csOverlay').classList.remove('open');document.body.style.overflow='';
+        document.getElementById('csBackdrop').classList.remove('show');
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+      }else if(st.classList.contains('open')){
+        st.classList.remove('open');document.body.style.overflow='';
+        document.getElementById('settingsBackdrop').classList.remove('show');
+        document.querySelectorAll('.st-item.confirming').forEach(function(i){i.classList.remove('confirming')});
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+      }else if(document.getElementById('shortsOverlay').classList.contains('open')){
+        document.getElementById('shortsOverlay').classList.remove('open');document.body.style.overflow='';
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+      }else if(ms.classList.contains('open')){
+        var msi=document.getElementById('mobileSearchInput');
+        var msc=document.getElementById('mobileSearchClear');
+        var mss=document.getElementById('mobileSearchSugs');
+        var mse=document.getElementById('mobileSearchEmpty');
+        var msg=document.getElementById('mobileSearchGrid');
+        ms.classList.remove('open');document.body.style.overflow='';
+        msi.value='';msc.classList.remove('show');mss.innerHTML='';
+        mse.classList.remove('hidden');msg.innerHTML='';
+        document.querySelectorAll('.mnav-btn').forEach(function(b,i){b.classList.toggle('active',i===0)});
+      }
+    });
+
+    (function(){
+      var sb=document.getElementById('sidebar'),btn=document.getElementById('sbToggle'),KEY='aw_sb_expanded';
+      function apply(v){sb.classList.toggle('expanded',v);btn.classList.toggle('active',v);document.body.classList.toggle('sb-expanded',v)}
+      function get(){return localStorage.getItem(KEY)==='true'}
+      function set(v){localStorage.setItem(KEY,v?'true':'false');apply(v)}
+      apply(get());
+      btn.addEventListener('click',function(e){e.stopPropagation();set(!get())});
+      window.toggleSidebar=function(){set(!get())};
+    })();
+
+    function setSbActive(btn){
+      document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+    }
+    var sbBtnsCached = null;
+    window.addEventListener('scroll',function(){
+      if(window.scrollY<100){
+        if(!sbBtnsCached) sbBtnsCached = document.querySelectorAll('.sb-btn');
+        sbBtnsCached.forEach(function(b){b.classList.remove('active')});
+        var h=document.querySelector('.sb-btn[data-sb="home"]');
+        if(h)h.classList.add('active');
+      }
+    },{passive:true});
+
+    document.addEventListener('load', function(e) {
+      if(e.target.tagName === 'IMG' && e.target.hasAttribute('loading')) {
+        e.target.classList.add('loaded');
+      }
+    }, true);
+
+    // ── What's New ──────────────────────────────────────────
+    var whatsNewData = [];
+    var wnIndex = 0;
+    
+    function loadWhatsNewData() {
+      // --- Fetch What's New Data ---
+      var whatsNewContainer = document.getElementById('whats-new-container');
+      
+      return fetch('tnew.json')
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          // Store for overlay usage
+          whatsNewData = data;
+          wnIndex = 0;
+          
+          // Render in scrollable container if it exists
+          if (whatsNewContainer) {
+            whatsNewContainer.innerHTML = '';
+            
+            if (!data || !data.length) {
+              document.getElementById('whatsNewSection').classList.add('hidden');
+              return;
+            }
+            
+            document.getElementById('whatsNewSection').classList.remove('hidden');
+            
+            data.forEach(function(item) {
+              var badgeColor = 'bg-emerald-500 text-white';
+              if (item.badge) {
+                switch(item.badge.toUpperCase()) {
+                  case 'NEW':
+                    badgeColor = 'bg-emerald-500 text-white';
+                    break;
+                  case 'IMPROVED':
+                    badgeColor = 'bg-blue-500 text-white';
+                    break;
+                  case 'FIXED':
+                    badgeColor = 'bg-amber-500 text-black';
+                    break;
+                  default:
+                    badgeColor = 'bg-aw-accent text-white';
+                }
+              }
+
+              var cardHTML = `
+                <div class="min-w-[280px] md:min-w-[320px] bg-neutral-900/50 border border-neutral-800/80 rounded-2xl overflow-hidden snap-start hover:border-aw-accent/30 transition-all duration-300 group">
+                  <div class="relative h-40 bg-neutral-800 overflow-hidden">
+                    <img src="${item.image}" class="wn-card-img w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 bg-neutral-900" data-mobile="${item.mobile || ''}" onerror="this.src='https://placehold.co/600x400/1a1a1a/a8ff35?text=AnimeWave'">
+                    ${item.badge ? `<span class="absolute top-3 right-3 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-md uppercase shadow-lg ${badgeColor}">${item.badge}</span>` : ''}
+                  </div>
+                  <div class="p-5">
+                    <h4 class="font-outfit font-semibold text-white text-base mb-1.5 line-clamp-1 group-hover:text-aw-accent transition-colors">${item.title}</h4>
+                    <p class="font-outfit text-xs text-neutral-400 line-clamp-2 leading-relaxed">${item.description}</p>
+                  </div>
+                </div>
+              `;
+              whatsNewContainer.insertAdjacentHTML('beforeend', cardHTML);
+            });
+
+            // Swap to mobile images on small screens
+            if (window.innerWidth < 1024) {
+              whatsNewContainer.querySelectorAll('.wn-card-img[data-mobile]').forEach(function(img) {
+                if (img.dataset.mobile) img.src = img.dataset.mobile;
+              });
+            }
+          }
+        })
+        .catch(function(error) {
+          console.error('Error loading What\'s New features:', error);
+          if (whatsNewContainer) {
+            whatsNewContainer.innerHTML = '<p class="text-neutral-500 text-xs p-4">Failed to load updates.</p>';
+          }
+          whatsNewData = [];
+        });
+    }
+    
+    function openWhatsNew() {
+      if (!whatsNewData.length) {
+        showToast('No new updates available', 'info');
+        return;
+      }
+      
+      var overlay = document.getElementById('whatsNewOverlay');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      
+      wnIndex = 0;
+      wnRenderSlide();
+      history.pushState({ overlay: 'whatsnew' }, '');
+      trapFocus(overlay);
+    }
+    
+    function closeWhatsNew() {
+      var overlay = document.getElementById('whatsNewOverlay');
+      if (isClosingOverlay) return;
+      isClosingOverlay = true;
+      try {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+        history.back();
+      } finally {
+        setTimeout(function() {
+          isClosingOverlay = false;
+        }, 350);
+      }
+    }
+    
+    function wnRenderSlide() {
+      if (!whatsNewData.length) return;
+      var item = whatsNewData[wnIndex];
+      var img = document.getElementById('wnImg');
+      var badge = document.getElementById('wnBadge');
+      var title = document.getElementById('wnTitle');
+      var desc = document.getElementById('wnDesc');
+      var story = document.getElementById('wnStory');
+      var prevBtn = document.getElementById('wnPrev');
+      var nextBtn = document.getElementById('wnNext');
+      var counter = document.getElementById('wnCounter');
+      var progress = document.getElementById('wnProgress');
+      var skipBtn = document.getElementById('wnSkipBtn');
+      
+      img.src = (window.innerWidth < 1024 && item.mobile) ? item.mobile : item.image;
+      
+      badge.textContent = item.badge || '';
+      var badgeType = (item.badge || '').toUpperCase();
+      badge.className = 'wn-badge ' + (badgeType === 'NEW' ? 'new-badge' : badgeType === 'IMPROVED' ? 'improved-badge' : 'fast-badge');
+      if (!item.badge) badge.style.display = 'none'; else badge.style.display = '';
+      title.textContent = item.title;
+      desc.textContent = item.description;
+      counter.textContent = (wnIndex + 1) + ' / ' + whatsNewData.length;
+      
+      // Update skip/done label
+      var closeBtn = document.getElementById('wnClose');
+      if (closeBtn) closeBtn.style.visibility = wnIndex >= whatsNewData.length - 1 ? 'visible' : 'hidden';
+      
+      // Update progress dots with animated fill
+      progress.innerHTML = whatsNewData.map(function(_, i) {
+        var cls = i < wnIndex ? 'filled' : i === wnIndex ? 'active' : '';
+        return '<div class="wn-dot ' + cls + '"><div class="wn-dot-fill"></div></div>';
+      }).join('');
+      
+      // Update button states
+      prevBtn.disabled = wnIndex === 0;
+      nextBtn.disabled = wnIndex >= whatsNewData.length - 1;
+      
+      // Reset animation
+      story.classList.remove('leaving');
+      story.classList.remove('active');
+      void story.offsetHeight;
+      story.classList.add('active');
+    }
+    
+    function wnNextSlide() {
+      if (wnIndex >= whatsNewData.length - 1) {
+        closeWhatsNew();
+        return;
+      }
+      var story = document.getElementById('wnStory');
+      story.classList.remove('active');
+      story.classList.add('leaving');
+      
+      wnIndex++;
+      setTimeout(function() {
+        story.classList.remove('leaving');
+        wnRenderSlide();
+      }, 300);
+    }
+    
+    function wnPrevSlide() {
+      if (wnIndex <= 0) return;
+      var story = document.getElementById('wnStory');
+      story.classList.remove('active');
+      story.classList.add('leaving');
+      
+      wnIndex--;
+      setTimeout(function() {
+        story.classList.remove('leaving');
+        wnRenderSlide();
+      }, 280);
+    }
+    
+    // Load What's New data on page load
+    loadWhatsNewData();
+
+    // Swap What's New card images on resize
+    window.addEventListener('resize', function() {
+      var container = document.getElementById('whats-new-container');
+      if (!container) return;
+      var isMobile = window.innerWidth < 1024;
+      container.querySelectorAll('.wn-card-img[data-mobile]').forEach(function(img) {
+        if (isMobile && img.dataset.mobile) {
+          img.src = img.dataset.mobile;
+        } else {
+          img.src = img.getAttribute('src').replace(/new\/mnew\//, 'new/dnew/');
+        }
+      });
+    });
+
+    loadData();
+
+    /* ====== Unread Notification Dot ====== */
+    function updateNotifUnreadDot(){
+      fetch('tnew.json')
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(data){
+          var hasNotif = Array.isArray(data) && data.length > 0;
+          var readState = {};
+          try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
+          var unread = hasNotif && !readState[0];
+          var navDot = document.getElementById('notifDot');
+          var sbDot = document.getElementById('sbNotifDot');
+          if(navDot) navDot.classList.toggle('hidden', !unread);
+          if(sbDot) sbDot.classList.toggle('hidden', !unread);
+        })
+        .catch(function(){});
+    }
+    updateNotifUnreadDot();
+  </script>
+</body>
+</html>
