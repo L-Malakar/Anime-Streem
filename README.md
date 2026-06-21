@@ -4,5 +4,5 @@ A anime streaming platform demo program.
 
 ## 🌐 Visit Our Websites (Demo)
 
-[![Anime Section](https://img.shields.io/badge/Anime_Stream-Crunchyroll_Orange-FF6600?style=for-the-badge&logo=crunchyroll&logoColor=white)](https://l-malakar.github.io/Anime-Streem/Anime/index)
-[![All Section](https://img.shields.io/badge/All_Collection-Purple?style=for-the-badge&logo=playstation5&logoColor=white)](https://l-malakar.github.io/Anime-Streem/All/index)
+[![Anime Stream](https://img.shields.io/badge/Anime_Stream-Hot_Pink-FF1493?style=for-the-badge&logo=plutotv&logoColor=white)](https://l-malakar.github.io/Anime-Streem/Anime/index)
+[![All Library](https://img.shields.io/badge/All_Library-VLC_Orange-FF8800?style=for-the-badge&logo=vlc&logoColor=white)](https://l-malakar.github.io/Anime-Streem/All/index)
