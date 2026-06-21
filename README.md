@@ -2,7 +2,7 @@
 ---
 A anime streaming platform demo program.
 
-## 🌐 Visit Our Websites(Demo)
+## 🌐 Visit Our Websites (Demo)
 
-[![Website 1](https://img.shields.io/badge/Main_Website-流-Blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://your-main-website.com)
-[![Website 2](https://img.shields.io/badge/Backup_Stream-Anime-Red?style=for-the-badge&logo=firefox&logoColor=white)](https://your-backup-website.com)
+[![Anime Section](https://img.shields.io/badge/Anime_Stream-Crunchyroll_Orange-FF6600?style=for-the-badge&logo=crunchyroll&logoColor=white)](https://l-malakar.github.io/Anime-Streem/Anime/index)
+[![All Section](https://img.shields.io/badge/All_Collection-Purple?style=for-the-badge&logo=playstation5&logoColor=white)](https://l-malakar.github.io/Anime-Streem/All/index)
