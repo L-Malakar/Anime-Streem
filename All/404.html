@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANIvalted — 404 Not Found</title>
+  <link rel="icon" type="image/png" href="logo.PNG" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Serif+JP:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{--bg:#080810;--surface:#0e0e1a;--surface2:#14141f;--border:rgba(255,255,255,0.06);--red:#e8321a;--red-glow:rgba(232,50,26,0.35);--gold:#f5c842;--text:#e8e8f0;--muted:#6b6b80;--font-display:'Bebas Neue',sans-serif;--font-jp:'Noto Serif JP',serif;--font-body:'Inter',sans-serif;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;}
+    .glitch-bg{position:fixed;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(232,50,26,0.06) 0%,transparent 70%);pointer-events:none;}
+    .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;animation:gridShift 8s linear infinite;}
+    @keyframes gridShift{0%{background-position:0 0}100%{background-position:60px 60px}}
+    nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;background:rgba(8,8,16,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+    .nav-logo{font-family:var(--font-display);font-size:1.8rem;letter-spacing:3px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:0.5rem;}
+    .nav-logo img{height:32px;object-fit:contain;}
+    .nav-logo span{color:var(--red);}
+    .content{position:relative;z-index:10;text-align:center;padding:2rem;animation:fadeIn 0.8s ease both;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .num-404{font-family:var(--font-display);font-size:clamp(8rem,20vw,18rem);line-height:0.85;letter-spacing:10px;color:transparent;-webkit-text-stroke:2px rgba(232,50,26,0.3);position:relative;user-select:none;}
+    .num-404::after{content:'404';position:absolute;inset:0;color:var(--red);opacity:0.06;filter:blur(20px);-webkit-text-stroke:0;}
+    .jp-text{font-family:var(--font-jp);font-size:1rem;color:var(--red);letter-spacing:4px;margin-bottom:1rem;opacity:0.7;}
+    .title-404{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.5rem);letter-spacing:6px;margin-bottom:1rem;}
+    .desc-404{font-size:1rem;color:var(--muted);max-width:480px;margin:0 auto 2.5rem;line-height:1.7;}
+    .btn-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+    .btn-primary{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:var(--red);color:#fff;border:none;border-radius:6px;font-family:var(--font-display);font-size:1.1rem;letter-spacing:3px;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+    .btn-primary:hover{background:#d02a14;transform:translateY(-2px);box-shadow:0 10px 30px var(--red-glow);}
+    .btn-ghost{display:inline-flex;align-items:center;gap:0.5rem;padding:0.85rem 2rem;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:6px;font-family:var(--font-display);font-size:1.1rem;letter-spacing:3px;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+    .btn-ghost:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+    .floaters{position:fixed;inset:0;pointer-events:none;overflow:hidden;}
+    .floater{position:absolute;font-family:var(--font-display);font-size:1.2rem;letter-spacing:3px;color:rgba(232,50,26,0.04);white-space:nowrap;animation:float linear infinite;}
+    @keyframes float{from{transform:translateY(110vh)}to{transform:translateY(-10vh)}}
+    .countdown{margin-top:2.5rem;font-size:0.75rem;color:var(--muted);letter-spacing:2px;}
+    .countdown span{color:var(--red);font-weight:600;}
+    @media(max-width:480px){nav{padding:0 1rem;}.num-404{font-size:8rem;}.nav-logo img{display:none;}}
+  </style>
+</head>
+<body>
+<div class="glitch-bg"></div>
+<div class="grid-bg"></div>
+<div class="floaters" id="floaters"></div>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="logo.PNG" alt="ANIvalted" onerror="this.style.display='none'" />
+    ANI<span>valted</span>
+  </a>
+</nav>
+
+<div class="content">
+  <div class="num-404">404</div>
+  <div class="jp-text">見つかりません — Not Found</div>
+  <h1 class="title-404">PAGE LOST IN THE VAULT</h1>
+  <p class="desc-404">This page doesn't exist in the vault. Maybe the link is broken, or this anime hasn't been catalogued yet.</p>
+  <div class="btn-group">
+    <a href="index.html" class="btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      HOME
+    </a>
+    <a href="suggestion.html" class="btn-ghost">SUGGEST ANIME</a>
+  </div>
+  <div class="countdown">Auto-redirecting to home in <span id="count">10</span>s</div>
+</div>
+
+<script>
+  const animeNames = ['ATTACK ON TITAN','DEMON SLAYER','ONE PIECE','NARUTO','BLEACH','JUJUTSU KAISEN','DEATH NOTE','FULLMETAL','HUNTER X HUNTER','MY HERO ACADEMIA','VINLAND SAGA','CHAINSAW MAN'];
+  const floaters = document.getElementById('floaters');
+  animeNames.forEach((name, i) => {
+    const el = document.createElement('div');
+    el.className = 'floater';
+    el.textContent = name;
+    el.style.left = `${(i / animeNames.length) * 100}%`;
+    el.style.animationDuration = `${15 + Math.random() * 20}s`;
+    el.style.animationDelay = `${-Math.random() * 20}s`;
+    floaters.appendChild(el);
+  });
+
+  let count = 10;
+  const countEl = document.getElementById('count');
+  setInterval(() => {
+    count--;
+    countEl.textContent = count;
+    if (count <= 0) window.location.href = 'index.html';
+  }, 1000);
+</script>
+<script src="miniplayer.js"></script>
+</body>
+</html>

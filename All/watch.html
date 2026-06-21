@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANIvalted — Watch</title>
+  <meta name="theme-color" content="#080810" />
+  <link rel="icon" type="image/png" href="logo.PNG" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080810; --surface: #0e0e1a; --surface2: #14141f; --surface3: #1a1a28;
+      --border: rgba(255,255,255,0.06); --border2: rgba(255,255,255,0.1);
+      --red: #e8321a; --red-glow: rgba(232,50,26,0.3);
+      --gold: #f5c842; --text: #e8e8f0; --muted: #6b6b80; --muted2: #9090a8;
+      --font-d: 'Bebas Neue', sans-serif; --font-b: 'Inter', sans-serif;
+      --nav-h: 60px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-b); min-height: 100vh; overflow-x: hidden; user-select: none; -webkit-user-select: none; }
+    input, textarea { user-select: text; -webkit-user-select: text; }
+    body::before { content:''; position:fixed; inset:0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:1000; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+
+    /* ══ NAV ══ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      height: var(--nav-h); background: rgba(8,8,16,0.95); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem; gap: 1rem;
+    }
+    .nav-left { display: flex; align-items: center; gap: 1rem; }
+    .nav-logo { font-family: var(--font-d); font-size: 1.5rem; letter-spacing: 3px; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.4rem; }
+    .nav-logo img { height: 28px; object-fit: contain; }
+    .nav-logo span { color: var(--red); }
+    .nav-sep { width: 1px; height: 20px; background: var(--border2); }
+    .nav-watch-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-back-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: var(--muted); text-decoration: none; font-size: 0.75rem;
+      font-weight: 500; letter-spacing: 1px; text-transform: uppercase;
+      transition: color 0.2s; padding: 0.35rem 0.75rem;
+      border: 1px solid var(--border); border-radius: 4px;
+      background: transparent; font-family: var(--font-b); cursor: pointer;
+    }
+    .nav-back-btn:hover { color: var(--text); border-color: var(--border2); }
+    .nav-user { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; }
+    .nav-user:hover { border-color: var(--red); }
+    .nav-user img { width:100%; height:100%; object-fit:cover; }
+    .nav-user svg { color: var(--muted); }
+
+    /* ══ MAIN LAYOUT ══ */
+    .page { padding-top: var(--nav-h); min-height: 100vh; display: flex; flex-direction: column; }
+    .watch-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.25rem 1.5rem 3rem;
+      width: 100%;
+      align-items: start;
+    }
+
+    /* ══ PLAYER COLUMN ══ */
+    .player-col { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; overflow: hidden; }
+
+    /* Video wrapper — strict 16:9 */
+    .video-wrap {
+      position: relative; width: 100%; padding-bottom: 56.25%; height: 0;
+      border-radius: 10px; overflow: hidden;
+      background: #000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px var(--border);
+    }
+    .video-wrap iframe {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;
+    }
+    .video-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1rem;
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    }
+    .video-placeholder svg { color: var(--muted); opacity: 0.4; }
+    .video-placeholder p { color: var(--muted); font-size: 0.85rem; letter-spacing: 1px; }
+
+    /* Info bar below player */
+    .player-info { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; overflow: hidden; }
+    .ep-label {
+      font-size: 0.65rem; color: var(--red); letter-spacing: 3px;
+      text-transform: uppercase; font-weight: 600;
+    }
+    .player-title {
+      font-family: var(--font-d); font-size: clamp(1.4rem, 3vw, 2rem);
+      letter-spacing: 3px; line-height: 1.1; color: var(--text);
+      word-break: break-word; overflow-wrap: break-word; min-width: 0;
+    }
+    .player-meta {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; min-width: 0;
+    }
+    .player-meta-item { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; }
+    .player-meta-item svg { flex-shrink: 0; }
+    .player-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; padding-top: 0.25rem; }
+    .pa-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1.1rem; border-radius: 4px; font-family: var(--font-d);
+      font-size: 0.9rem; letter-spacing: 2px; cursor: pointer;
+      text-decoration: none; transition: all 0.2s; border: 1px solid transparent;
+    }
+    .pa-btn.red { background: var(--red); color: #fff; }
+    .pa-btn.red:hover { background: #d02a14; box-shadow: 0 6px 20px var(--red-glow); transform: translateY(-1px); }
+    .pa-btn.ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+    .pa-btn.ghost:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.03); }
+    .pa-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+    /* Save to library button state */
+    .pa-btn.saved { background: rgba(245,200,66,0.12); color: var(--gold); border-color: rgba(245,200,66,0.35); }
+    .pa-btn.saved:hover { background: rgba(245,200,66,0.2); border-color: var(--gold); transform: translateY(-1px); }
+
+    /* Prev/Next nav */
+    .ep-nav { display: flex; gap: 0.75rem; align-items: center; }
+    .ep-nav-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted); font-family: var(--font-d);
+      font-size: 0.85rem; letter-spacing: 1.5px; cursor: pointer; transition: all 0.2s; text-decoration:none;
+    }
+    .ep-nav-btn:hover:not(:disabled) { color: var(--text); border-color: var(--border2); background: var(--surface3); }
+    .ep-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .ep-nav-sep { font-size: 0.7rem; color: var(--muted); letter-spacing: 1px; }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar-col { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: calc(var(--nav-h) + 1.25rem); max-height: calc(100vh - var(--nav-h) - 2.5rem); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--red) transparent; }
+    .sidebar-col::-webkit-scrollbar { width: 3px; }
+    .sidebar-col::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+
+    /* Anime info card */
+    .anime-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; text-decoration: none; color: var(--text); display: block;
+      transition: border-color 0.2s;
+    }
+    .anime-card:hover { border-color: rgba(232,50,26,0.3); }
+    .anime-card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; filter: brightness(0.85); }
+    .anime-card-body { padding: 1rem 1.25rem; }
+    .anime-card-title { font-family: var(--font-d); font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .anime-card-meta { font-size: 0.7rem; color: var(--muted); display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .anime-card-badge { padding: 0.15rem 0.55rem; border-radius: 3px; font-size: 0.6rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+    .badge-sss{background:rgba(245,200,66,0.15);color:#f5c842;border:1px solid rgba(245,200,66,0.3);}
+    .badge-ss{background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);}
+    .badge-s{background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);}
+    .badge-a{background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);}
+    .badge-b{background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.3);}
+    .badge-other{background:rgba(107,107,128,0.15);color:#6b6b80;border:1px solid rgba(107,107,128,0.3);}
+
+    /* Episode list panel */
+    .ep-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .ep-panel-header {
+      padding: 1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .ep-panel-title { font-family: var(--font-d); font-size: 1rem; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; }
+    .season-select {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      font-family: var(--font-b); font-size: 0.75rem; padding: 0.3rem 0.6rem;
+      border-radius: 4px; cursor: pointer; outline: none;
+    }
+    .season-select:focus { border-color: var(--red); }
+    .ep-list { padding: 0.5rem; max-height: 380px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--red) transparent; }
+    .ep-list::-webkit-scrollbar { width: 3px; }
+    .ep-list::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+    .ep-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 0.75rem; border-radius: 6px; text-decoration: none;
+      color: var(--text); transition: background 0.15s; cursor: pointer;
+    }
+    .ep-item:hover { background: var(--surface2); }
+    .ep-item.active { background: rgba(232,50,26,0.12); border: 1px solid rgba(232,50,26,0.25); }
+    .ep-item.no-link { opacity: 0.38; cursor: not-allowed; pointer-events: none; }
+    .ep-num {
+      width: 36px; height: 36px; border-radius: 6px; background: var(--surface2);
+      border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-d); font-size: 1rem; letter-spacing: 1px; flex-shrink: 0;
+      color: var(--muted);
+    }
+    .ep-item.active .ep-num { background: var(--red); border-color: var(--red); color: #fff; }
+    .ep-item-info { flex: 1; min-width: 0; }
+    .ep-item-label { font-size: 0.8rem; font-weight: 500; color: var(--text); }
+    .ep-item-meta { font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; }
+    .ep-playing-icon { color: var(--red); flex-shrink: 0; }
+
+    /* ══ SPLASH ══ */
+    #splash { position:fixed; inset:0; z-index:9000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.5rem; transition:opacity 0.5s; }
+    #splash.out { opacity:0; pointer-events:none; }
+    .spl-logo { font-family:var(--font-d); font-size:2.5rem; letter-spacing:8px; }
+    .spl-logo span { color:var(--red); }
+    .spl-bar { width:100px; height:2px; background:var(--surface2); border-radius:2px; overflow:hidden; }
+    .spl-fill { height:100%; width:0; background:var(--red); animation:sLoad 1.2s ease forwards; }
+    @keyframes sLoad { to{width:100%;} }
+    .spl-txt { font-size:0.65rem; color:var(--muted); letter-spacing:3px; text-transform:uppercase; }
+
+    /* ══ SUGGESTIONS — VAULT STRIPS ══ */
+    .suggestions-section {
+      padding: 0 0 3rem; width: 100%; overflow: hidden;
+    }
+    .suggestions-heading {
+      font-family: var(--font-d); font-size: 1.1rem; letter-spacing: 4px;
+      color: var(--muted); text-transform: uppercase; margin-bottom: 1.25rem;
+      padding: 0 1.5rem 0.6rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .suggestions-heading::before {
+      content: ''; display: block; width: 3px; height: 1.1rem;
+      background: var(--red); border-radius: 2px; flex-shrink: 0;
+    }
+
+    /* Strip container */
+    .vault-strip {
+      overflow: hidden; margin-bottom: 1.25rem; position: relative;
+      cursor: grab;
+    }
+    .vault-strip.dragging { cursor: grabbing; }
+    .vault-strip::before, .vault-strip::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 100px; z-index: 2;
+      pointer-events: none;
+    }
+    .vault-strip::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+    .vault-strip::after  { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
+
+    /* The inner track */
+    .vault-track {
+      display: flex; gap: 14px; width: max-content;
+      will-change: transform; user-select: none; -webkit-user-select: none;
+    }
+
+    /* Individual poster card */
+    .vault-card {
+      width: 110px; height: 165px; border-radius: 8px; overflow: hidden;
+      flex-shrink: 0; border: 1.5px solid var(--border); position: relative;
+      display: block; text-decoration: none; transition: border-color 0.25s, transform 0.25s;
+      background: var(--surface2);
+    }
+    .vault-card:hover { border-color: rgba(232,50,26,0.6); transform: scale(1.05); z-index: 3; }
+    .vault-card img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      filter: brightness(0.82) saturate(1.1); transition: filter 0.25s;
+    }
+    .vault-card:hover img { filter: brightness(1) saturate(1.3); }
+
+    /* Title overlay */
+    .vault-card-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 0.4rem 0.45rem 0.35rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.92), transparent);
+      font-family: var(--font-d); font-size: 0.52rem; letter-spacing: 0.8px;
+      color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* "Not Available" badge */
+    .vault-card-na {
+      position: absolute; top: 6px; right: 6px;
+      background: rgba(8,8,16,0.82); border: 1px solid rgba(232,50,26,0.55);
+      color: var(--red); font-family: var(--font-d); font-size: 0.42rem;
+      letter-spacing: 1.2px; padding: 0.18rem 0.42rem; border-radius: 3px;
+      text-transform: uppercase; backdrop-filter: blur(4px);
+    }
+    /* Dim unavailable cards slightly */
+    .vault-card.na img { filter: brightness(0.45) saturate(0.5) grayscale(0.3); }
+    .vault-card.na:hover img { filter: brightness(0.65) saturate(0.7); }
+
+    @media (max-width: 768px) {
+      .suggestions-section { padding: 0 0 2rem; }
+      .suggestions-heading { padding: 0 0.875rem 0.6rem; font-size: 0.9rem; letter-spacing: 3px; }
+      .vault-card { width: 90px; height: 135px; }
+      .vault-strip::before, .vault-strip::after { width: 60px; }
+    }
+
+    /* ══ ERROR STATE ══ */
+    .err-state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - var(--nav-h)); text-align:center; padding:2rem; gap:1rem; }
+    .err-state h1 { font-family:var(--font-d); font-size:5rem; color:var(--red); letter-spacing:8px; opacity:0.3; }
+    .err-state p { color:var(--muted); font-size:0.9rem; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 1024px) {
+      .watch-layout { grid-template-columns: 1fr 300px; gap: 1rem; }
+    }
+    @media (max-width: 768px) {
+      .watch-layout { grid-template-columns: 1fr; padding: 1rem; }
+      .sidebar-col { position: static; max-height: none; }
+      nav { padding: 0 1rem; }
+      .nav-watch-label { display: none; }
+    }
+    @media (max-width: 480px) {
+      .player-title { font-size: 1.4rem; }
+    }
+
+  /* ═══════════════════════════════════════════════
+     WATCH.HTML — MOBILE APP REDESIGN (≤768px)
+     ═══════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    :root { --mob-nav-h: 52px; --mob-bottom-bar: 58px; --mob-safe: env(safe-area-inset-bottom,0px); }
+
+    /* ── Hide desktop nav ── */
+    nav { display: none !important; }
+
+    /* ── MOBILE TOP BAR ── */
+    #mob-watch-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      height: var(--mob-nav-h);
+      background: rgba(8,8,16,0.97); backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(232,50,26,0.15);
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0 0.875rem;
+    }
+    .mob-watch-back {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+    }
+    .mob-watch-back:active { background: rgba(255,255,255,0.08); color: var(--text); }
+    .mob-watch-title {
+      flex: 1; min-width: 0;
+      font-family: var(--font-d); font-size: 0.95rem; letter-spacing: 2px;
+      color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mob-watch-saved {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: none; border: none; cursor: pointer; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent; color: var(--muted);
+    }
+    .mob-watch-saved:active { background: rgba(255,255,255,0.08); }
+
+    /* ── MOBILE BOTTOM EP NAV BAR ── */
+    #mob-ep-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      height: calc(var(--mob-bottom-bar) + var(--mob-safe));
+      padding-bottom: var(--mob-safe);
+      background: rgba(8,8,16,0.98); backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 0.5rem;
+      padding-left: 0.875rem; padding-right: 0.875rem;
+    }
+    .mob-ep-prev, .mob-ep-next {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mob-ep-prev:active, .mob-ep-next:active { background: var(--surface3); color: var(--text); border-color: var(--border2); }
+    .mob-ep-prev:disabled, .mob-ep-next:disabled { opacity: 0.3; pointer-events: none; }
+    .mob-ep-info {
+      flex: 1; min-width: 0; text-align: center;
+      font-family: var(--font-d); font-size: 0.85rem; letter-spacing: 2px;
+      color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mob-ep-info span { color: var(--red); }
+    .mob-ep-details-btn {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 0.85rem; height: 40px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(232,50,26,0.12); border: 1px solid rgba(232,50,26,0.3);
+      color: var(--red); font-family: var(--font-d); font-size: 0.78rem;
+      letter-spacing: 1.5px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+    }
+    .mob-ep-details-btn:active { background: rgba(232,50,26,0.22); }
+
+    /* ── Page layout ── */
+    body { padding-bottom: calc(var(--mob-bottom-bar) + var(--mob-safe)); }
+    .page { padding-top: var(--mob-nav-h); }
+
+    /* ── Video: full-width, tight ── */
+    .watch-layout {
+      grid-template-columns: 1fr !important;
+      padding: 0 0 1rem !important;
+      gap: 0 !important;
+    }
+    .video-wrap {
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border-left: none; border-right: none;
+    }
+
+    /* ── Player info below video ── */
+    .player-col { gap: 0; }
+    .player-info { padding: 0.875rem 0.875rem 0; gap: 0.5rem; }
+    .ep-label { font-size: 0.58rem; letter-spacing: 2.5px; }
+    .player-title { font-size: 1.25rem; letter-spacing: 2px; line-height: 1.2; }
+    .player-meta { gap: 0.6rem; }
+    .player-meta-item { font-size: 0.68rem; }
+    .player-actions {
+      display: flex; flex-wrap: nowrap; overflow-x: auto;
+      gap: 0.5rem; padding: 0.5rem 0.875rem 0.875rem;
+      scrollbar-width: none; border-bottom: 1px solid var(--border);
+      -webkit-overflow-scrolling: touch;
+    }
+    .player-actions::-webkit-scrollbar { display: none; }
+    .pa-btn {
+      flex-shrink: 0; flex-direction: column !important;
+      gap: 0.3rem !important; padding: 0.55rem 1rem !important;
+      font-size: 0.7rem !important; letter-spacing: 1px !important;
+      border-radius: 8px !important; min-width: 64px;
+      text-align: center; justify-content: center; align-items: center;
+    }
+    .pa-btn svg { width: 20px !important; height: 20px !important; }
+    .pa-btn:active { transform: scale(0.95) !important; }
+
+    /* ── Hide desktop ep nav (replaced by bottom bar) ── */
+    .ep-nav { display: none !important; }
+
+    /* ── Sidebar becomes stacked below player ── */
+    .sidebar-col {
+      position: static !important; max-height: none !important;
+      padding: 0 0.875rem; gap: 0.875rem;
+    }
+
+    /* ── Anime info card compact ── */
+    .anime-card { padding: 1rem; border-radius: 10px; }
+    .ac-title { font-size: 0.85rem; letter-spacing: 2px; margin-bottom: 0.6rem; }
+    .ac-thumb { width: 56px; height: 84px; border-radius: 6px; }
+    .ac-info { gap: 0.3rem; }
+    .ac-name { font-size: 0.88rem; letter-spacing: 1px; }
+    .ac-meta { font-size: 0.62rem; }
+    .ac-badges { gap: 0.3rem; margin-top: 0.35rem; }
+    .badge { padding: 0.18rem 0.5rem; font-size: 0.55rem; }
+
+    /* ── Episode panel ── */
+    .ep-panel { border-radius: 10px; }
+    .ep-panel-header { padding: 0.875rem 1rem 0.65rem; }
+    .ep-panel-title { font-size: 0.85rem; letter-spacing: 2px; }
+    .ep-list { max-height: 260px; }
+    .ep-item { padding: 0.5rem 0.6rem; gap: 0.6rem; border-radius: 6px; }
+    .ep-num { width: 32px; height: 32px; font-size: 0.85rem; border-radius: 5px; }
+    .ep-item-label { font-size: 0.75rem; }
+    .ep-item-meta { font-size: 0.6rem; }
+
+    /* ── Suggestions handled by vault-strip responsive CSS above ── */
+
+    /* ── Toast above bottom bar ── */
+    .watch-toast {
+      bottom: calc(var(--mob-bottom-bar) + var(--mob-safe) + 0.6rem) !important;
+      right: 0.875rem !important; left: 0.875rem !important;
+      max-width: none !important; text-align: center;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .player-title { font-size: 1.1rem; }
+    .mob-ep-details-btn { display: none; }
+  }
+  </style>
+</head>
+<body>
+
+<!-- MOBILE WATCH TOP BAR -->
+<div id="mob-watch-bar" style="display:none">
+  <button class="mob-watch-back" onclick="goToDetailsWithPIP()" aria-label="Back to details">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+  </button>
+  <div class="mob-watch-title" id="mob-watch-title">ANIvalted</div>
+  <button class="mob-watch-saved" onclick="window.location.href='save.html'" aria-label="Saved">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+  </button>
+</div>
+
+<!-- MOBILE BOTTOM EP NAV BAR -->
+<div id="mob-ep-bar" style="display:none">
+  <button class="mob-ep-prev" id="mob-prev-btn" onclick="_mobPrev()" aria-label="Previous episode">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+  </button>
+  <div class="mob-ep-info" id="mob-ep-info"><span>S1</span> · EP 1</div>
+  <button class="mob-ep-next" id="mob-next-btn" onclick="_mobNext()" aria-label="Next episode">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+  </button>
+  <button class="mob-ep-details-btn" onclick="goToDetailsWithPIP()">Details</button>
+</div>
+
+<script>
+// Show mobile bars only on mobile
+if (window.innerWidth <= 768) {
+  document.getElementById('mob-watch-bar').style.display = 'flex';
+  document.getElementById('mob-ep-bar').style.display = 'flex';
+}
+
+// Sync mobile top bar title + bottom bar ep info
+window._syncMobBars = function() {
+  const title = document.getElementById('mob-watch-title');
+  const epInfo = document.getElementById('mob-ep-info');
+  const prevBtn = document.getElementById('mob-prev-btn');
+  const nextBtn = document.getElementById('mob-next-btn');
+  if (title && window._anime) title.textContent = window._anime.name || 'ANIvalted';
+  if (epInfo) epInfo.innerHTML = '<span>S' + (window.CUR_S||1) + '</span> · EP ' + (window.CUR_E||1);
+  // Prev/next state
+  if (prevBtn && nextBtn && window._epLinks && window._seasons) {
+    const prevLink = typeof window.getLink === 'function' ? window.getLink(window.CUR_S, window.CUR_E - 1) : null;
+    const nextLink = typeof window.getLink === 'function' ? window.getLink(window.CUR_S, window.CUR_E + 1) : null;
+    prevBtn.disabled = !prevLink;
+    nextBtn.disabled = !nextLink;
+  }
+};
+window._mobPrev = function() {
+  if (typeof window.goToEpisode !== 'function' || typeof window.getLink !== 'function') return;
+  const s = window.CUR_S, e = window.CUR_E;
+  // try same season prev ep
+  if (window.getLink(s, e - 1)) { window.goToEpisode(s, e - 1); return; }
+  // try last ep of previous season
+  const prevS = s - 1;
+  if (prevS >= 1 && window._epLinks && window._epLinks['s' + prevS]) {
+    const eps = Object.keys(window._epLinks['s' + prevS]).map(k => parseInt(k.replace('e',''))).sort((a,b)=>b-a);
+    if (eps.length && window.getLink(prevS, eps[0])) window.goToEpisode(prevS, eps[0]);
+  }
+};
+window._mobNext = function() {
+  if (typeof window.goToEpisode !== 'function' || typeof window.getLink !== 'function') return;
+  const s = window.CUR_S, e = window.CUR_E;
+  // try same season next ep
+  if (window.getLink(s, e + 1)) { window.goToEpisode(s, e + 1); return; }
+  // try first ep of next season
+  const nextS = s + 1;
+  if (window._epLinks && window._epLinks['s' + nextS]) {
+    const eps = Object.keys(window._epLinks['s' + nextS]).map(k => parseInt(k.replace('e',''))).sort((a,b)=>a-b);
+    if (eps.length && window.getLink(nextS, eps[0])) window.goToEpisode(nextS, eps[0]);
+  }
+};
+</script>
+
+
+  <div class="spl-bar"><div class="spl-fill"></div></div>
+  <div class="spl-txt">Loading Episode...</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a class="nav-logo" href="index.html">
+      <img src="logo.PNG" alt="ANIvalted" onerror="this.style.display='none'" />
+      ANI<span>valted</span>
+    </a>
+    <div class="nav-sep"></div>
+    <span class="nav-watch-label">Now Watching *We can not support Piracy.</span>
+  </div>
+  <div class="nav-right">
+    <button class="nav-back-btn" id="nav-anime-link" onclick="goToDetailsWithPIP()" title="Start mini player &amp; go to Details">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+      Details
+    </button>
+    <div class="nav-user" id="nav-user" onclick="location.href='save.html'" title="Saved Anime">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+    </div>
+
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div id="root">
+    <!-- Skeleton / error state goes here -->
+  </div>
+</div>
+
+<!-- MINI PLAYER — must load FIRST so window.MiniPlayer exists before main script runs -->
+<script src="miniplayer.js"></script>
+
+<!-- FIREBASE AUTH + LOCAL LIBRARY/HISTORY -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { loadLocalLibrary, addToLocalLibrary, removeFromLocalLibrary, upsertWatchHistory, loadWatchHistory, removeWatchHistory } from './profile-utils.js';
+
+  const app = initializeApp({ apiKey:"AIzaSyDyYgyXyZl9x4UNGVlZvLsojvCWH3dwd_M", authDomain:"anivalted.firebaseapp.com", projectId:"anivalted", storageBucket:"anivalted.firebasestorage.app", messagingSenderId:"753217626793", appId:"1:753217626793:web:f001bbc7604cc7977f7fb8" });
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, user => {
+    window._u = user;
+    const uid = user && !user.isAnonymous ? user.uid : 'guest';
+    window._uid = uid;
+
+    // Expose local helpers globally for the main script
+    window._localLibHelpers = { loadLocalLibrary, addToLocalLibrary, removeFromLocalLibrary, upsertWatchHistory, loadWatchHistory, removeWatchHistory };
+
+    // Refresh save button state once auth resolves
+    if (typeof window._refreshSaveBtn === 'function') window._refreshSaveBtn();
+  });
+</script>
+
+<!-- MAIN WATCH LOGIC -->
+<script>
+  // ── URL params ──
+  const params   = new URLSearchParams(location.search);
+  const ANIME_ID = params.get('id') || '';
+  let   CUR_S    = parseInt(params.get('s') || '1');
+  let   CUR_E    = parseInt(params.get('e') || '1');
+  // Expose on window so the mobile bottom bar can read current episode position
+  Object.defineProperty(window, 'CUR_S', { get: () => CUR_S, set: v => { CUR_S = v; } });
+  Object.defineProperty(window, 'CUR_E', { get: () => CUR_E, set: v => { CUR_E = v; } });
+
+  let _data     = null;   // full details.json
+  let _anime    = null;   // current anime object
+  let _epLinks  = null;   // episodeLinks object
+  Object.defineProperty(window, '_epLinks', { get: () => _epLinks, set: v => { _epLinks = v; } });
+  let _seasons  = [];     // sorted season keys ['s1','s2',...]
+  Object.defineProperty(window, '_seasons', { get: () => _seasons, set: v => { _seasons = v; } });
+  let _curSKey  = '';     // 's1', 's2', etc. — tracks the PLAYING episode's season
+  let _drawerSKey = '';   // season shown in the drawer (may differ from what's playing)
+
+  // ── helpers ──
+  function toast(msg, type = 'info') {
+    const ex = document.querySelector('.watch-toast'); if (ex) ex.remove();
+    const t = document.createElement('div');
+    t.className = 'watch-toast';
+    t.style.cssText = `position:fixed;bottom:2rem;right:2rem;padding:0.85rem 1.5rem;border-radius:8px;font-size:0.9rem;font-weight:500;z-index:9999;animation:tIn 0.4s cubic-bezier(0.34,1.56,0.64,1);max-width:340px;transition:opacity 0.4s;font-family:var(--font-b);${type==='success'?'background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:#34d399':type==='error'?'background:rgba(232,50,26,0.15);border:1px solid rgba(232,50,26,0.3);color:#e8321a':'background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:#60a5fa'}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    if (!document.getElementById('watch-toast-style')) {
+      const s = document.createElement('style');
+      s.id = 'watch-toast-style';
+      s.textContent = '@keyframes tIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}';
+      document.head.appendChild(s);
+    }
+    setTimeout(() => { t.style.opacity = '0'; }, 2800);
+    setTimeout(() => t.remove(), 3300);
+  }
+  function sKey(n) { return 's' + n; }
+  function eKey(n) { return 'e' + n; }
+  function sortedEpNums(skKey) {
+    if (!_epLinks || !_epLinks[skKey]) return [];
+    return Object.keys(_epLinks[skKey])
+      .map(k => parseInt(k.replace('e','')))
+      .sort((a,b) => a - b);
+  }
+  window.getLink = function getLink(s, e) {
+    if (!_epLinks) return null;
+    const sk = sKey(s); const ek = eKey(e);
+    return (_epLinks[sk] && _epLinks[sk][ek]) ? _epLinks[sk][ek] : null;
+  }
+  function tierBadgeClass(tier) {
+    if (!tier) return 'badge-other';
+    const t = tier.toUpperCase();
+    if (t === 'SSS') return 'badge-sss';
+    if (t === 'SS')  return 'badge-ss';
+    if (t.startsWith('S')) return 'badge-s';
+    if (t.startsWith('A')) return 'badge-a';
+    if (t.startsWith('B')) return 'badge-b';
+    return 'badge-other';
+  }
+
+  // ── Update URL without reload ──
+  function pushState(s, e) {
+    const url = `${location.pathname}?id=${encodeURIComponent(ANIME_ID)}&s=${s}&e=${e}`;
+    history.replaceState({ s, e }, '', url);
+  }
+
+  // ── Navigate to episode ──
+  window.goToEpisode = function goToEpisode(s, e) {
+    const link = getLink(s, e);
+    if (!link) return;
+    CUR_S = s; CUR_E = e;
+    _curSKey = sKey(s);
+    _drawerSKey = _curSKey;  // sync drawer to match what's now playing
+    // also update the season <select> to reflect the playing season
+    const sel = document.getElementById('season-select');
+    if (sel) sel.value = _curSKey;
+    pushState(s, e);
+    updatePlayer(link);
+    updateInfoBar();
+    updateEpList();
+    updateNavBtns();
+    saveCurrentToHistory();   // ← auto-save every episode visit
+  }
+
+  // ── Share current episode ──
+  function shareEpisode() {
+    const title = _anime ? `${_anime.name} — S${CUR_S} E${CUR_E}` : document.title;
+    const url = location.href;
+    if (navigator.share) {
+      navigator.share({ title, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        toast('Link copied!', 'success');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+        toast('Link copied!', 'success');
+      });
+    }
+  }
+
+  // ── Update iframe src ──
+  function updatePlayer(iframeSrc) {
+    const wrap = document.getElementById('video-wrap');
+    if (!wrap) return;
+    if (!iframeSrc || iframeSrc.trim() === '') {
+      wrap.innerHTML = `<div class="video-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" width="64" height="64"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+        <p>No video link set for this episode</p>
+      </div>`;
+    } else {
+      wrap.innerHTML = `<iframe src="${iframeSrc}" frameborder="0" scrolling="no"
+        allow="autoplay; encrypted-media; fullscreen" allowfullscreen
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>`;
+    }
+  }
+
+  // ── Update episode label + title in info bar ──
+  function updateInfoBar() {
+    if (typeof window._syncMobBars === 'function') window._syncMobBars();
+    const a = _anime;
+    if (!a) return;
+    const seasonNum = CUR_S;
+    const epNum = CUR_E;
+    const seasonLabels = a.seasons || _seasons.map(sk => `Season ${sk.replace('s','')}`);
+    const sIdx = _seasons.indexOf(sKey(CUR_S));
+    const seasonLabel = seasonLabels[sIdx] || `Season ${CUR_S}`;
+
+    const epLbl = document.getElementById('ep-label');
+    const pTitle = document.getElementById('player-title');
+    const pMeta  = document.getElementById('player-meta');
+    if (epLbl) epLbl.textContent = `${seasonLabel} · Episode ${epNum}`;
+    if (pTitle) pTitle.textContent = a.name;
+    if (pMeta) {
+      pMeta.innerHTML = `
+        <span class="player-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
+          ${a.rating != null ? a.rating + '/10' : 'Unrated'}
+        </span>
+        <span class="player-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/></svg>
+          ${a.studio || 'Unknown Studio'}
+        </span>
+        <span class="player-meta-item">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+          ${a.year || ''}
+        </span>
+        ${a.tear ? `<span class="anime-card-badge ${tierBadgeClass(a.tear)}">${a.tear} TIER</span>` : ''}`;
+    }
+  }
+
+  // ── Update prev/next buttons ──
+  function updateNavBtns() {
+    const eps = sortedEpNums(_curSKey);
+    const curIdx = eps.indexOf(CUR_E);
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    // Previous: previous episode in same season, or last ep of previous season
+    let prevS = CUR_S, prevE = null;
+    if (curIdx > 0) {
+      prevE = eps[curIdx - 1];
+    } else {
+      // Try previous season
+      const sIdx = _seasons.indexOf(_curSKey);
+      if (sIdx > 0) {
+        prevS = parseInt(_seasons[sIdx - 1].replace('s',''));
+        const prevEps = sortedEpNums(_seasons[sIdx - 1]);
+        prevE = prevEps.length ? prevEps[prevEps.length - 1] : null;
+      }
+    }
+    // Next: next episode in same season, or first ep of next season
+    let nextS = CUR_S, nextE = null;
+    if (curIdx < eps.length - 1) {
+      nextE = eps[curIdx + 1];
+    } else {
+      const sIdx = _seasons.indexOf(_curSKey);
+      if (sIdx < _seasons.length - 1) {
+        nextS = parseInt(_seasons[sIdx + 1].replace('s',''));
+        const nextEps = sortedEpNums(_seasons[sIdx + 1]);
+        nextE = nextEps.length ? nextEps[0] : null;
+      }
+    }
+
+    if (prevBtn) {
+      prevBtn.disabled = prevE === null;
+      prevBtn.onclick = prevE !== null ? () => goToEpisode(prevS, prevE) : null;
+    }
+    if (nextBtn) {
+      nextBtn.disabled = nextE === null;
+      nextBtn.onclick = nextE !== null ? () => goToEpisode(nextS, nextE) : null;
+    }
+  }
+
+  // ── Render episode list in sidebar ──
+  function updateEpList() {
+    const list = document.getElementById('ep-list');
+    if (!list) return;
+    // Use _drawerSKey for what season is displayed — independent of what's playing
+    const viewKey = _drawerSKey || _curSKey;
+    const eps = sortedEpNums(viewKey);
+    const a = _anime;
+    const sNum = parseInt(viewKey.replace('s',''));
+    list.innerHTML = eps.map(eNum => {
+      const link = getLink(sNum, eNum);
+      const isActive = sNum === CUR_S && eNum === CUR_E;
+      const hasLink = link && link.trim() !== '';
+      return `<a class="ep-item ${isActive ? 'active' : ''} ${!hasLink ? 'no-link' : ''}"
+        ${hasLink && !isActive ? `href="watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${sNum}&e=${eNum}"` : ''}
+        ${isActive || !hasLink ? 'onclick="return false;"' : ''}
+        ${isActive ? '' : hasLink ? `onclick="event.preventDefault();goToEpisode(${sNum},${eNum})"` : ''}>
+        <div class="ep-num">${eNum}</div>
+        <div class="ep-item-info">
+          <div class="ep-item-label">Episode ${eNum}</div>
+          <div class="ep-item-meta">${hasLink ? 'Available' : 'No link set'}</div>
+        </div>
+        ${isActive ? `<svg class="ep-playing-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="14" height="14"><path d="M8 5v14l11-7L8 5z"/></svg>` : ''}
+      </a>`;
+    }).join('');
+  }
+
+  // ── Season selector change — only changes the drawer view, NOT the playing video ──
+  window.onSeasonChange = function(sel) {
+    _drawerSKey = sel.value;   // update ONLY the drawer season
+    // just re-render the episode list — CUR_S / CUR_E and the iframe are untouched
+    updateEpList();
+  };
+
+  // ── Save current episode to local watch history ──
+  function saveCurrentToHistory() {
+    if (!_anime) return;
+    const uid = window._uid || 'guest';
+
+    const seasonLabels = _anime.seasons || _seasons.map(sk => `Season ${sk.replace('s','')}`);
+    const sIdx = _seasons.indexOf(_curSKey);
+    const seasonLabel = seasonLabels[sIdx] || `Season ${CUR_S}`;
+    const entry = {
+      animeId:      ANIME_ID,
+      animeName:    _anime.name,
+      animeImage:   _anime.image || '',
+      season:       CUR_S,
+      episode:      CUR_E,
+      episodeLabel: `${seasonLabel} · Ep ${CUR_E}`,
+      url:          `watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${CUR_S}&e=${CUR_E}`,
+      savedAt:      Date.now()
+    };
+
+    // Use profile-utils helpers if available, otherwise write directly to localStorage
+    const helpers = window._localLibHelpers;
+    if (helpers) {
+      helpers.upsertWatchHistory(uid, entry);
+    } else {
+      // Direct fallback — same logic as upsertWatchHistory in profile-utils.js
+      const key = 'anivalted_live_' + uid;
+      try {
+        let hist = JSON.parse(localStorage.getItem(key) || '[]');
+        hist = hist.filter(h => h.animeId !== ANIME_ID);
+        hist.unshift(entry);
+        if (hist.length > 30) hist = hist.slice(0, 30);
+        localStorage.setItem(key, JSON.stringify(hist));
+      } catch(e) { console.warn('watch history save failed', e); }
+    }
+  }
+
+  // ── localStorage save helpers (same key as index.html & save.html) ──
+  const SAVE_KEY = 'anivalted_saved';
+  function _getSaved() { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || '[]'); } catch(e) { return []; } }
+  function _setSaved(ids) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(ids)); } catch(e) {} }
+  function _isInSaved(id) { return _getSaved().map(i => String(i)).includes(String(id)); }
+
+  // ── Toggle save to saved page library ──
+  window.toggleSaveLibrary = function() {
+    if (!_anime) return;
+    const id = String(ANIME_ID);
+    const inSaved = _isInSaved(id);
+    const saved = _getSaved();
+    if (inSaved) {
+      _setSaved(saved.filter(i => String(i) !== id));
+      toast('Removed from saved', 'info');
+    } else {
+      if (!saved.map(i => String(i)).includes(id)) {
+        saved.push(id);
+        _setSaved(saved);
+      }
+      toast('Saved! ✓', 'success');
+    }
+    window._refreshSaveBtn();
+  };
+
+  // ── Refresh the save button appearance ──
+  window._refreshSaveBtn = function() {
+    const btn = document.getElementById('save-lib-btn');
+    if (!btn) return;
+    const inSaved = _isInSaved(String(ANIME_ID));
+    if (inSaved) {
+      btn.classList.add('saved');
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="15" height="15"><path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg> SAVED`;
+    } else {
+      btn.classList.remove('saved');
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg> SAVE`;
+    }
+  };
+
+  // ── Build full page ──
+  function buildPage() {
+    const a = _anime;
+    if (!a) return;
+    const sIdx = _seasons.indexOf(sKey(CUR_S));
+    const seasonLabels = a.seasons || _seasons.map(sk => `Season ${sk.replace('s','')}`);
+
+    const seasonOptions = _seasons.map((sk, i) =>
+      `<option value="${sk}" ${sk === _curSKey ? 'selected' : ''}>${seasonLabels[i] || 'Season '+(i+1)}</option>`
+    ).join('');
+
+    document.getElementById('root').innerHTML = `
+      <div class="watch-layout">
+
+        <!-- PLAYER COLUMN -->
+        <div class="player-col">
+
+          <!-- Video player -->
+          <div class="video-wrap" id="video-wrap">
+            <div class="video-placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" width="64" height="64"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
+              <p>Loading...</p>
+            </div>
+          </div>
+
+          <!-- Info bar -->
+          <div class="player-info">
+            <div class="ep-label" id="ep-label">Loading...</div>
+            <div class="player-title" id="player-title">—</div>
+            <div class="player-meta" id="player-meta"></div>
+
+            <!-- Prev / Next -->
+            <div class="ep-nav">
+              <button class="ep-nav-btn" id="prev-btn" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                PREV
+              </button>
+              <span class="ep-nav-sep" id="ep-nav-sep">—</span>
+              <button class="ep-nav-btn" id="next-btn" disabled>
+                NEXT
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+              </button>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="player-actions">
+              <button class="pa-btn ghost" id="save-lib-btn" onclick="toggleSaveLibrary()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+                SAVE
+              </button>
+              <button class="pa-btn ghost" onclick="shareEpisode()">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>
+                SHARE
+              </button>
+              <a class="pa-btn ghost" href="anime.html?id=${encodeURIComponent(ANIME_ID)}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+                DETAILS
+              </a>
+              <a class="pa-btn ghost" href="index.html">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                LIBRARY
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar-col">
+
+          <!-- Episode list panel -->
+          <div class="ep-panel">
+            <div class="ep-panel-header">
+              <div class="ep-panel-title">Episodes</div>
+              <select class="season-select" id="season-select" onchange="onSeasonChange(this)">
+                ${seasonOptions}
+              </select>
+            </div>
+            <div class="ep-list" id="ep-list"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MORE TO WATCH — VAULT STRIPS -->
+      <div class="suggestions-section" id="suggestions-section">
+        <div class="suggestions-heading">More to Watch</div>
+        <div class="vault-strip" id="vault-strip-1"><div class="vault-track" id="vault-track-1"></div></div>
+        <div class="vault-strip" id="vault-strip-2"><div class="vault-track" id="vault-track-2"></div></div>
+        <div class="vault-strip" id="vault-strip-3"><div class="vault-track" id="vault-track-3"></div></div>
+      </div>`;
+
+    // Now load the actual video and update all dynamic parts
+    _curSKey = sKey(CUR_S);
+    _drawerSKey = _curSKey;   // drawer starts on the playing season
+    const link = getLink(CUR_S, CUR_E);
+    updatePlayer(link);
+    updateInfoBar();
+    updateEpList();
+    updateNavBtns();
+    buildSuggestions();
+    saveCurrentToHistory();    // auto-save on first load
+    window._refreshSaveBtn();  // reflect library state
+
+    // Update Details button target
+    const navLink = document.getElementById('nav-anime-link');
+    if (navLink) navLink.dataset.detailsUrl = `anime.html?id=${encodeURIComponent(ANIME_ID)}`;
+  }
+
+  // ── Build "More to Watch" — Vault Strips ──
+  function buildSuggestions() {
+    if (!_data) return;
+
+    // Pool: exclude current anime and upcoming-only entries
+    const pool = _data.filter(x => x.id !== ANIME_ID && x.state !== 'plan');
+    if (!pool.length) {
+      const sec = document.getElementById('suggestions-section');
+      if (sec) sec.style.display = 'none';
+      return;
+    }
+
+    // Shuffle and split into 3 groups
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const t = Math.ceil(shuffled.length / 3);
+    const groups = [
+      shuffled.slice(0, t),
+      shuffled.slice(t, t * 2),
+      shuffled.slice(t * 2)
+    ].map(g => g.length >= 3 ? g : shuffled.slice(0, Math.max(3, shuffled.length)));
+
+    // Check if an anime has at least one episode link
+    function hasLinks(anime) {
+      if (!anime.episodeLinks) return false;
+      return Object.values(anime.episodeLinks).some(season =>
+        season && Object.values(season).some(link => link && String(link).trim() !== '')
+      );
+    }
+
+    // Build HTML for one card
+    function cardHTML(anime) {
+      const url   = `watch.html?id=${encodeURIComponent(anime.id)}&s=1&e=1`;
+      const img   = anime.image || `https://placehold.co/110x165/14141f/e8321a?text=${encodeURIComponent((anime.name||'?')[0])}`;
+      const avail = hasLinks(anime);
+      const naTag = avail ? '' : '<span class="vault-card-na">Coming Soon</span>';
+      return `<a class="vault-card${avail ? '' : ' na'}" href="${url}" title="${anime.name||''}">
+        <img src="${img}" alt="${anime.name||''}" loading="lazy"
+          onerror="this.src='https://placehold.co/110x165/14141f/e8321a?text=${encodeURIComponent((anime.name||'?')[0])}'"/>
+        ${naTag}
+        <div class="vault-card-label">${anime.name||'Unknown'}</div>
+      </a>`;
+    }
+
+    // Populate each track — duplicate for seamless loop
+    [1,2,3].forEach(i => {
+      const track = document.getElementById(`vault-track-${i}`);
+      if (!track) return;
+      const grp = groups[i - 1];
+      // Two copies for infinite scroll illusion
+      track.innerHTML = grp.map(cardHTML).join('') + grp.map(cardHTML).join('');
+    });
+
+    // Start the strip animations
+    initVaultStrips();
+  }
+
+  // ── Vault Strips Animation Engine ──
+  function initVaultStrips() {
+    const SPEEDS = [0.45, 0.38, 0.52]; // px per frame, alternating directions
+    const DIRS   = [1, -1, 1];         // strip 2 scrolls right→left reversed
+
+    const strips = [1,2,3].map(i => {
+      const el    = document.getElementById(`vault-strip-${i}`);
+      const track = document.getElementById(`vault-track-${i}`);
+      if (!el || !track) return null;
+
+      const halfW = track.scrollWidth / 2;
+
+      return {
+        el, track,
+        speed:   SPEEDS[i - 1] * DIRS[i - 1],
+        halfW,
+        offset:  0,
+        paused:  false,
+        dragging: false,
+        dragStartX: 0,
+        dragOffset: 0,
+      };
+    }).filter(Boolean);
+
+    let rafId = null;
+
+    function tick() {
+      strips.forEach(s => {
+        if (s.paused || s.dragging) return;
+
+        s.offset += s.speed;
+
+        // Seamless wrap — keep offset in [0, halfW) regardless of direction
+        if (s.offset >= s.halfW) s.offset -= s.halfW;
+        if (s.offset < 0)        s.offset += s.halfW;
+
+        s.track.style.transform = `translateX(${-s.offset.toFixed(2)}px)`;
+      });
+      rafId = requestAnimationFrame(tick);
+    }
+
+    rafId = requestAnimationFrame(tick);
+
+    // ── Pause on hold, resume on release ──
+    // ── Drag to scroll left/right manually ──
+    strips.forEach(s => {
+      const el = s.el;
+
+      // ---- MOUSE ----
+      el.addEventListener('mousedown', e => {
+        s.paused  = true;
+        s.dragging = true;
+        s.dragStartX = e.clientX;
+        s.dragOffset = s.offset;
+        el.classList.add('dragging');
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', e => {
+        if (!s.dragging) return;
+        const delta = e.clientX - s.dragStartX;
+        s.offset = s.dragOffset - delta;
+        // Wrap within [0, halfW)
+        s.offset = ((s.offset % s.halfW) + s.halfW) % s.halfW;
+        s.track.style.transform = `translateX(${-s.offset.toFixed(2)}px)`;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!s.dragging) return;
+        s.dragging = false;
+        s.paused   = false;
+        el.classList.remove('dragging');
+      });
+
+      // ---- TOUCH ----
+      el.addEventListener('touchstart', e => {
+        s.paused   = true;
+        s.dragging = true;
+        s.dragStartX = e.touches[0].clientX;
+        s.dragOffset = s.offset;
+      }, { passive: true });
+
+      el.addEventListener('touchmove', e => {
+        if (!s.dragging) return;
+        const delta = e.touches[0].clientX - s.dragStartX;
+        s.offset = s.dragOffset - delta;
+        s.offset = ((s.offset % s.halfW) + s.halfW) % s.halfW;
+        s.track.style.transform = `translateX(${-s.offset.toFixed(2)}px)`;
+      }, { passive: true });
+
+      el.addEventListener('touchend', () => {
+        s.dragging = false;
+        s.paused   = false;
+      });
+
+      // Prevent clicks firing on drag release
+      el.addEventListener('click', e => {
+        const movedTooFar = s.el._clickBlocked;
+        if (movedTooFar) { e.preventDefault(); e.stopPropagation(); s.el._clickBlocked = false; }
+      }, true);
+    });
+  }
+
+  // ── main ──
+  async function main() {
+    if (!ANIME_ID) {
+      document.getElementById('root').innerHTML = `<div class="err-state"><h1>404</h1><p>No anime ID provided.</p></div>`;
+      hideSplash(); return;
+    }
+
+    let data = [];
+    try { const r = await fetch('details.json'); data = await r.json(); }
+    catch(e) {
+      document.getElementById('root').innerHTML = `<div class="err-state"><h1>!</h1><p>Could not load anime data.</p></div>`;
+      hideSplash(); return;
+    }
+    _data = data;
+    const a = data.find(x => x.id === ANIME_ID);
+    if (!a) {
+      document.getElementById('root').innerHTML = `<div class="err-state"><h1>404</h1><p>Anime not found in vault.</p></div>`;
+      hideSplash(); return;
+    }
+    _anime = a;
+    _epLinks = a.episodeLinks || {};
+    _seasons = Object.keys(_epLinks).sort((x,y) => parseInt(x.replace('s','')) - parseInt(y.replace('s','')));
+    _curSKey = sKey(CUR_S);
+
+    // Validate requested season/episode exist, fall back to first available
+    if (!_seasons.includes(_curSKey)) {
+      _curSKey = _seasons[0] || 's1';
+      CUR_S = parseInt(_curSKey.replace('s',''));
+    }
+    _drawerSKey = _curSKey;   // drawer always starts on the playing season
+    const eps = sortedEpNums(_curSKey);
+    if (!eps.includes(CUR_E)) {
+      CUR_E = eps[0] || 1;
+    }
+
+    // Update page title
+    document.title = `ANIvalted — ${a.name} · S${CUR_S}E${CUR_E}`;
+
+    buildPage();
+      }
+
+    main();
+
+  // ===== MINI PLAYER INTEGRATION =====
+  function _buildMiniState() {
+    if (!_anime || !_epLinks) return null;
+    const iframeSrc = getLink(CUR_S, CUR_E) || '';
+    const seasons = Object.keys(_epLinks).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1)));
+    const sk = sKey(CUR_S);
+    const eps = sortedEpNums(sk);
+    const curIdx = eps.indexOf(CUR_E);
+    const sIdx = seasons.indexOf(sk);
+    const seasonLabels = _anime.seasons || seasons.map(s=>`Season ${s.slice(1)}`);
+    const seasonLabel = seasonLabels[sIdx] || `Season ${CUR_S}`;
+
+    let prevUrl = null, nextUrl = null;
+    if (curIdx > 0) {
+      prevUrl = `watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${CUR_S}&e=${eps[curIdx-1]}`;
+    } else if (sIdx > 0) {
+      const ps = parseInt(seasons[sIdx-1].slice(1));
+      const pEps = sortedEpNums(seasons[sIdx-1]);
+      if (pEps.length) prevUrl = `watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${ps}&e=${pEps[pEps.length-1]}`;
+    }
+    if (curIdx < eps.length-1) {
+      nextUrl = `watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${CUR_S}&e=${eps[curIdx+1]}`;
+    } else if (sIdx < seasons.length-1) {
+      const ns = parseInt(seasons[sIdx+1].slice(1));
+      const nEps = sortedEpNums(seasons[sIdx+1]);
+      if (nEps.length) nextUrl = `watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${ns}&e=${nEps[0]}`;
+    }
+
+    return {
+      animeId: String(ANIME_ID),
+      animeName: _anime.name,
+      image: _anime.image || '',
+      epLabel: `${seasonLabel} · Ep ${CUR_E}`,
+      iframeSrc,
+      watchUrl: `watch.html?id=${encodeURIComponent(ANIME_ID)}&s=${CUR_S}&e=${CUR_E}`,
+      prevUrl,
+      nextUrl
+    };
+  }
+
+  // Sync state to MiniPlayer whenever episode changes
+  const _origGoToEpisode = goToEpisode;
+  window.goToEpisode = function(s, e) {
+    _origGoToEpisode(s, e);
+    setTimeout(() => { if (window.MiniPlayer) window.MiniPlayer.store(_buildMiniState()); }, 100);
+  };
+
+  // Details button: activate PIP then navigate to the anime's details page
+  window.goToDetailsWithPIP = function() {
+    const state = _buildMiniState();
+    const btn = document.getElementById('nav-anime-link');
+    const detailsUrl = (btn && btn.dataset.detailsUrl)
+      || (ANIME_ID ? `anime.html?id=${encodeURIComponent(ANIME_ID)}` : 'index.html');
+    if (state && window.MiniPlayer) {
+      window.MiniPlayer.activate(state);
+    }
+    window.location.href = detailsUrl;
+  };
+
+  // Also store state immediately when page loads (so other pages can show it)
+  window.addEventListener('load', () => {
+    setTimeout(() => { if (window.MiniPlayer && _anime) window.MiniPlayer.store(_buildMiniState()); }, 500);
+  });
+
+  // Always hard-close PIP when the watch page is open.
+  // miniplayer.js handles this automatically in its init() — no call needed here.
+
+  // ===== BLOCK RIGHT CLICK & TEXT COPY =====
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('copy', e => e.preventDefault());
+  document.addEventListener('selectstart', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+  });
+</script>
+</body>
+</html>

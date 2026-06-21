@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANIvalted — The Anime Universe</title>
+  <meta name="description" content="Every anime ever watched — ranked, rated, tiered. Search, explore, and suggest." />
+  <meta name="theme-color" content="#080810" />
+  <meta property="og:title" content="ANIvalted — The Anime Universe" />
+  <meta property="og:description" content="Every anime ever watched — ranked, rated, tiered." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/png" href="logo.PNG" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Serif+JP:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080810; --surface: #0e0e1a; --surface2: #14141f;
+      --border: rgba(255,255,255,0.06); --red: #e8321a;
+      --red-glow: rgba(232,50,26,0.35); --orange: #f97316;
+      --gold: #f5c842; --text: #e8e8f0; --muted: #6b6b80;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-jp: 'Noto Serif JP', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    /* Mobile-only elements — hidden on desktop */
+    #mob-top-bar, #mob-tab-bar { display: none; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--font-body);
+      min-height: 100vh; overflow-x: hidden;
+      /* Block text selection site-wide */
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+    /* Allow selection inside search input only */
+    input, textarea { user-select: text; -webkit-user-select: text; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 64px;
+      background: rgba(8,8,16,0.9); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-display); font-size: 1.8rem;
+      letter-spacing: 3px; color: var(--text); text-decoration: none;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .nav-logo img { height: 36px; width: auto; object-fit: contain; }
+    .nav-logo span { color: var(--red); }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.8rem;
+      font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    .nav-search {
+      display: flex; align-items: center; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 0 0.75rem; gap: 0.5rem; transition: border-color 0.2s;
+    }
+    .nav-search:focus-within { border-color: var(--red); }
+    .nav-search input {
+      background: transparent; border: none; outline: none;
+      color: var(--text); font-size: 0.85rem; font-family: var(--font-body);
+      width: 180px; padding: 0.5rem 0;
+    }
+    .nav-search input::placeholder { color: var(--muted); }
+    .nav-search svg { color: var(--muted); flex-shrink: 0; }
+    /* Save button (top-right) */
+    .nav-user-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      cursor: pointer; overflow: hidden; flex-shrink: 0;
+      transition: border-color 0.2s; display: flex; align-items: center; justify-content: center;
+    }
+    .nav-user-btn:hover { border-color: var(--red); }
+    .nav-user-btn svg { color: var(--muted); }
+    /* hamburger */
+    .nav-hamburger {
+      display: none; background: none; border: none; color: var(--text);
+      cursor: pointer; padding: 4px;
+    }
+    /* mobile search button */
+    .nav-mobile-search-btn {
+      display: none; background: none; border: none; color: var(--text);
+      cursor: pointer; padding: 4px; align-items: center; justify-content: center;
+    }
+
+    /* ===== SEARCH OVERLAY ===== */
+    #search-overlay {
+      position: fixed; inset: 0; background: rgba(8,8,16,0.96);
+      backdrop-filter: blur(20px); z-index: 900; display: none;
+      flex-direction: column; align-items: center; padding-top: 12vh;
+      overflow-y: auto;   /* search results scroll inside the overlay */
+    }
+    #search-overlay.active { display: flex; }
+    /* When search is open, block page scroll */
+    body.search-open { overflow: hidden; }
+    .search-box { width: 100%; max-width: 680px; padding: 0 2rem; flex-shrink: 0; }
+    .search-input-wrap {
+      display: flex; align-items: center; gap: 1rem;
+      border-bottom: 2px solid var(--red); padding-bottom: 0.75rem; margin-bottom: 2rem;
+    }
+    .search-input-wrap svg { color: var(--red); flex-shrink: 0; width: 24px; height: 24px; }
+    .search-main-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-family: var(--font-display);
+      font-size: 2.5rem; letter-spacing: 3px;
+    }
+    .search-main-input::placeholder { color: var(--muted); }
+    .search-close { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1.5rem; }
+    .search-close:hover { color: var(--text); }
+    #search-results { width: 100%; max-width: 680px; padding: 0 2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .search-result-item {
+      display: flex; align-items: center; gap: 1rem; padding: 0.75rem;
+      border-radius: 6px; background: var(--surface); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text); cursor: pointer; transition: border-color 0.2s;
+    }
+    .search-result-item:hover { border-color: var(--red); }
+    .search-result-item img { width: 40px; height: 60px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+    .search-result-name { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: 1.5px; }
+    .search-result-meta { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ===== HERO MOUSE TRAIL (desktop only) ===== */
+    @media (hover: hover) and (pointer: fine) {
+      .hero-trail-poster {
+        position: absolute;
+        pointer-events: none !important;  /* NEVER intercept clicks/hover */
+        user-select: none;
+        -webkit-user-select: none;
+        z-index: 1;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.75);
+        animation: trailSpawn 1s cubic-bezier(0.22,1,0.36,1) forwards;
+        will-change: transform, opacity;
+      }
+      @keyframes trailSpawn {
+        0%   { opacity:0;    transform: scale(0.3)  rotate(var(--rot)); }
+        18%  { opacity:0.72; transform: scale(1.06) rotate(var(--rot)); }
+        55%  { opacity:0.58; transform: scale(1)    rotate(var(--rot)); }
+        100% { opacity:0;    transform: scale(0.55) rotate(var(--rot)); }
+      }
+      .hero-trail-poster img {
+        width:100%; height:100%; object-fit:cover; display:block;
+        filter: brightness(0.65) saturate(1.1);
+        pointer-events: none !important;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+    }
+    /* Hero content sits above trail at z-index:2, trail is z-index:1 */
+    .hero > *:not(.hero-trail-poster) {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(232,50,26,0.12) 0%, transparent 70%),
+                  radial-gradient(ellipse 40% 40% at 20% 80%, rgba(249,115,22,0.07) 0%, transparent 60%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
+    }
+    .hero-eyebrow { font-family: var(--font-jp); font-size: 0.85rem; color: var(--red); letter-spacing: 4px; margin-bottom: 1rem; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
+    .hero-title { font-family: var(--font-display); font-size: clamp(4rem, 12vw, 10rem); line-height: 0.9; letter-spacing: 8px; opacity: 0; animation: fadeUp 0.8s 0.4s forwards; }
+    .hero-title span { color: var(--red); }
+    .hero-sub { font-size: 1rem; color: var(--muted); margin-top: 1.5rem; font-weight: 300; max-width: 500px; line-height: 1.7; opacity: 0; animation: fadeUp 0.8s 0.6s forwards; }
+    .hero-stats { display: flex; gap: 2rem; margin-top: 3rem; flex-wrap: wrap; justify-content: center; opacity: 0; animation: fadeUp 0.8s 0.8s forwards; }
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-family: var(--font-display); font-size: 2.5rem; color: var(--red); letter-spacing: 2px; line-height: 1; }
+    .hero-stat-label { font-size: 0.65rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 0.25rem; }
+    .hero-scroll {
+      position: fixed;
+      bottom: 1.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: fit-content;
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      opacity: 0;
+      z-index: 300;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    .hero-scroll span { font-size: 0.6rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
+    /* Animated mouse icon */
+    .scroll-mouse {
+      width: 24px; height: 38px; border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 12px; position: relative; display: flex; justify-content: center;
+    }
+    .scroll-mouse::before {
+      content: '';
+      width: 3px; height: 7px;
+      background: var(--red);
+      border-radius: 2px;
+      position: absolute; top: 6px;
+      animation: scrollWheel 1.8s cubic-bezier(0.45,0.05,0.55,0.95) infinite;
+    }
+    @keyframes scrollWheel {
+      0%   { opacity: 1; transform: translateY(0); }
+      60%  { opacity: 0; transform: translateY(12px); }
+      61%  { opacity: 0; transform: translateY(0); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    /* Animated chevrons below */
+    .scroll-chevrons {
+      display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: 2px;
+    }
+    .scroll-chevrons span {
+      display: block; width: 10px; height: 10px;
+      border-right: 2px solid var(--red); border-bottom: 2px solid var(--red);
+      transform: rotate(45deg);
+      animation: chevronFade 1.8s ease infinite;
+      letter-spacing: 0;
+    }
+    .scroll-chevrons span:nth-child(1) { animation-delay: 0s;    opacity: 0.3; }
+    .scroll-chevrons span:nth-child(2) { animation-delay: 0.18s; opacity: 0.3; }
+    .scroll-chevrons span:nth-child(3) { animation-delay: 0.36s; opacity: 0.3; }
+    @keyframes chevronFade {
+      0%, 100% { opacity: 0.2; }
+      50%       { opacity: 1; }
+    }
+
+    /* Mobile: show finger icon, hide mouse */
+    .scroll-finger { display: none; }
+    @media (max-width: 768px) {
+      .hero-scroll { bottom: calc(62px + 1.25rem); }
+      .scroll-mouse { display: none; }
+      .scroll-finger {
+        display: flex; flex-direction: column; align-items: center;
+        animation: fingerBounce 1.8s ease-in-out infinite;
+      }
+      @keyframes fingerBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+    }
+
+
+    /* ===== LIVE — CONTINUE WATCHING ===== */
+    #live-section { border-bottom: 1px solid var(--border); }
+    .live-header-row { display:flex; align-items:center; gap:0.75rem; }
+    .live-dot { width:8px; height:8px; border-radius:50%; background:var(--red); box-shadow:0 0 8px var(--red); animation:livePulse 1.4s ease infinite; flex-shrink:0; }
+    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.75)} }
+    .live-actions { display:flex; gap:0.5rem; margin-left:auto; }
+    .live-btn { display:inline-flex; align-items:center; gap:0.35rem; padding:0.35rem 0.75rem; border-radius:5px; font-size:0.7rem; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.2s; background:transparent; }
+    .live-btn-edit { border:1px solid var(--border); color:var(--muted); }
+    .live-btn-edit:hover { border-color:var(--gold); color:var(--gold); background:rgba(245,200,66,0.06); }
+    .live-btn-clear { border:1px solid rgba(232,50,26,0.25); color:var(--red); }
+    .live-btn-clear:hover { background:rgba(232,50,26,0.08); border-color:var(--red); }
+    .live-strip { display:flex; gap:0.75rem; overflow-x:auto; padding-bottom:1rem; scrollbar-width:thin; scrollbar-color:var(--red) var(--surface2); }
+    .live-strip::-webkit-scrollbar { height:3px; }
+    .live-strip::-webkit-scrollbar-track { background:var(--surface2); border-radius:2px; }
+    .live-strip::-webkit-scrollbar-thumb { background:var(--red); border-radius:2px; }
+    .live-card { position:relative; flex-shrink:0; width:160px; text-decoration:none; color:var(--text); display:block; transition:transform 0.3s; }
+    .live-card:hover { transform:translateY(-4px); }
+    .live-card-thumb-wrap { position:relative; width:100%; aspect-ratio:2/3; border-radius:6px; overflow:hidden; border:2px solid transparent; transition:border-color 0.2s; }
+    .live-card:hover .live-card-thumb-wrap { border-color:var(--red); }
+    .live-card-thumb-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .live-progress-bar { position:absolute; bottom:0; left:0; right:0; height:3px; background:rgba(255,255,255,0.12); }
+    .live-progress-fill { height:100%; background:var(--red); border-radius:2px; transition:width 0.3s; }
+    .live-card-title { font-family:var(--font-display); font-size:0.9rem; letter-spacing:1px; margin-top:0.4rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .live-card-ep { font-size:0.65rem; color:var(--muted); letter-spacing:1px; margin-top:0.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .live-del-btn { position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(8,8,16,0.85); border:1px solid var(--border); color:var(--muted); cursor:pointer; display:none; align-items:center; justify-content:center; font-size:10px; transition:all 0.2s; z-index:5; }
+    .live-del-btn:hover { background:var(--red); border-color:var(--red); color:#fff; }
+    .live-card.edit-mode .live-del-btn { display:flex; }
+    .live-empty { color:var(--muted); font-size:0.85rem; letter-spacing:1px; padding:1rem 0; }
+
+    /* ===== SECTIONS ===== */
+    section { padding: 6rem 2.5rem; }
+    .section-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; }
+    .section-title { font-family: var(--font-display); font-size: 3rem; letter-spacing: 4px; }
+    .section-subtitle { font-size: 0.75rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .section-line { flex: 1; height: 1px; background: var(--border); min-width: 20px; }
+    .view-all-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 1rem; border: 1px solid var(--border);
+      border-radius: 4px; color: var(--muted); font-size: 0.75rem;
+      letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none;
+      cursor: pointer; background: transparent; font-family: var(--font-body);
+      transition: all 0.2s; flex-shrink: 0;
+    }
+    .view-all-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    /* ===== SKELETON ===== */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeleton-card { width: 100%; aspect-ratio: 2/3; border-radius: 8px; }
+    .skeleton-row { height: 80px; border-radius: 8px; margin-bottom: 0.75rem; }
+
+    /* ===== LIBRARY GRID ===== */
+    #random-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 900px) {
+      #random-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 480px) {
+      #random-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .tear-SSS { color: #f5c842; } .tear-SS { color: #f97316; } .tear-S { color: #a78bfa; }
+    .tear-A\+ { color: #2dd4bf; } .tear-A { color: #34d399; }
+    .tear-B\+ { color: #38bdf8; } .tear-B { color: #60a5fa; }
+    .tear-C { color: #94a3b8; } .tear-D { color: #f87171; } .tear-E { color: #fb923c; }
+    .tear-F\+ { color: #ef4444; } .tear-F { color: #dc2626; } .tear-F- { color: #991b1b; }
+
+    /* State badge & add-btn (used in library grid) */
+    .anime-card-state { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.55rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; z-index: 2; }
+    .state-watched { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .state-watching { background: rgba(232,50,26,0.15); color: var(--red); border: 1px solid rgba(232,50,26,0.3); }
+    .state-plan { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+    .card-add-btn {
+      position: absolute; top: 0.5rem; left: 0.5rem; z-index: 2;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(8,8,16,0.8); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); opacity: 0;
+      transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .card-add-btn:hover { color: var(--gold); border-color: var(--gold); }
+    .card-add-btn.in-library { opacity: 1; color: var(--gold); border-color: var(--gold); }
+
+    /* ===== TIER CHART - POSTER STYLE ===== */
+    .tear-chart { display: flex; flex-direction: column; gap: 4px; }
+    .tear-row {
+      display: flex; align-items: stretch; gap: 0; min-height: 90px;
+      border-radius: 6px; overflow: visible; position: relative;
+    }
+    .tear-label {
+      width: 56px; min-width: 56px; display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 2px; flex-shrink: 0;
+      border-right: 1px solid rgba(0,0,0,0.3); border-radius: 6px 0 0 6px; z-index: 1;
+    }
+    /* Scroll wrapper */
+    .tear-items-wrap {
+      flex: 1; overflow-x: auto; overflow-y: hidden;
+      background: rgba(255,255,255,0.02); border-radius: 0 6px 6px 0;
+      scrollbar-width: thin; scrollbar-color: var(--red) rgba(255,255,255,0.05);
+    }
+    .tear-items-wrap::-webkit-scrollbar { height: 3px; }
+    .tear-items-wrap::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+    .tear-items-wrap::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+    .tear-items {
+      display: flex; gap: 3px; align-items: center; flex-wrap: nowrap;
+      padding: 5px 6px 8px 5px; min-height: 90px;
+    }
+    /* Base poster — clean, no hover transform in CSS */
+    .tier-poster {
+      position: relative; flex-shrink: 0; height: 80px;
+      width: calc(80px * 2/3); border-radius: 4px;
+      cursor: pointer; text-decoration: none; display: block;
+    }
+    .tier-poster img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      border-radius: 4px; transition: filter 0.18s;
+    }
+    .tier-poster.hovered img { filter: brightness(0.3); }
+
+    /* Fixed hover clone — rendered on <body>, bypasses ALL overflow/stacking issues */
+    #tier-hover-clone {
+      position: fixed; pointer-events: none; z-index: 99999;
+      border-radius: 6px; overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.95), 0 0 0 2px rgba(232,50,26,0.65);
+      opacity: 0; transform: scale(0.82);
+      transition: opacity 0.16s ease, transform 0.26s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #tier-hover-clone.visible { opacity: 1; transform: scale(1); }
+    #tier-hover-clone img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      filter: brightness(0.38);
+    }
+    #tier-hover-clone .clone-info {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 10px; border-radius: 6px;
+      background: linear-gradient(to top, rgba(8,8,16,0.97) 0%, rgba(8,8,16,0.05) 65%, transparent 100%);
+    }
+    #tier-hover-clone .clone-name {
+      font-family: var(--font-display); font-size: 0.9rem; letter-spacing: 1.5px;
+      line-height: 1.15; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #tier-hover-clone .clone-meta { font-size: 0.65rem; color: rgba(255,255,255,0.72); margin-top: 3px; }
+
+    /* Tier label background colors */
+    .tear-SSS-row .tear-label { background: rgba(245,200,66,0.18); color: #f5c842; }
+    .tear-SS-row .tear-label { background: rgba(249,115,22,0.18); color: #f97316; }
+    .tear-S-row .tear-label { background: rgba(167,139,250,0.18); color: #a78bfa; }
+    .tear-A\+-row .tear-label { background: rgba(45,212,191,0.18); color: #2dd4bf; }
+    .tear-A-row .tear-label { background: rgba(52,211,153,0.18); color: #34d399; }
+    .tear-B\+-row .tear-label { background: rgba(56,189,248,0.18); color: #38bdf8; }
+    .tear-B-row .tear-label { background: rgba(96,165,250,0.18); color: #60a5fa; }
+    .tear-C-row .tear-label { background: rgba(148,163,184,0.18); color: #94a3b8; }
+    .tear-D-row .tear-label { background: rgba(248,113,113,0.18); color: #f87171; }
+    .tear-E-row .tear-label { background: rgba(251,146,60,0.18); color: #fb923c; }
+    .tear-F\+-row .tear-label { background: rgba(239,68,68,0.18); color: #ef4444; }
+    .tear-F-row .tear-label { background: rgba(220,38,38,0.18); color: #dc2626; }
+    .tear-F--row .tear-label { background: rgba(153,27,27,0.18); color: #991b1b; }
+    .top10-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .top10-item {
+      display: grid; grid-template-columns: 3rem 5rem 1fr auto;
+      gap: 1rem; align-items: center; padding: 0.75rem 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; text-decoration: none; color: var(--text);
+      transition: border-color 0.2s, background 0.2s, transform 0.2s; cursor: pointer;
+    }
+    .top10-item:hover { border-color: rgba(232,50,26,0.4); background: var(--surface2); transform: translateX(6px); }
+    .top10-rank { font-family: var(--font-display); font-size: 2rem; color: var(--red); letter-spacing: 2px; line-height: 1; }
+    .top10-rank.gold { color: var(--gold); }
+    .top10-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 4px; }
+    .top10-info { overflow: hidden; }
+    .top10-name { font-family: var(--font-display); font-size: 1.3rem; letter-spacing: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top10-meta { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem; flex-wrap: wrap; }
+    .meta-tag { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .meta-sep { color: var(--border); }
+    .top10-rating { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0; }
+    .rating-num { font-family: var(--font-display); font-size: 1.8rem; color: var(--gold); letter-spacing: 1px; line-height: 1; }
+    .rating-denom { font-size: 0.7rem; color: var(--muted); }
+
+    /* ===== WATCHING STRIP ===== */
+    .watching-strip { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: thin; scrollbar-color: var(--red) var(--surface2); }
+    .watching-strip::-webkit-scrollbar { height: 4px; display: block; }
+    .watching-strip::-webkit-scrollbar-track { background: var(--surface2); border-radius: 2px; }
+    .watching-strip::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+    @media (max-width: 768px) {
+      /* Hide ALL horizontal scrollbars on strips — desktop only */
+      .watching-strip  { scrollbar-width: none; }
+      .watching-strip::-webkit-scrollbar  { display: none; }
+      .live-strip      { scrollbar-width: none; }
+      .live-strip::-webkit-scrollbar      { display: none; }
+      .tear-items-wrap { scrollbar-width: none; }
+      .tear-items-wrap::-webkit-scrollbar { display: none; }
+    }
+    .watching-card { flex-shrink: 0; width: 160px; text-decoration: none; color: var(--text); display: block; transition: transform 0.3s; }
+    .watching-card:hover { transform: translateY(-4px); }
+    .watching-thumb { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: 6px; border: 2px solid transparent; transition: border-color 0.2s; }
+    .watching-card:hover .watching-thumb { border-color: var(--red); }
+    .watching-pulse { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.6rem; font-size: 0.65rem; color: var(--red); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: pulse 1.5s infinite; }
+    .watching-title { margin-top: 0.35rem; font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 1.5px; line-height: 1.2; }
+    .watching-eps { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ===== FILTER TABS ===== */
+    .filter-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .filter-tab {
+      padding: 0.4rem 1rem; border-radius: 4px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted); font-family: var(--font-body);
+      font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .filter-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .filter-tab.active { background: var(--red); color: #fff; border-color: var(--red); }
+
+    /* ===== SUGGEST CTA ===== */
+    .suggest-cta {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 4rem; text-align: center; position: relative; overflow: hidden;
+    }
+    .suggest-cta::before {
+      content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+      width: 400px; height: 300px; background: radial-gradient(ellipse, rgba(232,50,26,0.1), transparent); pointer-events: none;
+    }
+    .suggest-cta h2 { font-family: var(--font-display); font-size: 3.5rem; letter-spacing: 5px; margin-bottom: 1rem; }
+    .suggest-cta p { color: var(--muted); max-width: 500px; margin: 0 auto 2rem; line-height: 1.7; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.85rem 2.5rem; background: var(--red); color: #fff;
+      border: none; border-radius: 4px; font-family: var(--font-display);
+      font-size: 1.2rem; letter-spacing: 3px; cursor: pointer; text-decoration: none;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { background: #d02a14; transform: translateY(-2px); box-shadow: 0 10px 30px var(--red-glow); }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--border); padding: 3rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .footer-logo { font-family: var(--font-display); font-size: 1.5rem; letter-spacing: 3px; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+    .footer-logo img { height: 28px; opacity: 0.5; }
+    .footer-logo span { color: var(--red); }
+    .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-socials { display: flex; gap: 1rem; }
+    .footer-social { color: var(--muted); transition: color 0.2s; text-decoration: none; }
+    .footer-social:hover { color: var(--text); }
+    .footer-copy { font-size: 0.75rem; color: var(--muted); width: 100%; text-align: center; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+
+    /* ===== FULL LIBRARY MODAL ===== */
+    #library-modal {
+      position: fixed; inset: 0; z-index: 800;
+      background: var(--bg); overflow-y: auto;
+      display: none; flex-direction: column;
+    }
+    #library-modal.active { display: flex; }
+    .modal-header {
+      position: sticky; top: 0; background: rgba(8,8,16,0.95);
+      backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+      padding: 1rem 2.5rem; display: flex; align-items: center; gap: 1rem; z-index: 10;
+    }
+    .modal-close-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      border-radius: 4px; padding: 0.4rem 0.75rem; cursor: pointer;
+      font-size: 0.8rem; letter-spacing: 1px; transition: all 0.2s;
+    }
+    .modal-close-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .modal-body { padding: 2rem 2.5rem; flex: 1; }
+    .pagination {
+      display: flex; gap: 0.5rem; justify-content: center;
+      margin-top: 3rem; flex-wrap: wrap;
+    }
+    .page-btn {
+      width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 6px; background: transparent;
+      color: var(--muted); cursor: pointer; font-family: var(--font-display); font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .page-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .page-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    /* Paginated grid */
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .page-anime-card {
+      display: block; text-decoration: none; color: var(--text);
+      border-radius: 8px; overflow: hidden; position: relative;
+      border: 1px solid var(--border); transition: border-color 0.2s, transform 0.2s;
+    }
+    .page-anime-card:hover { border-color: rgba(232,50,26,0.4); transform: translateY(-4px); }
+    .page-anime-card:hover .card-add-btn { opacity: 1; }
+    .page-anime-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+    .page-anime-card-info { padding: 0.6rem 0.75rem; }
+    .page-anime-card-name { font-family: var(--font-display); font-size: 0.9rem; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .page-anime-card-meta { font-size: 0.65rem; color: var(--muted); margin-top: 0.15rem; }
+
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+    @keyframes scrollPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .fade-in-section { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-in-section.visible { opacity: 1; transform: none; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      nav { padding: 0 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 0 1rem; }
+      .nav-search { display: none; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex !important;   /* override display:none with higher priority */
+        flex-direction: column;
+        position: fixed; top: 64px; left: 0; right: 0;
+        background: rgba(8,8,16,0.98);
+        padding: 1.5rem; gap: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        z-index: 490;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      }
+      .nav-links.open a {
+        font-family: var(--font-display); font-size: 1.2rem;
+        letter-spacing: 3px; color: var(--muted);
+        text-decoration: none; padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border);
+        transition: color 0.2s;
+      }
+      .nav-links.open a:last-child { border-bottom: none; }
+      .nav-links.open a:hover, .nav-links.open a.active { color: var(--red); }
+      .nav-hamburger { display: block; }
+      .nav-mobile-search-btn { display: flex; }
+      section { padding: 4rem 1.25rem; }
+      .top10-item { grid-template-columns: 2.5rem 3.5rem 1fr auto; gap: 0.5rem; }
+      .suggest-cta { padding: 2rem 1.25rem; }
+      .suggest-cta h2 { font-size: 2.5rem; }
+      footer { flex-direction: column; align-items: flex-start; }
+      .dev-card { flex-direction: column; align-items: flex-start; padding: 2rem; }
+      .hero-stats { gap: 1.5rem; }
+      .modal-header, .modal-body { padding: 1rem 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .hero-title { font-size: 4rem; letter-spacing: 4px; }
+      .page-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    }
+
+    /* ===== PAGE SKELETON SPLASH — nav-level only, content visible behind it ===== */
+    #page-splash {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+      height: 64px; /* just covers the nav */
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #page-splash.hidden { opacity: 0; pointer-events: none; }
+
+    /* Skeleton shimmer shared */
+    .sk {
+      background: linear-gradient(90deg,
+        var(--surface) 0%, var(--surface2) 30%,
+        rgba(255,255,255,0.05) 50%, var(--surface2) 70%, var(--surface) 100%);
+      background-size: 300% 100%;
+      animation: skShimmer 1.8s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    @keyframes skShimmer {
+      0%   { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    /* ── Skeleton NAV ── */
+    .sk-nav {
+      position: sticky; top: 0; z-index: 500;
+      height: 64px; background: rgba(8,8,16,0.9);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; gap: 1rem;
+    }
+    .sk-nav-logo { width: 140px; height: 24px; border-radius: 4px; }
+    .sk-nav-search { width: 200px; height: 34px; border-radius: 6px; }
+    .sk-nav-links { display: flex; gap: 1.5rem; }
+    .sk-nav-link { width: 60px; height: 12px; border-radius: 4px; }
+    .sk-nav-avatar { width: 36px; height: 36px; border-radius: 50%; }
+    @media (max-width: 768px) {
+      .sk-nav-search, .sk-nav-links { display: none; }
+    }
+
+    /* ── Skeleton HERO ── */
+    .sk-hero {
+      height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 1.5rem;
+      padding: 0 2rem; text-align: center;
+    }
+    .sk-hero-eyebrow { width: 220px; height: 12px; border-radius: 4px; }
+    .sk-hero-title   { width: clamp(280px,55vw,700px); height: clamp(56px,10vw,110px); border-radius: 8px; }
+    .sk-hero-sub     { width: clamp(200px,38vw,500px); height: 14px; border-radius: 4px; margin-top: 0.5rem; }
+    .sk-hero-sub2    { width: clamp(140px,28vw,380px); height: 14px; border-radius: 4px; }
+    .sk-hero-stats   { display: flex; gap: 2.5rem; margin-top: 2rem; flex-wrap: wrap; justify-content: center; }
+    .sk-hero-stat    { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .sk-hero-stat-n  { width: 64px; height: 40px; border-radius: 6px; }
+    .sk-hero-stat-l  { width: 80px; height: 10px; border-radius: 4px; }
+    .sk-hero-scroll  {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      pointer-events: none;
+    }
+    .sk-hero-scroll-label { width: 40px; height: 9px; border-radius: 4px; }
+    .sk-hero-scroll-mouse { width: 24px; height: 38px; border-radius: 12px; }
+    .sk-hero-scroll-chev  { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* ── Skeleton SECTION HEADER ── */
+    .sk-section { padding: 5rem 2.5rem; }
+    @media (max-width: 768px) { .sk-section { padding: 3.5rem 1.25rem; } }
+    .sk-section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
+    .sk-section-title  { width: 180px; height: 36px; border-radius: 5px; flex-shrink: 0; }
+    .sk-section-line   { flex: 1; height: 1px; background: var(--border); }
+    .sk-section-badge  { width: 60px; height: 11px; border-radius: 4px; flex-shrink: 0; }
+
+    /* ── Skeleton WATCHING STRIP ── */
+    .sk-watching-strip { display: flex; gap: 1.25rem; overflow: hidden; }
+    .sk-watching-card  { flex-shrink: 0; width: 160px; display: flex; flex-direction: column; gap: 0.5rem; }
+    .sk-watching-img   { width: 160px; aspect-ratio: 2/3; border-radius: 6px; }
+    .sk-watching-label { width: 80px; height: 10px; border-radius: 4px; }
+    .sk-watching-name  { width: 130px; height: 13px; border-radius: 4px; }
+    .sk-watching-eps   { width: 90px; height: 10px; border-radius: 4px; }
+
+    /* ── Skeleton LIBRARY GRID ── */
+    .sk-filter-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
+    .sk-filter-tab  { width: 70px; height: 28px; border-radius: 4px; }
+    .sk-library-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 900px) { .sk-library-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 480px) { .sk-library-grid { grid-template-columns: repeat(2,1fr); } }
+    .sk-library-card { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .sk-library-card-img  { width: 100%; aspect-ratio: 2/3; border-radius: 0; }
+    .sk-library-card-info { padding: 0.6rem 0.75rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .sk-library-card-name { height: 13px; border-radius: 4px; width: 80%; }
+    .sk-library-card-meta { height: 10px; border-radius: 4px; width: 55%; }
+
+    /* ── Skeleton TOP 10 ── */
+    .sk-top10-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .sk-top10-item {
+      display: grid; grid-template-columns: 3rem 5rem 1fr auto;
+      gap: 1rem; align-items: center; padding: 0.75rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    }
+    @media (max-width: 768px) {
+      .sk-top10-item { grid-template-columns: 2.5rem 3.5rem 1fr auto; gap: 0.5rem; }
+    }
+    .sk-top10-rank   { width: 40px; height: 40px; border-radius: 4px; }
+    .sk-top10-img    { width: 100%; aspect-ratio: 2/3; border-radius: 4px; }
+    .sk-top10-info   { display: flex; flex-direction: column; gap: 0.4rem; }
+    .sk-top10-name   { height: 18px; border-radius: 4px; width: 70%; }
+    .sk-top10-meta   { height: 10px; border-radius: 4px; width: 45%; }
+    .sk-top10-rating { width: 40px; height: 36px; border-radius: 4px; }
+
+    /* ── Skeleton TIER CHART ── */
+    .sk-tier-chart { display: flex; flex-direction: column; gap: 4px; }
+    .sk-tier-row {
+      display: flex; align-items: stretch; gap: 0; height: 90px;
+      border-radius: 6px; overflow: hidden;
+    }
+    .sk-tier-label { width: 56px; min-width: 56px; border-radius: 0; }
+    .sk-tier-items { flex: 1; display: flex; gap: 3px; align-items: center; padding: 5px; background: rgba(255,255,255,0.02); }
+    .sk-tier-poster { flex-shrink: 0; width: calc(80px * 2/3); height: 80px; border-radius: 4px; }
+
+    /* ===== TOAST ===== */
+    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.85rem 1.5rem; border-radius: 8px; font-size: 0.9rem; font-weight: 500; z-index: 9999; animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1); max-width: 340px; }
+    .toast.success { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+    .toast.info { background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.3); color: #60a5fa; }
+    .toast.error { background: rgba(232,50,26,0.15); border: 1px solid rgba(232,50,26,0.3); color: var(--red); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  /* =====================================================
+     MOBILE APP REDESIGN — YouTube-style (max-width: 768px)
+     ===================================================== */
+  @media (max-width: 768px) {
+    :root { --mob-nav-h: 56px; --mob-tab-h: 62px; --mob-safe-bottom: env(safe-area-inset-bottom, 0px); }
+    body { padding-bottom: calc(var(--mob-tab-h) + var(--mob-safe-bottom)); }
+
+    /* Hide desktop nav */
+    nav { display: none !important; }
+
+    /* ── MOBILE TOP BAR ── */
+    #mob-top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      height: var(--mob-nav-h);
+      background: rgba(8,8,16,0.97); backdrop-filter: blur(24px) saturate(1.6);
+      border-bottom: 1px solid rgba(232,50,26,0.18);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1rem;
+    }
+    #mob-top-bar .mob-logo {
+      font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 3px;
+      color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.35rem;
+    }
+    #mob-top-bar .mob-logo img { height: 24px; object-fit: contain; }
+    #mob-top-bar .mob-logo span { color: var(--red); }
+    #mob-top-bar .mob-top-actions { display: flex; align-items: center; gap: 0.1rem; }
+    .mob-icon-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; color: var(--text); cursor: pointer;
+      transition: background 0.15s; -webkit-tap-highlight-color: transparent;
+    }
+    .mob-icon-btn:active { background: rgba(255,255,255,0.08); }
+
+    /* ── MOBILE BOTTOM TAB BAR ── */
+    #mob-tab-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      height: calc(var(--mob-tab-h) + var(--mob-safe-bottom));
+      padding-bottom: var(--mob-safe-bottom);
+      background: rgba(8,8,16,0.98); backdrop-filter: blur(24px) saturate(1.6);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: stretch;
+    }
+    .mob-tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; background: none; border: none; color: var(--muted);
+      font-family: var(--font-body); font-size: 0.58rem; letter-spacing: 0.5px;
+      text-transform: uppercase; cursor: pointer; transition: color 0.2s;
+      text-decoration: none; padding: 0 0 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mob-tab svg { flex-shrink: 0; transition: transform 0.18s; }
+    .mob-tab:active svg { transform: scale(0.85); }
+    .mob-tab.active { color: var(--red); }
+    .mob-tab.active svg { filter: drop-shadow(0 0 5px rgba(232,50,26,0.65)); }
+
+    /* ── Page layout ── */
+    .hero { padding-top: var(--mob-nav-h); min-height: 100svh; height: auto; }
+    section { padding: 1.75rem 0.9rem; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: calc(var(--mob-nav-h) + 0.75rem) 1.25rem 2rem;
+      justify-content: center; text-align: center;
+    }
+    .hero-eyebrow { font-size: 0.68rem; letter-spacing: 3px; margin-bottom: 0.65rem; }
+    .hero-title { font-size: clamp(3rem,17vw,4.8rem); letter-spacing: 4px; line-height: 0.88; }
+    .hero-sub { font-size: 0.78rem; margin-top: 1rem; line-height: 1.65; max-width: 100%; }
+    .hero-stats {
+      gap: 0; margin-top: 1.75rem;
+      display: grid; grid-template-columns: repeat(4,1fr);
+      width: 100%; background: rgba(14,14,26,0.85);
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .hero-stat { padding: 0.8rem 0.25rem; border-right: 1px solid var(--border); }
+    .hero-stat:last-child { border-right: none; }
+    .hero-stat-num { font-size: 1.55rem; }
+    .hero-stat-label { font-size: 0.48rem; letter-spacing: 1px; margin-top: 0.12rem; }
+
+    /* ── Section headers ── */
+    .section-header { margin-bottom: 1rem; gap: 0.5rem; flex-wrap: nowrap; align-items: center; }
+    .section-title { font-size: 1.45rem; letter-spacing: 2px; white-space: nowrap; }
+    .section-subtitle { font-size: 0.58rem; letter-spacing: 1.5px; white-space: nowrap; }
+    .section-line { display: none; }
+
+    /* ── LIVE strip ── */
+    .live-header-row { gap: 0.4rem; }
+    .live-actions { gap: 0.3rem; }
+    .live-btn { padding: 0.25rem 0.55rem; font-size: 0.58rem; }
+    .live-strip { gap: 0.6rem; padding-bottom: 0.5rem; }
+    .live-card { width: 118px; }
+    .live-card-title { font-size: 0.78rem; }
+    .live-card-ep { font-size: 0.6rem; }
+
+    /* ── Watching / Upcoming strips ── */
+    .watching-strip { gap: 0.6rem; padding-bottom: 0.5rem; }
+    .watching-card { width: 118px; }
+    .watching-thumb { border-radius: 8px; }
+    .watching-pulse { font-size: 0.56rem; margin-top: 0.4rem; }
+    .watching-title { font-size: 0.8rem; letter-spacing: 0.8px; margin-top: 0.2rem; }
+    .watching-eps { font-size: 0.6rem; }
+
+    /* ── Filter tabs ── */
+    .filter-tabs {
+      flex-wrap: nowrap; overflow-x: auto; gap: 0.35rem;
+      padding-bottom: 0.2rem; margin-bottom: 1rem;
+      scrollbar-width: none;
+    }
+    .filter-tabs::-webkit-scrollbar { display: none; }
+    .filter-tab {
+      flex-shrink: 0; padding: 0.3rem 0.85rem;
+      font-size: 0.65rem; border-radius: 20px; letter-spacing: 0.8px;
+    }
+
+    /* ── Library grid — 3 columns ── */
+    #random-grid { grid-template-columns: repeat(3,1fr); gap: 0.5rem; }
+    .page-anime-card-name { font-size: 0.72rem; letter-spacing: 0.3px; }
+    .page-anime-card-meta { font-size: 0.52rem; }
+    .anime-card-state { font-size: 0.46rem; padding: 0.12rem 0.3rem; }
+    .card-add-btn { opacity: 1; width: 24px; height: 24px; }
+    .page-anime-card:active { transform: scale(0.97); }
+
+    /* ── Top 10 ── */
+    .top10-item { grid-template-columns: 2rem 2.8rem 1fr auto; gap: 0.55rem; padding: 0.55rem 0.7rem; border-radius: 10px; }
+    .top10-rank { font-size: 1.35rem; }
+    .top10-name { font-size: 0.95rem; letter-spacing: 1px; }
+    .top10-meta { gap: 0.3rem; }
+    .meta-tag { font-size: 0.55rem; }
+    .rating-num { font-size: 1.25rem; }
+    .rating-denom { font-size: 0.6rem; }
+
+    /* ── Tier chart ── */
+    .tear-label { width: 40px; min-width: 40px; font-size: 1.2rem; border-radius: 6px 0 0 6px; }
+    .tier-poster { height: 62px; width: calc(62px * 2/3); }
+    .tear-items { padding: 4px 4px 5px; min-height: 70px; gap: 2px; }
+    .tear-row { min-height: 70px; }
+
+    /* ── Suggest CTA ── */
+    .suggest-cta { padding: 1.75rem 1.1rem; border-radius: 10px; }
+    .suggest-cta h2 { font-size: 1.75rem; letter-spacing: 3px; }
+    .suggest-cta p { font-size: 0.78rem; margin-bottom: 1.4rem; }
+    .btn-primary { font-size: 0.9rem; padding: 0.7rem 1.6rem; letter-spacing: 2px; }
+
+    /* ── Footer ── */
+    footer { padding: 1.75rem 1rem 1.5rem; flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .footer-logo { font-size: 1.1rem; }
+    .footer-links { gap: 1.1rem; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.7rem; }
+    .footer-copy { font-size: 0.62rem; padding-top: 1rem; }
+
+    /* ── Library modal ── */
+    #library-modal { padding-bottom: calc(var(--mob-tab-h) + var(--mob-safe-bottom)); }
+    .modal-header { padding: 0.7rem 0.9rem; flex-wrap: wrap; gap: 0.4rem; }
+    #modal-filter-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-bottom: 0; }
+    #modal-filter-tabs::-webkit-scrollbar { display: none; }
+    #modal-filter-tabs .filter-tab { flex-shrink: 0; }
+    .modal-body { padding: 0.875rem 0.65rem; }
+    .page-grid { grid-template-columns: repeat(3,1fr); gap: 0.5rem; }
+    .pagination { margin-top: 2rem; }
+
+    /* ── Search overlay ── */
+    #search-overlay { padding-top: 0; }
+    #search-overlay.active { padding-top: calc(var(--mob-nav-h) + 0.5rem); }
+    .search-box { padding: 0 1rem; }
+    .search-main-input { font-size: 1.5rem; letter-spacing: 1.5px; }
+    #search-results { padding: 0 1rem; }
+
+    /* ── Scroll indicator repositioned on mobile (finger icon, above tab bar) ── */
+    /* .hero-scroll is NOT hidden — it shows the finger variant instead */
+
+    /* ── Toast above tab bar ── */
+    .toast { bottom: calc(var(--mob-tab-h) + var(--mob-safe-bottom) + 0.6rem); right: 0.875rem; left: 0.875rem; max-width: none; text-align: center; }
+
+    /* ── View all btn ── */
+    .view-all-btn { font-size: 0.68rem; padding: 0.32rem 0.8rem; }
+
+    /* ── Skeleton adjustments ── */
+    .sk-watching-card { width: 118px; }
+    .sk-watching-img { width: 118px; }
+    .sk-library-grid { grid-template-columns: repeat(3,1fr) !important; gap: 0.5rem; }
+  }
+
+  /* Extra small phones */
+  @media (max-width: 375px) {
+    .hero-title { font-size: 2.8rem; }
+    .hero-stats { grid-template-columns: repeat(2,1fr); }
+    .hero-stat { border-bottom: 1px solid var(--border); }
+    #random-grid, .page-grid { grid-template-columns: repeat(2,1fr); }
+    .mob-tab span { display: none; }
+  }
+  </style>
+</head>
+<body>
+
+<!-- ═══ MOBILE TOP BAR (hidden on desktop via CSS) ═══ -->
+<div id="mob-top-bar">
+  <a class="mob-logo" href="index.html">
+    <img src="logo.PNG" alt="ANIvalted" onerror="this.style.display='none'" />
+    ANI<span>valted</span>
+  </a>
+  <div class="mob-top-actions">
+    <button class="mob-icon-btn" onclick="document.getElementById('search-overlay').classList.add('active');document.body.classList.add('search-open');setTimeout(()=>document.getElementById('search-main-input').focus(),100)" title="Search" aria-label="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg>
+    </button>
+    <button class="mob-icon-btn" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved Anime">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══ MOBILE BOTTOM TAB BAR (hidden on desktop via CSS) ═══ -->
+<div id="mob-tab-bar">
+  <button class="mob-tab active" onclick="window.scrollTo({top:0,behavior:'smooth'});document.querySelectorAll('.mob-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');" aria-label="Home">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="mob-tab" onclick="document.getElementById('library').scrollIntoView({behavior:'smooth'});document.querySelectorAll('.mob-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');" aria-label="Library">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+    <span>Library</span>
+  </button>
+  <button class="mob-tab" onclick="document.getElementById('top10').scrollIntoView({behavior:'smooth'});document.querySelectorAll('.mob-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');" aria-label="Top 10">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-8.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0"/></svg>
+    <span>Top 10</span>
+  </button>
+  <button class="mob-tab" onclick="document.getElementById('tiers').scrollIntoView({behavior:'smooth'});document.querySelectorAll('.mob-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');" aria-label="Tiers">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+    <span>Tiers</span>
+  </button>
+  <a class="mob-tab" href="suggestion.html" aria-label="Suggest">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+    <span>Suggest</span>
+  </a>
+  <a class="mob-tab" href="about.html" aria-label="About">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+    <span>About</span>
+  </a>
+</div>
+
+
+<!-- PAGE SKELETON SPLASH — lightweight nav-level shimmer only, inline sections have their own sk skeletons -->
+<div id="page-splash" aria-hidden="true">
+
+  <!-- Skeleton Nav -->
+  <div class="sk-nav">
+    <div class="sk sk-nav-logo"></div>
+    <div class="sk sk-nav-search"></div>
+    <div class="sk-nav-links">
+      <div class="sk sk-nav-link"></div>
+      <div class="sk sk-nav-link"></div>
+      <div class="sk sk-nav-link"></div>
+      <div class="sk sk-nav-link"></div>
+    </div>
+    <div class="sk sk-nav-avatar"></div>
+  </div>
+
+</div>
+<!-- SEARCH OVERLAY -->
+<div id="search-overlay">
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg>
+      <input type="text" class="search-main-input" id="search-main-input" placeholder="SEARCH ANIME..." autocomplete="off" />
+      <button class="search-close" id="close-search">✕</button>
+    </div>
+  </div>
+  <div id="search-results"></div>
+</div>
+
+<!-- FULL LIBRARY MODAL -->
+<div id="library-modal">
+  <div class="modal-header">
+    <button class="modal-close-btn" onclick="closeLibraryModal()">CLOSE</button>
+    <span style="font-family:var(--font-display);font-size:1.5rem;letter-spacing:3px" id="modal-title">FULL LIBRARY</span>
+    <div class="filter-tabs" style="margin-bottom:0" id="modal-filter-tabs">
+      <button class="filter-tab active" data-filter="watched">Available</button>
+      <button class="filter-tab" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="watching">Running</button>
+      <button class="filter-tab" data-filter="plan">Upcoming</button>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="page-grid" id="modal-grid"></div>
+    <div class="pagination" id="modal-pagination"></div>
+  </div>
+</div>
+
+<!-- TIER HOVER CLONE - fixed position overlay for poster zoom, bypasses all stacking contexts -->
+<div id="tier-hover-clone">
+  <img src="" alt="" />
+  <div class="clone-info">
+    <div class="clone-name"></div>
+    <div class="clone-meta"></div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="logo.PNG" alt="ANIvalted Logo" onerror="this.style.display='none'" />
+    ANI<span>valted</span>
+  </a>
+  <div class="nav-search" id="nav-search-bar" style="cursor:pointer">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg>
+    <input type="text" placeholder="Search anime... (Ctrl+K)" id="nav-search-input" readonly style="cursor:pointer" />
+  </div>
+  <div class="nav-links" id="nav-links">
+    <a href="#library" class="active">Library</a>
+    <a href="#top10">Top 10</a>
+    <a href="#tiers">Tier List</a>
+    <a href="suggestion.html">Suggest</a>
+    <a href="about.html">About</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:0.75rem">
+    <!-- Mobile search icon (only shown on mobile) -->
+    <button class="nav-mobile-search-btn" id="nav-mobile-search-btn" onclick="document.getElementById('search-overlay').classList.add('active');document.body.classList.add('search-open');setTimeout(()=>document.getElementById('search-main-input').focus(),100)" title="Search">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/></svg>
+    </button>
+    <div class="nav-user-btn" id="nav-user-btn" onclick="window.location.href='save.html'" title="Saved Anime">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <p class="hero-eyebrow">アニメの宇宙 — The Anime Universe</p>
+  <h1 class="hero-title">ANI<span>valted</span></h1>
+  <p class="hero-sub">Every anime ever watched, ranked, rated, and remembered. Search, explore, and suggest. *We can not support Piracy.</p>
+  <div class="hero-stats" id="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-num" id="stat-total">—</div><div class="hero-stat-label">Total Animes</div></div>
+    <div class="hero-stat"><div class="hero-stat-num" id="stat-watched">—</div><div class="hero-stat-label">Available</div></div>
+    <div class="hero-stat"><div class="hero-stat-num" id="stat-watching">—</div><div class="hero-stat-label">Running</div></div>
+    <div class="hero-stat"><div class="hero-stat-num" id="stat-plan">—</div><div class="hero-stat-label">Upcoming</div></div>
+  </div>
+</section>
+
+<!-- SCROLL INDICATOR — fixed center bottom, hides on scroll past hero -->
+<div class="hero-scroll" id="hero-scroll-indicator">
+  <span>Scroll</span>
+  <div class="scroll-mouse"></div>
+  <!-- Mobile finger/swipe icon (hidden on desktop via CSS) -->
+  <div class="scroll-finger">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28" style="color:var(--red)">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1 1 20.25 10.5M8.288 14.212A5.25 5.25 0 1 1 17.25 10.5" />
+    </svg>
+  </div>
+  <div class="scroll-chevrons">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- LIVE — CONTINUE WATCHING -->
+<section id="live-section" class="fade-in-section" style="display:none">
+  <div class="section-header">
+    <div class="live-header-row">
+      <span class="live-dot"></span>
+      <h2 class="section-title">LIVE</h2>
+      <span class="section-subtitle">Continue</span>
+    </div>
+    <div class="section-line"></div>
+    <div class="live-actions">
+      <button class="live-btn live-btn-edit" id="live-edit-btn" onclick="toggleLiveEditMode()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg>
+        Edit
+      </button>
+      <button class="live-btn live-btn-clear" onclick="clearAllLiveHistory()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+        Clear
+      </button>
+    </div>
+  </div>
+  <div class="live-strip" id="live-strip"></div>
+</section>
+
+<!-- RUNNING ANIME -->
+<section id="watching-section" class="fade-in-section">
+  <div class="section-header">
+    <h2 class="section-title">RUNNING ANIME</h2>
+    <div class="section-line"></div>
+    <span class="section-subtitle">Live</span>
+  </div>
+  <div class="watching-strip" id="watching-strip">
+    <!-- inline skeletons replaced by real content after data loads -->
+    <div class="sk-watching-card"><div class="sk sk-watching-img"></div><div class="sk sk-watching-label"></div><div class="sk sk-watching-name"></div><div class="sk sk-watching-eps"></div></div>
+    <div class="sk-watching-card"><div class="sk sk-watching-img"></div><div class="sk sk-watching-label"></div><div class="sk sk-watching-name"></div><div class="sk sk-watching-eps"></div></div>
+    <div class="sk-watching-card"><div class="sk sk-watching-img"></div><div class="sk sk-watching-label"></div><div class="sk sk-watching-name"></div><div class="sk sk-watching-eps"></div></div>
+  </div>
+</section>
+
+<!-- UPCOMING -->
+<section id="upcoming-section" class="fade-in-section">
+  <div class="section-header">
+    <h2 class="section-title">UPCOMING</h2>
+    <div class="section-line"></div>
+    <span class="section-subtitle">Soon</span>
+  </div>
+  <div class="watching-strip" id="upcoming-strip">
+    <!-- inline skeletons replaced by real content after data loads -->
+    <div class="sk-watching-card"><div class="sk sk-watching-img"></div><div class="sk sk-watching-label"></div><div class="sk sk-watching-name"></div><div class="sk sk-watching-eps"></div></div>
+    <div class="sk-watching-card"><div class="sk sk-watching-img"></div><div class="sk sk-watching-label"></div><div class="sk sk-watching-name"></div><div class="sk sk-watching-eps"></div></div>
+    <div class="sk-watching-card"><div class="sk sk-watching-img"></div><div class="sk sk-watching-label"></div><div class="sk sk-watching-name"></div><div class="sk sk-watching-eps"></div></div>
+  </div>
+</section>
+
+<!-- LIBRARY -->
+<section id="library" class="fade-in-section">
+  <div class="section-header">
+    <h2 class="section-title">LIBRARY</h2>
+    <div class="section-line"></div>
+    <span class="section-subtitle">All Anime</span>
+    <button class="view-all-btn" onclick="openLibraryModal(document.querySelector('#filter-tabs .filter-tab.active')?.dataset.filter||'all')">View All</button>
+  </div>
+  <div class="filter-tabs" id="filter-tabs">
+    <button class="filter-tab active" data-filter="watched">Available</button>
+    <button class="filter-tab" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="watching">Running</button>
+    <button class="filter-tab" data-filter="plan">Upcoming</button>
+  </div>
+  <div id="random-grid">
+    <!-- inline skeletons: js replaces with real cards after load -->
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+    <div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>
+  </div>
+  <div style="display:flex;justify-content:center;margin-top:2.5rem;">
+    <button class="view-all-btn" onclick="openLibraryModal(document.querySelector('#filter-tabs .filter-tab.active')?.dataset.filter||'all')" style="padding:0.6rem 2rem;font-size:0.8rem;">View All →</button>
+  </div>
+</section>
+
+<!-- TOP 10 ALL TIME -->
+<section id="top10" class="fade-in-section">
+  <div class="section-header">
+    <h2 class="section-title">TOP 10 ALL TIME</h2>
+    <div class="section-line"></div>
+    <span class="section-subtitle">Life Time</span>
+  </div>
+  <div class="top10-list" id="top10-list">
+    <div class="sk-top10-item"><div class="sk sk-top10-rank"></div><div class="sk sk-top10-img"></div><div class="sk-top10-info"><div class="sk sk-top10-name"></div><div class="sk sk-top10-meta"></div></div><div class="sk sk-top10-rating"></div></div>
+    <div class="sk-top10-item"><div class="sk sk-top10-rank"></div><div class="sk sk-top10-img"></div><div class="sk-top10-info"><div class="sk sk-top10-name"></div><div class="sk sk-top10-meta"></div></div><div class="sk sk-top10-rating"></div></div>
+    <div class="sk-top10-item"><div class="sk sk-top10-rank"></div><div class="sk sk-top10-img"></div><div class="sk-top10-info"><div class="sk sk-top10-name"></div><div class="sk sk-top10-meta"></div></div><div class="sk sk-top10-rating"></div></div>
+  </div>
+</section>
+
+<!-- BEST OF YEAR -->
+<section id="top-year" class="fade-in-section">
+  <div class="section-header">
+    <h2 class="section-title">BEST OF THE YEAR</h2>
+    <div class="section-line"></div>
+    <span class="section-subtitle">Top Picks This Year</span>
+  </div>
+  <div class="top10-list" id="top-year-list">
+    <div class="sk-top10-item"><div class="sk sk-top10-rank"></div><div class="sk sk-top10-img"></div><div class="sk-top10-info"><div class="sk sk-top10-name"></div><div class="sk sk-top10-meta"></div></div><div class="sk sk-top10-rating"></div></div>
+    <div class="sk-top10-item"><div class="sk sk-top10-rank"></div><div class="sk sk-top10-img"></div><div class="sk-top10-info"><div class="sk sk-top10-name"></div><div class="sk sk-top10-meta"></div></div><div class="sk sk-top10-rating"></div></div>
+  </div>
+</section>
+
+<!-- TIER LIST -->
+<section id="tiers" class="fade-in-section">
+  <div class="section-header">
+    <h2 class="section-title">TIER LIST</h2>
+    <div class="section-line"></div>
+    <span class="section-subtitle">Rankings</span>
+  </div>
+  <div class="tear-chart" id="tear-chart">
+    <div class="sk-tier-row"><div class="sk sk-tier-label"></div><div class="sk-tier-items"><div class="sk sk-tier-poster"></div><div class="sk sk-tier-poster"></div><div class="sk sk-tier-poster"></div></div></div>
+    <div class="sk-tier-row"><div class="sk sk-tier-label"></div><div class="sk-tier-items"><div class="sk sk-tier-poster"></div><div class="sk sk-tier-poster"></div></div></div>
+    <div class="sk-tier-row"><div class="sk sk-tier-label"></div><div class="sk-tier-items"><div class="sk sk-tier-poster"></div><div class="sk sk-tier-poster"></div><div class="sk sk-tier-poster"></div><div class="sk sk-tier-poster"></div></div></div>
+  </div>
+</section>
+
+<!-- SUGGEST CTA -->
+<section class="fade-in-section">
+  <div class="suggest-cta">
+    <h2>SEEN SOMETHING<br/>MISSING HERE?</h2>
+    <p>If there's an anime that deserves to be on this list, send in a recommendation. Every suggestion is welcome. *We can not support Piracy.</p>
+    <a href="suggestion.html" class="btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+      SUGGEST AN ANIME
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <img src="logo.PNG" alt="logo" onerror="this.style.display='none'" />
+    ANI<span>valted</span>
+  </div>
+  <div class="footer-links">
+    <a href="#library">Library</a>
+    <a href="#top10">Top 10</a>
+    <a href="#tiers">Tier List</a>
+    <a href="suggestion.html">Suggest</a>
+  </div>
+  <div class="footer-socials">
+  </div>
+  <div class="footer-copy">© 2025 ANIvalted · Free for all anime fans. All rights to respective owners.</div>
+</footer>
+
+
+<script>
+  // ===== CONTENT PROTECTION =====
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('copy',        e => e.preventDefault());
+  document.addEventListener('cut',         e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    // Block Ctrl/Cmd + C, X, A, U (view-source), S (save)
+    if (e.ctrlKey || e.metaKey) {
+      if (['c','x','a','u','s'].includes(e.key.toLowerCase())) {
+        // Allow inside inputs/textareas
+        if (!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+          e.preventDefault();
+        }
+      }
+    }
+    // Block F12 / DevTools shortcut (optional, soft block only)
+    if (e.key === 'F12') e.preventDefault();
+  });
+
+  let ALL_ANIME = [];
+  const TEAR_ORDER = ['SSS','SS','S','A+','A','B+','B','C','D','E','F+','F','F-'];
+  const TEAR_COLORS = {
+    SSS:'#f5c842', SS:'#f97316', S:'#a78bfa',
+    'A+':'#2dd4bf', A:'#34d399', 'B+':'#38bdf8', B:'#60a5fa',
+    C:'#94a3b8', D:'#f87171', E:'#fb923c', 'F+':'#ef4444', F:'#dc2626', 'F-':'#991b1b'
+  };
+  const PREVIEW_COUNT = 20; // kept for compatibility
+
+  // Dynamically compute PAGE_SIZE for the "View All" modal: 45–60 items filling complete rows
+  function getPageSize() {
+    const modalBody = document.querySelector('.modal-body') || document.documentElement;
+    const bodyWidth = modalBody.clientWidth || window.innerWidth;
+    const padding = window.innerWidth <= 768 ? 40 : 80;
+    const minCard = window.innerWidth <= 480 ? 130 : 160;
+    const gap = 16;
+    const availableWidth = bodyWidth - padding;
+    const cols = Math.max(2, Math.floor((availableWidth + gap) / (minCard + gap)));
+    // Target 7-9 rows → 45-60 items on desktop (5 cols × 9 = 45, 5 cols × 12 = 60)
+    const targetRows = window.innerWidth <= 768 ? 8 : 9;
+    return cols * targetRows;
+  }
+  let PAGE_SIZE = 50; // will be updated on openLibraryModal
+
+  // ===== SKELETON POPULATION (runs immediately, before data loads) =====
+  (function buildSkeletons() {
+    // Library grid: fill correct number of skeleton cards for 5-col grid
+    const skGrid = document.getElementById('sk-library-grid');
+    if (skGrid) {
+      const cols = window.innerWidth <= 480 ? 2 : window.innerWidth <= 900 ? 3 : 5;
+      const count = cols * 2; // 2 rows worth
+      for (let i = 0; i < count; i++) {
+        skGrid.innerHTML += `<div class="sk-library-card"><div class="sk sk-library-card-img"></div><div class="sk-library-card-info"><div class="sk sk-library-card-name"></div><div class="sk sk-library-card-meta"></div></div></div>`;
+      }
+    }
+    // Tier chart: generate one skeleton row per tier
+    const skTier = document.getElementById('sk-tier-chart');
+    if (skTier) {
+      const tiers = ['SSS','SS','S','A+','A','B+','B','C','D','E','F+','F','F-'];
+      const posterCols = Math.max(4, Math.floor((window.innerWidth - 136) / (Math.ceil(80*2/3) + 3)));
+      tiers.forEach(() => {
+        const posters = Array(Math.min(posterCols, 10)).fill(0)
+          .map(() => `<div class="sk sk-tier-poster"></div>`).join('');
+        skTier.innerHTML += `<div class="sk-tier-row"><div class="sk sk-tier-label"></div><div class="sk-tier-items">${posters}</div></div>`;
+      });
+    }
+    // Watching strip: show extra card on wide screens
+    if (window.innerWidth >= 900) {
+      const extra = document.getElementById('sk-watch-5');
+      if (extra) extra.style.display = 'flex';
+    }
+  })();
+  async function loadData() {
+    try {
+      const res = await fetch('details.json');
+      ALL_ANIME = await res.json();
+    } catch(e) { ALL_ANIME = []; }
+    init();
+  }
+
+  function getAnimeUrl(anime) { return `anime.html?id=${anime.id}`; }
+  function getTearClass(tear) { return `tear-${tear}`; }
+  function getStateClass(s) { return { watched:'state-watched', watching:'state-watching', plan:'state-plan' }[s] || 'state-watched'; }
+  function getStateLabel(s) { return { watched:'AVAILABLE', watching:'RUNNING', plan:'UPCOMING' }[s] || (s ? s.toUpperCase() : ''); }
+
+  function showToast(msg, type = 'info') {
+    const ex = document.querySelector('.toast'); if (ex) ex.remove();
+    const t = document.createElement('div');
+    t.className = `toast ${type}`; t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.style.opacity = '0', 3000);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // ===== NAV ===== 
+  function toggleMenu() {
+    const links = document.getElementById('nav-links');
+    const isOpen = links.classList.toggle('open');
+    document.getElementById('nav-hamburger').innerHTML = isOpen
+      ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>`;
+  }
+  window.toggleMenu = toggleMenu;
+  // Ensure hamburger works on touch-only devices (some mobile browsers need explicit touch listener)
+  document.getElementById('nav-hamburger').addEventListener('touchend', function(e) {
+    e.preventDefault();
+    toggleMenu();
+  });
+
+  // Close menu on outside click
+  document.addEventListener('click', (e) => {
+    const links = document.getElementById('nav-links');
+    const hamburger = document.getElementById('nav-hamburger');
+    if (links && links.classList.contains('open') && !links.contains(e.target) && !hamburger.contains(e.target)) {
+      links.classList.remove('open');
+      hamburger.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>`;
+    }
+  });
+  // Close menu on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('nav-links')?.classList.remove('open');
+      // Also restore scroll if search was open (setupSearch handles its own ESC but backup here)
+      document.body.classList.remove('search-open');
+    }
+  });
+
+
+
+  // ===== ADD TO LIBRARY (localStorage only) =====
+  const SAVE_KEY = 'anivalted_saved';
+  function getSavedIds() {
+    try { return JSON.parse(localStorage.getItem(SAVE_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function setSavedIds(ids) {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(ids)); } catch(e) {}
+  }
+
+  function toggleLibrary(animeId, btn) {
+    const saved = getSavedIds();
+    const savedStr = saved.map(i => String(i));
+    const inLib = savedStr.includes(String(animeId));
+    if (inLib) {
+      setSavedIds(saved.filter(id => String(id) !== String(animeId)));
+      window._userLibrary = (window._userLibrary || []).filter(id => String(id) !== String(animeId));
+      btn.classList.remove('in-library');
+      btn.title = 'Save anime';
+      showToast('Removed from saved', 'info');
+    } else {
+      // Guard: never add duplicates
+      if (!savedStr.includes(String(animeId))) {
+        saved.push(String(animeId));
+        setSavedIds(saved);
+        window._userLibrary = [...(window._userLibrary || []), String(animeId)];
+      }
+      btn.classList.add('in-library');
+      btn.title = 'Remove from saved';
+      showToast('Saved! ✓', 'success');
+    }
+  }
+  window.toggleLibrary = toggleLibrary;
+
+  // ===== COUNTS =====
+  function animateCount(el, target, duration = 1200) {
+    let start = 0;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      el.textContent = Math.floor(p * target);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    };
+    requestAnimationFrame(step);
+  }
+
+  function buildStats() {
+    setTimeout(() => {
+      animateCount(document.getElementById('stat-total'), ALL_ANIME.length);
+      animateCount(document.getElementById('stat-watched'), ALL_ANIME.filter(a=>a.state==='watched').length);
+      animateCount(document.getElementById('stat-watching'), ALL_ANIME.filter(a=>a.state==='watching').length);
+      animateCount(document.getElementById('stat-plan'), ALL_ANIME.filter(a=>a.state==='plan').length);
+    }, 800);
+  }
+
+  // ===== GRID CARD (uniform, matches modal) =====
+  function makeCard(anime, i) {
+    // Sync _userLibrary from localStorage on first use
+    if (!window._userLibrary) {
+      try { window._userLibrary = JSON.parse(localStorage.getItem('anivalted_saved') || '[]'); } catch(e) { window._userLibrary = []; }
+    }
+    const inLib = (window._userLibrary || []).map(i => String(i)).includes(String(anime.id));
+    const card = document.createElement('a');
+    card.className = 'page-anime-card';
+    card.href = getAnimeUrl(anime);
+    card.innerHTML = `
+      <img src="${anime.image}" alt="${anime.name}" loading="lazy"
+        onerror="this.src='https://via.placeholder.com/300x450/14141f/e8321a?text=${encodeURIComponent(anime.name)}'" />
+      <div class="${getStateClass(anime.state)} anime-card-state">${getStateLabel(anime.state)}</div>
+      <div class="page-anime-card-info">
+        <div class="page-anime-card-name">${anime.name}</div>
+        <div class="page-anime-card-meta">${anime.tear} Tier · ${anime.rating ?? '?'}/10</div>
+      </div>
+      <button class="card-add-btn ${inLib?'in-library':''}" data-id="${anime.id}" title="${inLib?'Remove from library':'Add to library'}" onclick="event.preventDefault();event.stopPropagation();toggleLibrary('${anime.id}',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="${inLib?'currentColor':'none'}" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+      </button>
+    `;
+    return card;
+  }
+
+  // ===== LIBRARY PREVIEW — shows 15-25 cards dynamically based on viewport =====
+  function buildGrid(animes) {
+    const grid = document.getElementById('random-grid');
+    grid.innerHTML = '';
+    const cols = window.innerWidth <= 480 ? 2 : window.innerWidth <= 900 ? 3 : 5;
+    // Target 3-5 rows so total is between 15-25 on desktop (5 cols × 3-5 rows)
+    const targetRows = window.innerWidth <= 480 ? 4 : window.innerWidth <= 900 ? 4 : 4;
+    const previewCount = Math.min(animes.length, cols * targetRows); // e.g. 20 on desktop
+    const shuffled = [...animes].sort(() => Math.random() - 0.5).slice(0, previewCount);
+    shuffled.forEach((anime, i) => grid.appendChild(makeCard(anime, i)));
+  }
+
+  // ===== LIVE — WATCH HISTORY =====
+  const LIVE_KEY_PREFIX = 'anivalted_live_';
+  function liveKey() { return LIVE_KEY_PREFIX + 'guest'; }
+  function getLiveHistory() {
+    try { return JSON.parse(localStorage.getItem(liveKey()) || '[]'); } catch(e) { return []; }
+  }
+  function saveLiveHistory(arr) {
+    try { localStorage.setItem(liveKey(), JSON.stringify(arr)); } catch(e) {}
+  }
+  // Call this from watch.html or anime.html to save progress
+  window.saveLiveEntry = function(entry) {
+    // entry = { animeId, animeName, animeImage, episodeLabel, url, progress }
+    let hist = getLiveHistory();
+    hist = hist.filter(h => h.animeId !== entry.animeId); // remove old entry for same anime
+    hist.unshift({ ...entry, savedAt: Date.now() });
+    if (hist.length > 20) hist = hist.slice(0, 20);
+    saveLiveHistory(hist);
+  };
+  let _liveEditMode = false;
+  window.toggleLiveEditMode = function() {
+    _liveEditMode = !_liveEditMode;
+    const btn = document.getElementById('live-edit-btn');
+    if (btn) {
+      if (_liveEditMode) {
+        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Done`;
+        btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)';
+      } else {
+        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z"/></svg> Edit`;
+        btn.style.borderColor = ''; btn.style.color = '';
+      }
+    }
+    document.querySelectorAll('.live-card').forEach(c => {
+      if (_liveEditMode) c.classList.add('edit-mode'); else c.classList.remove('edit-mode');
+    });
+  };
+  window.deleteLiveEntry = function(animeId) {
+    let hist = getLiveHistory().filter(h => h.animeId !== animeId);
+    saveLiveHistory(hist);
+    buildLive();
+  };
+  window.clearAllLiveHistory = function() {
+    saveLiveHistory([]);
+    buildLive();
+  };
+  function buildLive() {
+    const section = document.getElementById('live-section');
+    const strip = document.getElementById('live-strip');
+    if (!strip || !section) return;
+    const hist = getLiveHistory();
+    if (hist.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    strip.innerHTML = '';
+    hist.forEach(entry => {
+      const card = document.createElement('div');
+      card.className = 'live-card' + (_liveEditMode ? ' edit-mode' : '');
+      card.dataset.id = entry.animeId;
+      const progress = entry.progress || 0;
+      card.innerHTML = `
+        <button class="live-del-btn" onclick="event.preventDefault();deleteLiveEntry('${entry.animeId}')" title="Remove">✕</button>
+        <a href="${entry.url || '#'}" style="text-decoration:none;color:inherit;display:block">
+          <div class="live-card-thumb-wrap">
+            <img src="${entry.animeImage || ''}" alt="${entry.animeName || ''}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(entry.animeName||'?')}'" />
+            <div class="live-progress-bar"><div class="live-progress-fill" style="width:${progress}%"></div></div>
+          </div>
+          <div class="live-card-title">${entry.animeName || '—'}</div>
+          <div class="live-card-ep">${entry.episodeLabel || 'Continue watching'}</div>
+        </a>`;
+      strip.appendChild(card);
+    });
+  }
+
+  // ===== WATCHING STRIP =====
+  function buildWatching() {
+    const strip = document.getElementById('watching-strip');
+    const watching = ALL_ANIME.filter(a => a.state === 'watching');
+    if (watching.length === 0) { document.getElementById('watching-section').style.display = 'none'; return; }
+    strip.innerHTML = '';
+    watching.forEach(anime => {
+      const card = document.createElement('a');
+      card.className = 'watching-card';
+      card.href = getAnimeUrl(anime);
+      card.innerHTML = `
+        <img class="watching-thumb" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(anime.name)}'" />
+        <div class="watching-pulse"><span class="pulse-dot"></span> RUNNING</div>
+        <div class="watching-title">${anime.name}</div>
+        <div class="watching-eps">${anime.season || ''}</div>
+      `;
+      strip.appendChild(card);
+    });
+  }
+
+  // ===== UPCOMING STRIP =====
+  function buildUpcoming() {
+    const strip = document.getElementById('upcoming-strip');
+    const upcoming = ALL_ANIME.filter(a => a.state === 'plan');
+    if (upcoming.length === 0) { document.getElementById('upcoming-section').style.display = 'none'; return; }
+    strip.innerHTML = '';
+    upcoming.forEach(anime => {
+      const card = document.createElement('a');
+      card.className = 'watching-card';
+      card.href = getAnimeUrl(anime);
+      card.innerHTML = `
+        <img class="watching-thumb" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/60a5fa?text=${encodeURIComponent(anime.name)}'" />
+        <div class="watching-pulse" style="color:#60a5fa;border-color:rgba(96,165,250,0.3)"><span class="pulse-dot" style="background:#60a5fa;box-shadow:0 0 6px #60a5fa"></span> UPCOMING</div>
+        <div class="watching-title">${anime.name}</div>
+        <div class="watching-eps">${anime.season || ''}</div>
+      `;
+      strip.appendChild(card);
+    });
+  }
+
+  // ===== TOP 10 =====
+  function buildTop10(sst, containerId) {
+    const container = document.getElementById(containerId);
+    const list = ALL_ANIME.filter(a=>a.sst===sst&&a.rank).sort((a,b)=>a.rank-b.rank).slice(0,10);
+    container.innerHTML = '';
+    if (list.length === 0) { container.innerHTML = '<p style="color:var(--muted);font-size:0.85rem">No entries yet.</p>'; return; }
+    list.forEach(anime => {
+      const item = document.createElement('a');
+      item.className = 'top10-item';
+      item.href = getAnimeUrl(anime);
+      item.innerHTML = `
+        <div class="top10-rank ${anime.rank===1?'gold':''}">#${anime.rank}</div>
+        <img class="top10-img" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/80x120/14141f/e8321a?text=${anime.rank}'" />
+        <div class="top10-info">
+          <div class="top10-name">${anime.name}</div>
+          <div class="top10-meta">
+            <span class="meta-tag ${getTearClass(anime.tear)}">${anime.tear} TIER</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-tag">${anime.language||''}</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-tag">${anime.season||''}</span>
+          </div>
+        </div>
+        <div class="top10-rating"><div class="rating-num">${anime.rating}</div><div class="rating-denom">/10</div></div>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  // ===== TIER HOVER CLONE SYSTEM =====
+  // A single fixed element on <body> that mimics the poster at a larger size.
+  // This completely sidesteps overflow:hidden / stacking context clipping.
+  const clone = document.getElementById('tier-hover-clone');
+  const cloneImg  = clone.querySelector('img');
+  const cloneName = clone.querySelector('.clone-name');
+  const cloneMeta = clone.querySelector('.clone-meta');
+  let cloneHideTimer = null;
+
+  function showClone(poster, animeData, tearLabel) {
+    clearTimeout(cloneHideTimer);
+    const rect = poster.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Dynamic size: scale relative to viewport
+    const baseH = Math.round(Math.max(120, Math.min(200, vh * 0.22)));
+    const baseW = Math.round(baseH * 2 / 3);
+
+    // Position: center over the poster but clamp to viewport edges
+    let left = rect.left + rect.width / 2 - baseW / 2;
+    let top  = rect.top  + rect.height / 2 - baseH / 2;
+    left = Math.max(8, Math.min(left, vw - baseW - 8));
+    top  = Math.max(8, Math.min(top,  vh - baseH - 8));
+
+    clone.style.width  = baseW + 'px';
+    clone.style.height = baseH + 'px';
+    clone.style.left   = left  + 'px';
+    clone.style.top    = top   + 'px';
+    cloneImg.src = animeData.image;
+    cloneName.textContent = animeData.name;
+    cloneMeta.textContent = `${tearLabel} · ${animeData.rating ?? '?'}/10 · ${getStateLabel(animeData.state)}`;
+
+    // Force reflow then animate in
+    clone.style.display = 'block';
+    requestAnimationFrame(() => clone.classList.add('visible'));
+
+    poster.classList.add('hovered');
+  }
+
+  function hideClone(poster) {
+    clone.classList.remove('visible');
+    if (poster) poster.classList.remove('hovered');
+    cloneHideTimer = setTimeout(() => { clone.style.display = 'none'; }, 200);
+  }
+
+  // Hide clone immediately on any scroll — cursor leaves poster during scroll
+  // but mouseleave doesn't always fire when the page moves under a static cursor
+  window.addEventListener('scroll', () => {
+    if (clone.classList.contains('visible')) {
+      clone.classList.remove('visible');
+      clone.style.display = 'none';
+      // Also clear any hovered state on all posters
+      document.querySelectorAll('.tier-poster.hovered').forEach(p => p.classList.remove('hovered'));
+    }
+  }, { passive: true });
+
+  // ===== TIER CHART (full inline - all tiers, all anime, h-scroll per row) =====
+  function buildTierChart() {
+    const chart = document.getElementById('tear-chart');
+    chart.innerHTML = '';
+
+    TEAR_ORDER.forEach(tear => {
+      const animes = ALL_ANIME.filter(a => a.tear === tear);
+      if (animes.length === 0) return;
+      const color = TEAR_COLORS[tear] || '#6b6b80';
+
+      const row = document.createElement('div');
+      row.className = `tear-row tear-${CSS.escape(tear)}-row`;
+
+      const label = document.createElement('div');
+      label.className = 'tear-label';
+      label.style.cssText = `background:${color}22;color:${color}`;
+      label.textContent = tear;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'tear-items-wrap';
+
+      const items = document.createElement('div');
+      items.className = 'tear-items';
+
+      animes.forEach(anime => {
+        const poster = document.createElement('a');
+        poster.className = 'tier-poster';
+        poster.href = getAnimeUrl(anime);
+        poster.innerHTML = `<img src="${anime.image}" alt="${anime.name}" loading="lazy"
+            onerror="this.src='https://via.placeholder.com/60x90/14141f/e8321a?text=${encodeURIComponent(anime.name[0])}'" />`;
+
+        poster.addEventListener('mouseenter', () => showClone(poster, anime, tear));
+        poster.addEventListener('mouseleave', () => hideClone(poster));
+        // Also hide if user clicks through to anime page
+        poster.addEventListener('click', () => hideClone(poster));
+
+        items.appendChild(poster);
+      });
+
+      wrap.appendChild(items);
+      row.appendChild(label);
+      row.appendChild(wrap);
+      chart.appendChild(row);
+    });
+  }
+
+  // openTierModal is no longer used
+  window.openTierModal = function() {};
+
+  // ===== FULL LIBRARY MODAL WITH PAGINATION =====
+  let modalCurrentPage = 1;
+  let modalCurrentFilter = 'all';
+  let modalAnimes = [];
+
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function openLibraryModal(filter = 'all') {
+    modalCurrentFilter = filter;
+    modalCurrentPage = 1;
+    PAGE_SIZE = getPageSize();
+    const base = filter === 'all' ? ALL_ANIME : ALL_ANIME.filter(a=>a.state===filter);
+    modalAnimes = shuffleArray(base);
+    document.getElementById('library-modal').classList.add('active');
+    // Sync the active tab in the modal header
+    document.querySelectorAll('#modal-filter-tabs .filter-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === filter);
+    });
+    renderModalPage();
+    setupModalTabs();
+  }
+  window.openLibraryModal = openLibraryModal;
+
+  function closeLibraryModal() {
+    // Sync main-page filter to whatever was active in the modal
+    const modalActiveFilter = document.querySelector('#modal-filter-tabs .filter-tab.active')?.dataset.filter || 'watched';
+    document.querySelectorAll('#filter-tabs .filter-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === modalActiveFilter);
+    });
+    const filtered = modalActiveFilter === 'all' ? ALL_ANIME : ALL_ANIME.filter(a => a.state === modalActiveFilter);
+    buildGrid(filtered);
+    // Update subtitle label
+    const subtitle = document.querySelector('#library .section-subtitle');
+    if (subtitle) subtitle.textContent = FILTER_LABELS[modalActiveFilter] || 'All Anime';
+    document.getElementById('library-modal').classList.remove('active');
+  }
+  window.closeLibraryModal = closeLibraryModal;
+
+  function renderModalPage() {
+    const grid = document.getElementById('modal-grid');
+    const start = (modalCurrentPage - 1) * PAGE_SIZE;
+    const page = modalAnimes.slice(start, start + PAGE_SIZE);
+    grid.innerHTML = '';
+    page.forEach(anime => {
+      const card = document.createElement('a');
+      card.className = 'page-anime-card';
+      card.href = getAnimeUrl(anime);
+      card.innerHTML = `
+        <img src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(anime.name)}'" />
+        <div class="page-anime-card-info">
+          <div class="page-anime-card-name">${anime.name}</div>
+          <div class="page-anime-card-meta">${anime.tear} Tier · ${anime.rating??'?'}/10 · ${getStateLabel(anime.state)}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+    renderPagination();
+    document.getElementById('modal-grid').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function renderPagination() {
+    const totalPages = Math.ceil(modalAnimes.length / PAGE_SIZE);
+    const pag = document.getElementById('modal-pagination');
+    pag.innerHTML = '';
+    if (totalPages <= 1) return;
+    const prev = document.createElement('button');
+    prev.className = 'page-btn'; prev.textContent = '←'; prev.disabled = modalCurrentPage === 1;
+    prev.onclick = () => { modalCurrentPage--; renderModalPage(); };
+    pag.appendChild(prev);
+    for (let i = 1; i <= totalPages; i++) {
+      if (totalPages > 7 && Math.abs(i - modalCurrentPage) > 2 && i !== 1 && i !== totalPages) {
+        if (i === 2 || i === totalPages - 1) { const dots = document.createElement('span'); dots.textContent = '…'; dots.style.cssText = 'padding:0 0.5rem;color:var(--muted);display:flex;align-items:center'; pag.appendChild(dots); }
+        continue;
+      }
+      const btn = document.createElement('button');
+      btn.className = `page-btn ${i === modalCurrentPage ? 'active' : ''}`;
+      btn.textContent = i;
+      btn.onclick = () => { modalCurrentPage = i; renderModalPage(); };
+      pag.appendChild(btn);
+    }
+    const next = document.createElement('button');
+    next.className = 'page-btn'; next.textContent = '→'; next.disabled = modalCurrentPage === totalPages;
+    next.onclick = () => { modalCurrentPage++; renderModalPage(); };
+    pag.appendChild(next);
+  }
+
+  function setupModalTabs() {
+    document.querySelectorAll('#modal-filter-tabs .filter-tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('#modal-filter-tabs .filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        modalCurrentFilter = btn.dataset.filter;
+        modalCurrentPage = 1;
+        PAGE_SIZE = getPageSize();
+        const base = modalCurrentFilter === 'all' ? ALL_ANIME : ALL_ANIME.filter(a=>a.state===modalCurrentFilter);
+        modalAnimes = shuffleArray(base);
+        renderModalPage();
+      };
+    });
+  }
+
+  // ===== FILTER TABS (HOME) =====
+  const FILTER_LABELS = { all: 'All Anime', watched: 'Available', watching: 'Running', plan: 'Upcoming' };
+  function buildFilterTabs() {
+    document.querySelectorAll('#filter-tabs .filter-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#filter-tabs .filter-tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        // Update section subtitle to reflect active category
+        const subtitle = document.querySelector('.section-subtitle');
+        if (subtitle) subtitle.textContent = FILTER_LABELS[filter] || 'All Anime';
+        const filtered = filter === 'all' ? ALL_ANIME : ALL_ANIME.filter(a=>a.state===filter);
+        buildGrid(filtered);
+      });
+    });
+  }
+
+  // ===== SEARCH =====
+  function setupSearch() {
+    const overlay = document.getElementById('search-overlay');
+    const mainInput = document.getElementById('search-main-input');
+    const results = document.getElementById('search-results');
+    const navBar = document.getElementById('nav-search-bar');
+
+    const open = () => {
+      overlay.classList.add('active');
+      document.body.classList.add('search-open'); // lock page scroll
+      setTimeout(() => mainInput.focus(), 100);
+    };
+    const close = () => {
+      overlay.classList.remove('active');
+      document.body.classList.remove('search-open'); // restore page scroll
+      mainInput.value = '';
+      results.innerHTML = '';
+    };
+
+    navBar.addEventListener('click', open);
+    document.getElementById('close-search').addEventListener('click', close);
+    // Click backdrop to close
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') close();
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); open(); }
+    });
+
+    // How many suggestion cards fit in one row?
+    function getSuggestionCount() {
+      const available = Math.min(window.innerWidth, 680) - 64; // max-width minus padding
+      const cardW = 56 + 16; // img width + gap approx
+      return Math.max(3, Math.min(10, Math.floor(available / cardW)));
+    }
+
+    mainInput.addEventListener('input', () => {
+      const q = mainInput.value.toLowerCase().trim();
+      results.innerHTML = '';
+      if (!q) return;
+
+      const hits = ALL_ANIME.filter(a =>
+        a.name.toLowerCase().includes(q) ||
+        (a.altName && a.altName.toLowerCase().includes(q)) ||
+        (a.genre && a.genre.join(' ').toLowerCase().includes(q))
+      ).slice(0, 8);
+
+      if (!hits.length) {
+        // No results: show suggest button + random anime grid
+        const n = getSuggestionCount();
+        const suggestions = [...ALL_ANIME].filter(a => a.state === 'watched' || a.state === 'watching').sort(() => Math.random() - 0.5).slice(0, n);
+
+        results.innerHTML = `
+          <div style="text-align:center;padding:1.5rem 0 1rem;display:flex;flex-direction:column;align-items:center;gap:1rem">
+            <p style="color:var(--muted);font-size:0.85rem;letter-spacing:1px">No anime found. Maybe suggest it? *We can not support Piracy.</p>
+            <a href="suggestion.html" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.5rem;background:var(--red);color:#fff;border-radius:4px;font-family:var(--font-display);font-size:1rem;letter-spacing:2px;text-decoration:none;transition:background 0.2s" onmouseover="this.style.background='#d02a14'" onmouseout="this.style.background='var(--red)'">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+              SUGGEST IT
+            </a>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:1.25rem;margin-top:0.25rem">
+            <p style="color:var(--muted);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;text-align:center">You might like these</p>
+            <div id="search-suggestions-row" style="display:flex;gap:10px;justify-content:center;flex-wrap:nowrap"></div>
+          </div>`;
+
+        const row = results.querySelector('#search-suggestions-row');
+        suggestions.forEach(anime => {
+          const card = document.createElement('a');
+          card.href = getAnimeUrl(anime);
+          card.title = anime.name;
+          card.style.cssText = 'flex-shrink:0;width:56px;text-decoration:none;display:block;text-align:center';
+          card.innerHTML = `
+            <img src="${anime.image}" alt="${anime.name}"
+              style="width:56px;height:84px;object-fit:cover;border-radius:5px;border:1px solid var(--border);transition:border-color 0.2s"
+              onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'"
+              onerror="this.src='https://via.placeholder.com/56x84/14141f/e8321a?text=${encodeURIComponent(anime.name[0])}'"/>
+            <div style="font-size:0.5rem;color:var(--muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:56px">${anime.name}</div>`;
+          row.appendChild(card);
+        });
+        return;
+      }
+
+      hits.forEach(anime => {
+        const item = document.createElement('a');
+        item.className = 'search-result-item';
+        item.href = getAnimeUrl(anime);
+        item.innerHTML = `
+          <img src="${anime.image}" alt="${anime.name}" onerror="this.src='https://via.placeholder.com/40x60/14141f/e8321a?text=${anime.name[0]}'" />
+          <div>
+            <div class="search-result-name">${anime.name}</div>
+            <div class="search-result-meta">${anime.tear} Tier · ${anime.rating ?? '?'}/10 · ${getStateLabel(anime.state)}</div>
+          </div>`;
+        results.appendChild(item);
+      });
+    });
+  }
+
+  // ===== HERO MOUSE TRAIL (desktop only) =====
+  function setupHeroTrail() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    const hero = document.querySelector('.hero');
+    if (!hero) return;
+
+    let lastSpawn = 0;
+    const INTERVAL = 110; // ms
+    const SIZES = [
+      { w: 52, h: 78 }, { w: 62, h: 93 }, { w: 44, h: 66 },
+      { w: 58, h: 87 }, { w: 48, h: 72 }
+    ];
+
+    function spawnPoster(x, y) {
+      if (!ALL_ANIME.length) return;
+      const anime = ALL_ANIME[Math.floor(Math.random() * ALL_ANIME.length)];
+      const sz  = SIZES[Math.floor(Math.random() * SIZES.length)];
+      const rot = (Math.random() * 28 - 14).toFixed(1);
+
+      const el = document.createElement('div');
+      el.className = 'hero-trail-poster';
+      // Offset so poster is centred on cursor
+      el.style.cssText = [
+        `width:${sz.w}px`,
+        `height:${sz.h}px`,
+        `left:${(x - sz.w / 2).toFixed(0)}px`,
+        `top:${(y - sz.h / 2).toFixed(0)}px`,
+        `--rot:${rot}deg`
+      ].join(';');
+      el.innerHTML = `<img src="${anime.image}" alt="" draggable="false"
+        onerror="this.parentElement.remove()" />`;
+
+      // Insert as first child — behind .hero-bg, .hero-grid and all hero text
+      hero.insertBefore(el, hero.firstChild);
+      setTimeout(() => el.remove(), 1050);
+    }
+
+    hero.addEventListener('mousemove', e => {
+      const now = Date.now();
+      if (now - lastSpawn < INTERVAL) return;
+      lastSpawn = now;
+      // Always compute relative to hero's top-left — offsetX/Y is relative to
+      // whatever child element the event originates on, which causes the top-left bug.
+      const rect = hero.getBoundingClientRect();
+      spawnPoster(e.clientX - rect.left, e.clientY - rect.top);
+    });
+  }
+
+  // ===== INTERSECTION OBSERVER =====
+  function setupAnimations() {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in-section').forEach(el=>obs.observe(el));
+
+    // ── Scroll indicator logic ──
+    // • Fades in 1.4 s after page load (matches original feel)
+    // • User scrolls down → stays visible 1 s, then fades out
+    // • User scrolls back to landing page → fades in again immediately
+    const scrollEl = document.getElementById('hero-scroll-indicator');
+    if (scrollEl) {
+      // Fade in on load
+      setTimeout(() => { scrollEl.style.opacity = '1'; }, 1400);
+
+      window.addEventListener('scroll', () => {
+        const inHero = window.scrollY < window.innerHeight * 0.25;
+        scrollEl.style.opacity = inHero ? '1' : '0';
+      }, { passive: true });
+    }
+  }
+
+  // ===== INIT =====
+  function init() {
+    buildStats();
+    buildLive();
+    buildWatching();
+    buildUpcoming();
+    buildGrid(ALL_ANIME.filter(a=>a.state==='watched')); // default: Available
+    buildTop10('top_life','top10-list');
+    buildTop10('top_year','top-year-list');
+    buildTierChart();
+    buildFilterTabs();
+    setupSearch();
+    setupHeroTrail();
+    setupAnimations();
+  }
+
+  // Hide splash immediately — no auth required
+  (function() {
+    const splash = document.getElementById('page-splash');
+    if (splash) { splash.classList.add('hidden'); setTimeout(() => splash.remove(), 600); }
+  })();
+
+  loadData();
+
+  // ── Mobile tab scroll spy ──
+  (function() {
+    if (window.innerWidth > 768) return;
+    const sections = [
+      { id: null,        tab: 0 },  // top → Home
+      { id: 'library',   tab: 1 },
+      { id: 'top10',     tab: 2 },
+      { id: 'tiers',     tab: 3 },
+    ];
+    const tabs = document.querySelectorAll('#mob-tab-bar .mob-tab');
+    function setActive(idx) {
+      tabs.forEach((t,i) => t.classList.toggle('active', i === idx));
+    }
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY + window.innerHeight * 0.35;
+      let active = 0;
+      sections.forEach((s, i) => {
+        if (!s.id) return;
+        const el = document.getElementById(s.id);
+        if (el && el.offsetTop <= y) active = s.tab;
+      });
+      setActive(active);
+    }, { passive: true });
+  })();
+
+</script>
+<script src="miniplayer.js"></script>
+</body>
+</html>

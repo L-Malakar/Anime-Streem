@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — ANIvalted</title>
+  <link rel="icon" type="image/png" href="logo.PNG" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Serif+JP:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080810; --surface: #0e0e1a; --surface2: #14141f;
+      --border: rgba(255,255,255,0.06); --red: #e8321a;
+      --red-glow: rgba(232,50,26,0.35); --orange: #f97316;
+      --gold: #f5c842; --text: #e8e8f0; --muted: #6b6b80;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-jp: 'Noto Serif JP', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; user-select: none; -webkit-user-select: none; }
+    ::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: var(--bg); } ::-webkit-scrollbar-thumb { background: var(--red); }
+
+    /* ═══ NAV (desktop) ═══ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 64px;
+      background: rgba(8,8,16,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 3px; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; }
+    .nav-logo img { height: 36px; width: auto; object-fit: contain; }
+    .nav-logo span { color: var(--red); }
+    .nav-links { display: flex; align-items: center; gap: 1.2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.78rem; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+    /* Tier & Suggest look like styled nav-pills */
+    .nav-pill {
+      padding: 0.3rem 0.85rem; border: 1px solid var(--border);
+      border-radius: 5px; font-size: 0.72rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted); text-decoration: none;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-pill:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .nav-pill.suggest { border-color: rgba(232,50,26,0.35); color: var(--red); }
+    .nav-pill.suggest:hover { background: rgba(232,50,26,0.1); border-color: var(--red); }
+
+    /* ═══ MOBILE TOP BAR ═══ */
+    #mob-top-bar {
+      display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 56px; background: rgba(8,8,16,0.97); backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(232,50,26,0.18);
+      align-items: center; justify-content: space-between; padding: 0 1rem;
+    }
+    .mob-logo { font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 3px; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 0.35rem; }
+    .mob-logo img { height: 24px; object-fit: contain; }
+    .mob-logo span { color: var(--red); }
+    .mob-top-actions { display: flex; align-items: center; gap: 0.25rem; }
+    .mob-icon-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    /* ═══ MOBILE BOTTOM TAB BAR ═══ */
+    #mob-tab-bar {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+      height: 62px; background: rgba(8,8,16,0.98); backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,0.06); align-items: stretch;
+    }
+    .mob-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: var(--font-body); font-size: 0.58rem; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: color 0.2s; text-decoration: none; padding: 0 0 2px; -webkit-tap-highlight-color: transparent; }
+    .mob-tab.active { color: var(--red); }
+    .mob-tab.active svg { filter: drop-shadow(0 0 5px rgba(232,50,26,0.65)); }
+
+    /* Switch to mobile layout below 768px */
+    @media (max-width: 768px) {
+      nav { display: none !important; }
+      #mob-top-bar { display: flex !important; }
+      #mob-tab-bar { display: flex !important; }
+      body { padding-bottom: 62px; }
+      #ch-hero { padding-top: 56px; }
+    }
+    @media (min-width: 769px) {
+      #mob-top-bar { display: none !important; }
+      #mob-tab-bar { display: none !important; }
+    }
+
+    /* ═══ NOISE OVERLAY ═══ */
+    body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:9999; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E"); }
+
+    /* ═══ PROGRESS BAR ═══ */
+    #progress-bar { position:fixed; top:64px; left:0; height:2px; background:linear-gradient(90deg,var(--red),var(--gold)); width:0%; z-index:800; transition:width 0.05s linear; box-shadow:0 0 12px var(--red-glow); }
+    @media(max-width:768px) { #progress-bar { top: 56px; } }
+
+    /* ═══ SCROLL INDICATOR — exact copy from index.html ═══ */
+    .hero-scroll {
+      position: fixed;
+      bottom: 1.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: fit-content;
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      opacity: 0;
+      z-index: 300;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    .hero-scroll span { font-size: 0.6rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
+    /* Desktop: animated mouse */
+    .scroll-mouse {
+      width: 24px; height: 38px; border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 12px; position: relative; display: flex; justify-content: center;
+    }
+    .scroll-mouse::before {
+      content: '';
+      width: 3px; height: 7px;
+      background: var(--red);
+      border-radius: 2px;
+      position: absolute; top: 6px;
+      animation: scrollWheel 1.8s cubic-bezier(0.45,0.05,0.55,0.95) infinite;
+    }
+    @keyframes scrollWheel {
+      0%   { opacity: 1; transform: translateY(0); }
+      60%  { opacity: 0; transform: translateY(12px); }
+      61%  { opacity: 0; transform: translateY(0); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    /* Chevrons (used by both) */
+    .scroll-chevrons {
+      display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: 2px;
+    }
+    .scroll-chevrons span {
+      display: block; width: 10px; height: 10px;
+      border-right: 2px solid var(--red); border-bottom: 2px solid var(--red);
+      transform: rotate(45deg);
+      animation: chevronFade 1.8s ease infinite;
+      letter-spacing: 0;
+    }
+    .scroll-chevrons span:nth-child(1) { animation-delay: 0s;    opacity: 0.3; }
+    .scroll-chevrons span:nth-child(2) { animation-delay: 0.18s; opacity: 0.3; }
+    .scroll-chevrons span:nth-child(3) { animation-delay: 0.36s; opacity: 0.3; }
+    @keyframes chevronFade { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+    /* Mobile: hide mouse, show finger swipe icon instead */
+    .scroll-finger { display: none; }
+    @media (max-width: 768px) {
+      .hero-scroll { bottom: calc(62px + 1.25rem); }
+      .scroll-mouse { display: none; }
+      .scroll-finger {
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        animation: fingerBounce 1.8s ease-in-out infinite;
+      }
+      .scroll-finger svg { opacity: 0.7; }
+      @keyframes fingerBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+    }
+
+    /* ═══ REVEAL ═══ */
+    .reveal { opacity:0; transform:translateY(60px); transition:opacity 0.9s cubic-bezier(0.22,1,0.36,1), transform 0.9s cubic-bezier(0.22,1,0.36,1); }
+    .reveal.left  { transform:translateX(-80px); }
+    .reveal.right { transform:translateX(80px); }
+    .reveal.scale { transform:scale(0.75); }
+    .reveal.visible { opacity:1!important; transform:none!important; }
+    .reveal.d1{transition-delay:0.1s} .reveal.d2{transition-delay:0.2s} .reveal.d3{transition-delay:0.35s} .reveal.d4{transition-delay:0.5s} .reveal.d5{transition-delay:0.65s}
+
+    /* ═══ CH1 HERO ═══ */
+    #ch-hero { min-height:100vh; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:80px 2rem 4rem; position:relative; overflow:hidden; }
+    @media(max-width:768px){ #ch-hero { min-height:100svh; padding:72px 1.25rem 4rem; } }
+    .hero-orb { position:absolute; border-radius:50%; filter:blur(120px); pointer-events:none; animation:floatOrb 8s ease-in-out infinite; }
+    .hero-orb.o1{width:600px;height:600px;background:rgba(232,50,26,0.12);top:-200px;left:-200px;animation-delay:0s}
+    .hero-orb.o2{width:400px;height:400px;background:rgba(245,200,66,0.07);bottom:-100px;right:-100px;animation-delay:3s}
+    .hero-orb.o3{width:300px;height:300px;background:rgba(249,115,22,0.08);top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:1.5s}
+    @keyframes floatOrb { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-30px) scale(1.05)} }
+    .kanji-bg { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+    .kanji-char { position:absolute; font-family:var(--font-jp); color:rgba(255,255,255,0.04); animation:kanjiDrift linear infinite; }
+    @keyframes kanjiDrift { from{transform:translateY(110vh) rotate(0deg);opacity:0} 5%{opacity:1} 95%{opacity:0.8} to{transform:translateY(-20vh) rotate(360deg);opacity:0} }
+    .hero-eyebrow { font-size:0.7rem; letter-spacing:4px; text-transform:uppercase; color:var(--red); margin-bottom:1.5rem; }
+    .hero-eyebrow::before,.hero-eyebrow::after { content:''; display:inline-block; width:40px; height:1px; background:var(--red); vertical-align:middle; margin:0 12px; opacity:0.6; }
+    .hero-headline { font-family:var(--font-display); font-size:clamp(3.5rem,10vw,9rem); letter-spacing:4px; line-height:0.9; }
+    .hero-headline .line-red{color:var(--red)} .hero-headline .line-gold{color:var(--gold)}
+    .hero-sub { font-size:clamp(1rem,2.5vw,1.4rem); color:var(--muted); max-width:640px; margin:2rem auto 0; font-weight:300; line-height:1.7; }
+    .hero-sub strong{color:var(--text);font-weight:600}
+    .lang-tags { display:flex; flex-wrap:wrap; gap:0.6rem; justify-content:center; margin-top:2.5rem; max-width:600px; }
+    .lang-tag { padding:0.35rem 0.9rem; border:1px solid var(--border); border-radius:20px; font-size:0.78rem; font-weight:500; letter-spacing:1px; color:var(--text); background:var(--surface2); animation:tagPulse 3s ease-in-out infinite; }
+    .lang-tag:nth-child(1){animation-delay:0.0s}.lang-tag:nth-child(2){animation-delay:0.3s}.lang-tag:nth-child(3){animation-delay:0.6s}
+    .lang-tag:nth-child(4){animation-delay:0.9s}.lang-tag:nth-child(5){animation-delay:1.2s}.lang-tag:nth-child(6){animation-delay:1.5s}
+    .lang-tag:nth-child(7){animation-delay:1.8s}.lang-tag:nth-child(8){animation-delay:2.1s}
+    @keyframes tagPulse { 0%,100%{border-color:var(--border);color:var(--muted)} 50%{border-color:var(--red);color:var(--text);box-shadow:0 0 12px rgba(232,50,26,0.3)} }
+
+    /* ═══ CH2 FREE ═══ */
+    #ch-free{background:radial-gradient(ellipse at center,#0e0e1a 0%,#080810 70%);padding:6rem 2rem}
+    @media(max-width:768px){#ch-free{padding:4rem 1.25rem}}
+    .free-inner{max-width:1100px;margin:0 auto;text-align:center}
+    .free-tagline{font-family:var(--font-display);font-size:clamp(4rem,12vw,11rem);letter-spacing:6px;line-height:1;background:linear-gradient(135deg,#fff 20%,var(--gold) 60%,var(--red) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:4rem}
+    @media(max-width:768px){.pillars{grid-template-columns:1fr;gap:1rem;margin-top:2.5rem}}
+    .pillar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem 1.5rem;text-align:center;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.3s}
+    .pillar::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(232,50,26,0.08) 0%,transparent 70%);opacity:0;transition:opacity 0.3s}
+    .pillar:hover{border-color:var(--red);transform:translateY(-4px)} .pillar:hover::before{opacity:1}
+    .pillar-icon{font-size:2.5rem;margin-bottom:1rem;display:block}
+    .pillar-title{font-family:var(--font-display);font-size:1.8rem;letter-spacing:2px;color:var(--text);margin-bottom:0.5rem}
+    .pillar-sub{font-size:0.82rem;color:var(--muted);line-height:1.6}
+
+    /* ═══ CH3 ONE CLICK ═══ */
+    #ch-oneclick{background:var(--bg);padding:6rem 2rem}
+    @media(max-width:768px){#ch-oneclick{padding:4rem 1.25rem}}
+    .oneclick-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+    @media(max-width:768px){.oneclick-inner{grid-template-columns:1fr;gap:2.5rem}}
+    .section-eyebrow{font-size:0.7rem;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:1rem}
+    .section-title{font-family:var(--font-display);font-size:clamp(2.5rem,5vw,5rem);letter-spacing:2px;line-height:1;margin-bottom:1.5rem}
+    .section-body{color:var(--muted);line-height:1.8;font-size:0.95rem}
+    .section-body strong{color:var(--text)}
+    .click-demo{display:flex;flex-direction:column;align-items:center;gap:2rem}
+    .click-btn-demo{padding:1.2rem 3rem;background:var(--red);font-family:var(--font-display);font-size:1.8rem;letter-spacing:3px;color:#fff;border:none;border-radius:6px;cursor:pointer;animation:btnGlow 2s ease-in-out infinite;position:relative;overflow:hidden;text-decoration:none;display:inline-block;transition:transform 0.2s}
+    .click-btn-demo:hover{transform:scale(1.04)}
+    @media(max-width:768px){.click-btn-demo{padding:1rem 2rem;font-size:1.4rem;letter-spacing:2px;width:100%;text-align:center}}
+    @keyframes btnGlow{0%,100%{box-shadow:0 0 20px rgba(232,50,26,0.4)}50%{box-shadow:0 0 60px rgba(232,50,26,0.8),0 0 120px rgba(232,50,26,0.3)}}
+    .steps-flow{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:center}
+    .step-node{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1.2rem;font-size:0.78rem;letter-spacing:1px;color:var(--muted);text-align:center;min-width:90px;transition:all 0.3s}
+    .step-node.active{border-color:var(--red);color:var(--text);background:rgba(232,50,26,0.1);box-shadow:0 0 16px rgba(232,50,26,0.2)}
+    .step-arrow{color:var(--muted);font-size:1.2rem}
+
+    /* ═══ CH4 VAULT ═══ */
+    #ch-mosaic{background:var(--bg);padding:6rem 0 4rem;position:relative;overflow:hidden}
+    @media(max-width:768px){#ch-mosaic{padding:4rem 0 2.5rem}}
+    .mosaic-header{text-align:center;padding:0 2rem;margin-bottom:3rem}
+    .mosaic-title{font-family:var(--font-display);font-size:clamp(2.5rem,6vw,6rem);letter-spacing:3px}
+    .mosaic-title .accent{color:var(--red)}
+    .scroll-strip{overflow:hidden;margin-bottom:1.5rem;position:relative}
+    .scroll-strip::before,.scroll-strip::after{content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none}
+    .scroll-strip::before{left:0;background:linear-gradient(to right,var(--bg),transparent)}
+    .scroll-strip::after{right:0;background:linear-gradient(to left,var(--bg),transparent)}
+    .strip-inner{display:flex;gap:16px;width:max-content;animation:scrollLeft 35s linear infinite}
+    .strip-inner.reverse{animation:scrollRight 32s linear infinite}
+    @keyframes scrollLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes scrollRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+    .strip-poster{width:120px;height:180px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1px solid var(--border);position:relative;transition:transform 0.3s,border-color 0.2s;display:block;text-decoration:none}
+    .strip-poster:hover{transform:scale(1.08);z-index:5;border-color:rgba(232,50,26,0.6)}
+    .strip-poster img{width:100%;height:100%;object-fit:cover;filter:brightness(0.8) saturate(1.1);transition:filter 0.3s;display:block}
+    .strip-poster:hover img{filter:brightness(1) saturate(1.3)}
+    .strip-poster .overlay{position:absolute;bottom:0;left:0;right:0;padding:0.5rem;background:linear-gradient(to top,rgba(0,0,0,0.9),transparent);font-size:0.55rem;letter-spacing:1px;color:var(--text);font-family:var(--font-display)}
+
+    /* ═══ CH5 HALL OF FAME ═══ */
+    #ch-titles{background:radial-gradient(ellipse at 80% 50%,rgba(232,50,26,0.06),transparent 60%),var(--bg);padding:6rem 2rem}
+    @media(max-width:768px){#ch-titles{padding:4rem 1.25rem}}
+    .titles-inner{max-width:1100px;margin:0 auto}
+    .titles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+    @media(max-width:768px){.titles-grid{grid-template-columns:1fr;gap:0.75rem}}
+    .title-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;display:flex;align-items:center;gap:1rem;transition:all 0.3s;position:relative;overflow:hidden;text-decoration:none;color:var(--text)}
+    .title-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transition:transform 0.3s;transform-origin:bottom}
+    .title-card:hover{border-color:rgba(232,50,26,0.4);transform:translateX(6px)} .title-card:hover::before{transform:scaleY(1)}
+    .title-card:hover .title-num{color:var(--red)}
+    .title-card-poster{width:44px;height:66px;border-radius:5px;overflow:hidden;flex-shrink:0}
+    .title-card-poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .title-num{font-family:var(--font-display);font-size:2.5rem;letter-spacing:2px;color:rgba(255,255,255,0.08);line-height:1;min-width:52px;text-align:center;transition:color 0.3s}
+    .title-info{flex:1}
+    .title-name{font-family:var(--font-display);font-size:1.2rem;letter-spacing:1.5px;color:var(--text);line-height:1.1}
+    .title-badge{display:inline-block;margin-top:0.3rem;padding:0.2rem 0.6rem;border-radius:3px;font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+    .badge-goat{background:rgba(245,200,66,0.15);color:var(--gold);border:1px solid rgba(245,200,66,0.3)}
+    .badge-big3{background:rgba(232,50,26,0.15);color:var(--red);border:1px solid rgba(232,50,26,0.3)}
+    .badge-isekai{background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.3)}
+    .badge-banger{background:rgba(249,115,22,0.15);color:var(--orange);border:1px solid rgba(249,115,22,0.3)}
+    .badge-new{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)}
+
+    /* ═══ CH6 ABOUT ═══ */
+    #ch-about{background:var(--bg);padding:6rem 2rem;position:relative}
+    @media(max-width:768px){#ch-about{padding:4rem 1.25rem}}
+    .about-inner{max-width:900px;margin:0 auto;text-align:center}
+    .about-quote{font-family:var(--font-jp);font-size:clamp(0.9rem,2.5vw,1.3rem);color:var(--muted);line-height:1.9;margin:2rem 0;padding:2rem;border-left:2px solid var(--red);text-align:left;background:var(--surface);border-radius:0 8px 8px 0}
+    @media(max-width:768px){.about-quote{padding:1.25rem;font-size:0.85rem;line-height:1.7}}
+    .about-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:3rem}
+    @media(max-width:600px){.about-grid{grid-template-columns:repeat(2,1fr)}}
+    .about-stat{text-align:center;padding:1.5rem 0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;transition:border-color 0.3s}
+    .about-stat:hover{border-color:rgba(232,50,26,0.4)}
+    .about-stat-num{font-family:var(--font-display);font-size:clamp(2rem,5vw,3.2rem);letter-spacing:2px;color:var(--red);line-height:1}
+    .about-stat-label{font-size:0.65rem;letter-spacing:2px;color:var(--muted);margin-top:0.4rem;text-transform:uppercase}
+
+    /* ═══ CH7 3D RING — IMPROVED ═══ */
+    #ch-ring{background:radial-gradient(circle at center,#0e0e1a 0%,var(--bg) 70%);padding:6rem 2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;position:relative;overflow:hidden}
+    @media(max-width:768px){#ch-ring{padding:4rem 1.25rem;min-height:auto}}
+    .ring-title{font-family:var(--font-display);font-size:clamp(2rem,5vw,4rem);letter-spacing:3px;text-align:center;margin-bottom:4rem;position:relative;z-index:2}
+    @media(max-width:768px){.ring-title{margin-bottom:2.5rem}}
+    .ring-glow-bg{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,50,26,0.1) 0%,transparent 70%);filter:blur(60px);pointer-events:none;animation:ringGlowPulse 7s ease-in-out infinite}
+    @keyframes ringGlowPulse{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.3);opacity:1.2}}
+
+    /* Outer perspective container */
+    .scene-3d {
+      width: 460px; height: 460px;
+      perspective: 900px;
+      perspective-origin: 50% 50%;
+      position: relative; z-index: 2; flex-shrink: 0;
+    }
+    @media(max-width:600px){.scene-3d{width:300px;height:300px;perspective:700px;}}
+    @media(max-width:400px){.scene-3d{width:260px;height:260px;perspective:600px;}}
+
+    /* Ring wrapper — JS drives its transform (float + tilt) */
+    .ring-3d {
+      width:100%; height:100%;
+      transform-style: preserve-3d;
+      position: relative;
+      /* NO CSS animation here — JS owns all transforms */
+    }
+
+    /* Individual poster cards */
+    .ring-card {
+      position: absolute; width: 90px; height: 135px;
+      left: 50%; top: 50%; margin-left: -45px; margin-top: -67px;
+      border-radius: 8px; overflow: hidden;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      transform-style: preserve-3d;
+      backface-visibility: visible;
+      transition: border-color 0.3s;
+      text-decoration: none; display: block;
+      will-change: transform, opacity, filter;
+    }
+    .ring-card:hover { border-color: var(--red); }
+    .ring-card img { width:100%; height:100%; object-fit:cover; display:block; }
+    .ring-card-label { position:absolute; bottom:0; left:0; right:0; padding:0.3rem; background:linear-gradient(to top,rgba(0,0,0,0.9),transparent); font-family:var(--font-display); font-size:0.48rem; letter-spacing:0.8px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* ═══ CH8 WHY ═══ */
+    #ch-why{background:var(--bg);padding:6rem 2rem}
+    @media(max-width:768px){#ch-why{padding:4rem 1.25rem}}
+    .why-inner{max-width:1100px;margin:0 auto}
+    .why-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;margin-top:3rem}
+    @media(max-width:768px){.why-features{grid-template-columns:1fr;gap:1rem;margin-top:2rem}}
+    .why-feat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;position:relative;overflow:hidden;transition:border-color 0.3s}
+    .why-feat:hover{border-color:rgba(232,50,26,0.5)}
+    .why-feat-num{font-family:var(--font-display);font-size:5rem;letter-spacing:2px;color:rgba(232,50,26,0.12);line-height:1;position:absolute;top:0.5rem;right:1rem}
+    .why-feat-icon{font-size:2rem;margin-bottom:1rem}
+    .why-feat-title{font-family:var(--font-display);font-size:1.6rem;letter-spacing:2px;color:var(--text);margin-bottom:0.75rem}
+    .why-feat-body{font-size:0.85rem;color:var(--muted);line-height:1.7}
+
+    /* ═══ CH9 CTA ═══ */
+    #ch-cta{min-height:80vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:4rem 2rem;position:relative;overflow:hidden}
+    @media(max-width:768px){#ch-cta{min-height:auto;padding:5rem 1.25rem}}
+    .cta-inner{text-align:center;position:relative;z-index:2}
+    .cta-title{font-family:var(--font-display);font-size:clamp(3rem,8vw,8rem);letter-spacing:4px;line-height:1}
+    .cta-sub{color:var(--muted);font-size:1rem;margin:1.5rem 0 3rem}
+    .cta-btn{display:inline-block;padding:1.2rem 4rem;background:var(--red);color:#fff;text-decoration:none;font-family:var(--font-display);font-size:2rem;letter-spacing:4px;border-radius:6px;box-shadow:0 0 60px rgba(232,50,26,0.5);transition:transform 0.2s,box-shadow 0.2s}
+    @media(max-width:768px){.cta-btn{padding:1rem 2.5rem;font-size:1.5rem;letter-spacing:2px}}
+    .cta-btn:hover{transform:scale(1.05);box-shadow:0 0 100px rgba(232,50,26,0.8)}
+    .cta-bg-text{position:absolute;font-family:var(--font-display);font-size:20vw;letter-spacing:4px;color:rgba(255,255,255,0.02);white-space:nowrap;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+
+    footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--muted);font-size:0.75rem;letter-spacing:1.5px}
+    footer a{color:var(--red);text-decoration:none}
+    #particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.35}
+  </style>
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<!-- ═══ MOBILE TOP BAR ═══ -->
+<div id="mob-top-bar">
+  <a class="mob-logo" href="index.html">
+    <img src="logo.PNG" alt="ANIvalted" onerror="this.style.display='none'" />
+    ANI<span>valted</span>
+  </a>
+  <div class="mob-top-actions">
+    <a class="mob-icon-btn" href="tier.html" title="Tier List">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+    </a>
+    <a class="mob-icon-btn" href="suggestion.html" title="Suggest Anime">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- ═══ MOBILE BOTTOM TAB BAR ═══ -->
+<div id="mob-tab-bar">
+  <a class="mob-tab" href="index.html">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
+    <span>Home</span>
+  </a>
+  <a class="mob-tab" href="tier.html">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+    <span>Tiers</span>
+  </a>
+  <a class="mob-tab" href="suggestion.html">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+    <span>Suggest</span>
+  </a>
+  <a class="mob-tab active" href="about.html">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+    <span>About</span>
+  </a>
+</div>
+
+<!-- ═══ DESKTOP NAV ═══ -->
+<nav>
+  <a href="index.html" class="nav-logo">
+    <img src="logo.PNG" alt="" onerror="this.style.display='none'" />
+    ANI<span>valted</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html#library">Library</a>
+    <a href="index.html#top10">Top 10</a>
+    <a href="index.html#tiers">Tier List</a>
+    <a href="suggestion.html" class="nav-pill suggest">Suggest</a>
+    <a href="about.html" class="active">About</a>
+  </div>
+</nav>
+
+<div id="progress-bar"></div>
+
+<!-- ═══ SCROLL INDICATOR (exact from index.html) ═══ -->
+<div class="hero-scroll" id="hero-scroll-indicator">
+  <span>Scroll</span>
+  <!-- Desktop: animated mouse -->
+  <div class="scroll-mouse"></div>
+  <!-- Mobile: finger/swipe icon -->
+  <div class="scroll-finger">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28" style="color:var(--red)">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1 1 20.25 10.5M8.288 14.212A5.25 5.25 0 1 1 17.25 10.5" />
+    </svg>
+  </div>
+  <div class="scroll-chevrons">
+    <span></span><span></span><span></span>
+  </div>
+</div>
+
+<!-- ════════ CH1 HERO ════════ -->
+<section id="ch-hero">
+  <div class="hero-orb o1"></div><div class="hero-orb o2"></div><div class="hero-orb o3"></div>
+  <div class="kanji-bg" id="kanji-bg"></div>
+  <div class="hero-eyebrow reveal d1">ANIvalted · The Anime Universe</div>
+  <h1 class="hero-headline reveal d2">
+    <div>DO YOU WANT</div>
+    <div>TO <span class="line-red">ENJOY</span></div>
+    <div>ANIME <span class="line-gold">SERIES</span></div>
+  </h1>
+  <p class="hero-sub reveal d3">Watch your favourite anime in your <strong>mother tongue</strong>.<br/>Every language. Every culture. Every story.</p>
+  <div class="lang-tags reveal d4">
+    <span class="lang-tag">🇮🇳 Hindi</span><span class="lang-tag">🇬🇧 English</span>
+    <span class="lang-tag">🇯🇵 Japanese</span><span class="lang-tag">🌊 Telugu</span>
+    <span class="lang-tag">🌿 Tamil</span><span class="lang-tag">🌴 Malayalam</span>
+    <span class="lang-tag">🌻 Kannada</span><span class="lang-tag">🌸 Bangla</span>
+  </div>
+</section>
+
+<!-- ════════ CH2 FREE ════════ -->
+<section id="ch-free">
+  <div class="free-inner">
+    <div class="free-tagline reveal scale">FOR FREE</div>
+    <div class="pillars">
+      <div class="pillar reveal d1"><span class="pillar-icon">🚫</span><div class="pillar-title">NO ADS</div><div class="pillar-sub">Zero interruptions. Zero popups. Zero autoplay garbage. Just pure anime, the way it's meant to be experienced.</div></div>
+      <div class="pillar reveal d2"><span class="pillar-icon">🔒</span><div class="pillar-title">NO TRACKER</div><div class="pillar-sub">Your watch history stays with you. We don't collect, sell, or peek at your data. Privacy is not a feature — it's a right.</div></div>
+      <div class="pillar reveal d3"><span class="pillar-icon">⚡</span><div class="pillar-title">NO CLUTTER</div><div class="pillar-sub">No logins nagging you. No newsletter popups. No cookie banners. Clean. Fast. Direct.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CH3 ONE CLICK ════════ -->
+<section id="ch-oneclick">
+  <div class="oneclick-inner">
+    <div>
+      <div class="section-eyebrow reveal">The ANIvalted Promise</div>
+      <h2 class="section-title reveal d1">ONE CLICK.<br/>DIRECT ACCESS.</h2>
+      <p class="section-body reveal d2">No rabbit holes. No redirects. No "please disable your adblocker" guilt trips.<br/><br/><strong>Find anime → Click → Watch.</strong><br/><br/>That's the entire product spec. Every title is one tap away — on any device, any time, any language.</p>
+    </div>
+    <div class="click-demo reveal right d2">
+      <div class="steps-flow">
+        <div class="step-node" id="step1">SEARCH</div>
+        <span class="step-arrow">→</span>
+        <div class="step-node" id="step2">SELECT</div>
+        <span class="step-arrow">→</span>
+        <div class="step-node" id="step3">WATCH</div>
+      </div>
+      <a id="watch-now-btn" href="index.html" class="click-btn-demo" onclick="goRandomAnime(event)">WATCH NOW</a>
+      <p style="font-size:0.7rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">No sign up required</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CH4 THE VAULT ════════ -->
+<section id="ch-mosaic">
+  <div class="mosaic-header">
+    <div class="section-eyebrow reveal">The Vault</div>
+    <h2 class="mosaic-title reveal d1">LATEST <span class="accent">·</span> GREATEST <span class="accent">·</span> LEGENDARY</h2>
+  </div>
+  <div class="scroll-strip"><div class="strip-inner" id="strip1"></div></div>
+  <div class="scroll-strip"><div class="strip-inner reverse" id="strip2"></div></div>
+  <div class="scroll-strip"><div class="strip-inner" id="strip3"></div></div>
+</section>
+
+<!-- ════════ CH5 HALL OF FAME ════════ -->
+<section id="ch-titles">
+  <div class="titles-inner">
+    <div style="margin-bottom:3rem;">
+      <div class="section-eyebrow reveal">Hall of Fame</div>
+      <h2 class="section-title reveal d1">THE <span style="color:var(--red)">BIG</span> TITLES</h2>
+      <p class="section-body reveal d2" style="max-width:600px;">Top 10 All Time — pulled directly from the ANIvalted rankings. These are the anime that defined the art form.</p>
+    </div>
+    <div class="titles-grid" id="titles-grid"></div>
+  </div>
+</section>
+
+<!-- ════════ CH6 ABOUT ════════ -->
+<section id="ch-about">
+  <div class="about-inner">
+    <div class="section-eyebrow reveal">Our Story</div>
+    <h2 class="section-title reveal d1">BUILT BY FANS.<br/><span style="color:var(--red)">FOR FANS.</span></h2>
+    <blockquote class="about-quote reveal d2">ANIvalted was born out of frustration. Too many sites. Too many ads. Too many broken links and suspicious popups. We wanted one place — clean, fast, honest — where any anime fan in India and beyond could find their favourite series, discover hidden gems, and watch without shame or hassle. So we built it.</blockquote>
+    <p class="section-body reveal d3" style="margin:1.5rem 0;">We believe anime is more than entertainment — it's culture, philosophy, emotion. Demon Slayer isn't just a fight scene; it's a meditation on grief. Frieren isn't just a fantasy; it's a question about what makes a life meaningful. Stories like these deserve to be accessible to everyone — in every language, at no cost.</p>
+    <div class="about-grid">
+      <div class="about-stat reveal d1"><div class="about-stat-num" id="stat-total">0</div><div class="about-stat-label">Total Animes</div></div>
+      <div class="about-stat reveal d2"><div class="about-stat-num" id="stat-available">0</div><div class="about-stat-label">Available</div></div>
+      <div class="about-stat reveal d3"><div class="about-stat-num" id="stat-running">0</div><div class="about-stat-label">Running</div></div>
+      <div class="about-stat reveal d4"><div class="about-stat-num" id="stat-upcoming">0</div><div class="about-stat-label">Upcoming</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CH7 3D UNIVERSE RING ════════ -->
+<section id="ch-ring">
+  <div class="ring-glow-bg"></div>
+  <h2 class="ring-title reveal">THE <span style="color:var(--red)">UNIVERSE</span> ROTATES</h2>
+  <div class="scene-3d reveal scale d1">
+    <div class="ring-3d" id="ring-3d"></div>
+  </div>
+  <p class="reveal d2" style="color:var(--muted);font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;margin-top:3rem;position:relative;z-index:2;">Hundreds of worlds. One destination.</p>
+</section>
+
+<!-- ════════ CH8 WHY ════════ -->
+<section id="ch-why">
+  <div class="why-inner">
+    <div class="section-eyebrow reveal">Why ANIvalted</div>
+    <h2 class="section-title reveal d1">DIFFERENT BY<br/><span style="color:var(--gold)">DESIGN</span></h2>
+    <div class="why-features">
+      <div class="why-feat reveal d1"><div class="why-feat-num">01</div><div class="why-feat-icon">🌍</div><div class="why-feat-title">MULTILINGUAL FIRST</div><div class="why-feat-body">Anime was made in Japan. But stories belong to everyone. Hindi, English, Japanese, Telugu, Tamil, Malayalam, Kannada, Bangla and more — watch in your tongue.</div></div>
+      <div class="why-feat reveal d2"><div class="why-feat-num">02</div><div class="why-feat-icon">🏆</div><div class="why-feat-title">CURATED, NOT DUMPED</div><div class="why-feat-body">Every title in our library is there on purpose. We rate, tier, and rank every anime — so you always know what's worth your time before you hit play.</div></div>
+      <div class="why-feat reveal d3"><div class="why-feat-num">03</div><div class="why-feat-icon">⚡</div><div class="why-feat-title">LIGHTNING FAST</div><div class="why-feat-body">No bloat. No 30 JavaScript frameworks. Whether on 5G or a village 3G connection — ANIvalted loads instantly, every time.</div></div>
+      <div class="why-feat reveal d1"><div class="why-feat-num">04</div><div class="why-feat-icon">🔍</div><div class="why-feat-title">SMART SEARCH</div><div class="why-feat-body">Type a title, a character, a vibe. Find exactly what you're looking for in under a second — no account, no history, no trace.</div></div>
+      <div class="why-feat reveal d2"><div class="why-feat-num">05</div><div class="why-feat-icon">📱</div><div class="why-feat-title">ANY DEVICE</div><div class="why-feat-body">Desktop, tablet, phone — ANIvalted is built mobile-first. No app required. Just open a browser and you're home. Works the same, everywhere.</div></div>
+      <div class="why-feat reveal d3"><div class="why-feat-num">06</div><div class="why-feat-icon">🆓</div><div class="why-feat-title">FOREVER FREE</div><div class="why-feat-body">Not a trial. Not freemium. Not "free with limitations." Free. Full stop. Great anime discovery should never be paywalled. That's a promise.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ CH9 CTA ════════ -->
+<section id="ch-cta">
+  <div class="cta-bg-text">ANIVALTED</div>
+  <div class="cta-inner">
+    <div class="section-eyebrow reveal">What are you waiting for?</div>
+    <h2 class="cta-title reveal d1">START<br/><span style="color:var(--red)">WATCHING</span><br/>TODAY</h2>
+    <p class="cta-sub reveal d2">Free. Fast. No strings attached.</p>
+    <a href="index.html" class="cta-btn reveal d3">EXPLORE NOW</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 <a href="index.html">ANIvalted</a> · Built by fans, for fans · No ads. No trackers. No nonsense.</p>
+</footer>
+
+<script>
+// ══════════════════════════════════════
+// 1. BLOCK RIGHT CLICK + COPY + F12
+// ══════════════════════════════════════
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('copy',  e => e.preventDefault());
+document.addEventListener('cut',   e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12') e.preventDefault();
+  if ((e.ctrlKey || e.metaKey) && ['c','x','a','u','s'].includes(e.key.toLowerCase())) {
+    if (!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) e.preventDefault();
+  }
+});
+
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+let ALL_ANIME = [];
+async function loadData() {
+  try { const r = await fetch('details.json'); ALL_ANIME = await r.json(); }
+  catch(e) { ALL_ANIME = []; }
+  init();
+}
+const isNotUpcoming = a => a.state !== 'plan';
+const getAnimeUrl   = a => `anime.html?id=${a.id}`;
+const getWatchUrl   = a => `watch.html?id=${a.id}`;
+
+// ══════════════════════════════════════
+// 2. WATCH NOW — random non-upcoming
+// ══════════════════════════════════════
+window.goRandomAnime = function(e) {
+  e.preventDefault();
+  const pool = ALL_ANIME.filter(isNotUpcoming);
+  if (!pool.length) { window.location.href='index.html'; return; }
+  window.location.href = getAnimeUrl(pool[Math.floor(Math.random()*pool.length)]);
+};
+
+// ══════════════════════════════════════
+// 3. VAULT STRIPS
+// ══════════════════════════════════════
+function buildStrips() {
+  const pool = [...ALL_ANIME.filter(isNotUpcoming)].sort(()=>Math.random()-0.5);
+  if (!pool.length) return;
+  const t = Math.ceil(pool.length/3);
+  const groups = [pool.slice(0,t), pool.slice(t,t*2), pool.slice(t*2)];
+  ['strip1','strip2','strip3'].forEach((id,gi)=>{
+    const el = document.getElementById(id); if (!el) return;
+    const grp = groups[gi].length>=3 ? groups[gi] : pool.slice(0,Math.max(3,pool.length));
+    [0,1].forEach(()=>grp.forEach(anime=>{
+      const a = document.createElement('a');
+      a.className='strip-poster'; a.href=getWatchUrl(anime); a.title=anime.name;
+      a.innerHTML=`<img src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://placehold.co/120x180/14141f/e8321a?text=${encodeURIComponent((anime.name||'?')[0])}'" /><div class="overlay">${anime.name}</div>`;
+      el.appendChild(a);
+    }));
+  });
+}
+
+// ══════════════════════════════════════
+// 4. HALL OF FAME
+// ══════════════════════════════════════
+const BADGE_MAP=[['attack on titan','goat'],['death note','goat'],['fullmetal alchemist','goat'],['demon slayer','big3'],['my hero academia','big3'],['one piece','big3'],['naruto','big3'],['re:zero','isekai'],['slime','isekai'],['overlord','isekai'],['spy x family','banger'],['spy × family','banger'],['chainsaw man','banger'],['jujutsu kaisen','banger'],['jjk','banger'],['frieren','new'],['classroom of the elite','banger'],['lord of miseries','new']];
+const BADGE_LABEL={goat:'GOAT',big3:'BIG 3',isekai:'ISEKAI',banger:'BANGER',new:'NEW'};
+function getBadge(name){const k=(name||'').toLowerCase();for(const[m,v]of BADGE_MAP)if(k.includes(m))return v;return'banger';}
+function buildTop10(){
+  const grid=document.getElementById('titles-grid'); if(!grid)return;
+  let list=ALL_ANIME.filter(a=>a.sst==='top_life'&&a.rank).sort((a,b)=>a.rank-b.rank).slice(0,10);
+  if(!list.length) list=ALL_ANIME.filter(isNotUpcoming).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,10);
+  grid.innerHTML='';
+  list.forEach((anime,i)=>{
+    const badge=getBadge(anime.name);
+    const card=document.createElement('a');
+    card.className='title-card reveal'; card.style.transitionDelay=(i%3*0.12)+'s'; card.href=getAnimeUrl(anime);
+    card.innerHTML=`<div class="title-num">${String(i+1).padStart(2,'0')}</div><div class="title-card-poster"><img src="${anime.image}" alt="${anime.name}" onerror="this.src='https://placehold.co/44x66/14141f/e8321a?text=${encodeURIComponent((anime.name||'?')[0])}'" /></div><div class="title-info"><div class="title-name">${anime.name}</div><span class="title-badge badge-${badge}">${BADGE_LABEL[badge]}</span><span style="margin-left:0.4rem;font-size:0.6rem;color:var(--muted)">${anime.rating?anime.rating+'/10':anime.tear?anime.tear+' Tier':''}</span></div>`;
+    grid.appendChild(card); revealObs.observe(card);
+  });
+}
+
+// ══════════════════════════════════════
+// 5. STATS
+// ══════════════════════════════════════
+function buildStats(){
+  const count=(fn)=>ALL_ANIME.filter(fn).length;
+  animateCount('stat-total',    ALL_ANIME.length);
+  animateCount('stat-available',count(a=>a.state==='watched'));
+  animateCount('stat-running',  count(a=>a.state==='watching'));
+  animateCount('stat-upcoming', count(a=>a.state==='plan'));
+}
+function animateCount(id,target){
+  const el=document.getElementById(id); if(!el)return;
+  let cur=0; const step=Math.max(1,target/55);
+  const t=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.floor(cur);if(cur>=target){el.textContent=target;clearInterval(t);}},16);
+}
+const statObs=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){buildStats();statObs.disconnect();}},{threshold:0.25});
+
+// ══════════════════════════════════════════════════════════════════
+// 6. 3D RING — MULTI-LAYER ANIMATION SYSTEM
+//
+// Layers (all composited every frame via rAF):
+//  A. ORBIT      – cards spin around Y axis at base speed
+//  B. BREATHE    – whole ring radius expands & contracts (inhale/exhale)
+//  C. FLOAT      – whole ring bobs up & down slowly
+//  D. TILT WAVE  – ring's X-axis tilt oscillates forward/back
+//  E. CARD RIPPLE– each card has its own Y offset ripple (wave around ring)
+//  F. CARD SPIN  – each card gently self-rotates on Z (tumble)
+//  G. DEPTH FX   – scale, opacity, brightness driven by Z depth
+//  H. BILLBOARD  – counter-rotate Y so poster always faces camera
+// ══════════════════════════════════════════════════════════════════
+let ringCards    = [];
+let ringStartTime = null;
+let ringRingEl   = null;   // the .ring-3d wrapper (we transform it for float/tilt)
+
+// ── Timing constants (all in ms or radians/ms) ──
+const R_ORBIT_SPEED  = 0.00030;  // full orbit ≈ 21 s
+const R_BREATHE_SPD  = 0.00045;  // radius breathe (disabled)
+const R_BREATHE_AMP  = 0;        // breathe removed — radius is fixed
+const R_BASE_RADIUS  = 235;      // locked to expanded radius (was 180 + 55 amp)
+const R_FLOAT_SPD    = 0.00028;  // whole-ring bob ≈ 22 s
+const R_FLOAT_AMP    = 38;       // ±38 px vertical float
+const R_TILT_SPD     = 0.00018;  // tilt wave ≈ 35 s
+const R_TILT_AMP     = 18;       // ±18° X-tilt
+const R_RIPPLE_AMP   = 32;       // ±32 px per-card Y ripple
+const R_SPIN_SPD     = 0.00008;  // self-spin speed (per card, very slow)
+const R_SPIN_AMP     = 10;       // ±10° self Z-spin
+
+function buildRing() {
+  const ring = document.getElementById('ring-3d');
+  if (!ring) return;
+  ringRingEl = ring;
+
+  // Responsive radius: lock to expanded size but scale for screen width
+  const vw = Math.min(window.innerWidth, 500);
+  const sceneSize = vw <= 400 ? 260 : vw <= 600 ? 300 : 460;
+  // Lock radius to 51% of scene so cards sit near the edge at all times
+  window._ringRadius = Math.round(sceneSize * 0.51);
+
+  const pool = [...ALL_ANIME.filter(isNotUpcoming)].sort(() => Math.random() - 0.5);
+  if (!pool.length) return;
+
+  const COUNT = Math.min(12, pool.length);
+  ring.innerHTML = '';
+  ringCards = [];
+
+  for (let i = 0; i < COUNT; i++) {
+    const anime = pool[i];
+    // Each card gets a unique random phase offset for its ripple & spin
+    const baseAngle   = (i / COUNT) * Math.PI * 2;
+    const ripplePhase = Math.random() * Math.PI * 2;
+    const spinPhase   = Math.random() * Math.PI * 2;
+    const spinDir     = Math.random() > 0.5 ? 1 : -1; // some spin CW, some CCW
+
+    const card = document.createElement('a');
+    card.className = 'ring-card';
+    card.href  = getAnimeUrl(anime);
+    card.title = anime.name;
+    card.innerHTML = `
+      <img src="${anime.image}" alt="${anime.name}" loading="lazy"
+           onerror="this.src='https://placehold.co/90x135/14141f/e8321a?text=${encodeURIComponent((anime.name||'?')[0])}'" />
+      <div class="ring-card-label">${anime.name}</div>`;
+    ring.appendChild(card);
+    ringCards.push({ el: card, baseAngle, ripplePhase, spinPhase, spinDir });
+  }
+
+  requestAnimationFrame(animateRing);
+}
+
+function animateRing(ts) {
+  if (!ringStartTime) ringStartTime = ts;
+  const t = ts - ringStartTime;
+
+  // ── B. BREATHE — removed; radius is fixed (locked to expanded size) ──
+  const radius = window._ringRadius || R_BASE_RADIUS;
+
+  // ── C. FLOAT — whole ring vertical bob ──
+  const ringFloatY = Math.sin(t * R_FLOAT_SPD) * R_FLOAT_AMP;
+
+  // ── D. TILT WAVE — X-axis tilt oscillates (leans toward / away viewer) ──
+  const tiltX = Math.sin(t * R_TILT_SPD) * R_TILT_AMP;
+  // Secondary slower tilt on Z for a lazy tumble
+  const tiltZ = Math.sin(t * R_TILT_SPD * 0.6 + 1.2) * (R_TILT_AMP * 0.4);
+
+  // Apply float + tilt to the whole ring wrapper
+  if (ringRingEl) {
+    ringRingEl.style.transform =
+      `translateY(${ringFloatY.toFixed(2)}px) rotateX(${tiltX.toFixed(2)}deg) rotateZ(${tiltZ.toFixed(2)}deg)`;
+  }
+
+  // ── A. ORBIT angle ──
+  const globalAngle = t * R_ORBIT_SPEED;
+
+  ringCards.forEach(({ el, baseAngle, ripplePhase, spinPhase, spinDir }) => {
+    const angle = globalAngle + baseAngle;
+
+    // ── Card position on orbit circle ──
+    const x = Math.sin(angle) * radius;
+    const z = Math.cos(angle) * radius;
+
+    // ── E. RIPPLE — per-card sinusoidal Y offset creates a wave around the ring ──
+    const ripple = Math.sin(angle * 2 + ripplePhase + t * 0.0006) * R_RIPPLE_AMP;
+    // Secondary ripple at double frequency for complexity
+    const ripple2 = Math.sin(angle * 3 - ripplePhase * 0.7 + t * 0.0004) * (R_RIPPLE_AMP * 0.4);
+    const y = ripple + ripple2;
+
+    // ── G. DEPTH FX — z-based scale, opacity, brightness ──
+    const depth    = (z + radius) / (2 * radius);           // 0 (back) → 1 (front)
+    const scale    = 0.68 + depth * 0.58;                   // 0.68 → 1.26
+    const opacity  = 0.40 + depth * 0.60;                   // 0.40 → 1.00
+    const bright   = 0.50 + depth * 0.50;                   // 0.50 → 1.00
+
+    // ── H. BILLBOARD — keep poster facing camera ──
+    const facingDeg = (Math.atan2(x, z) * 180 / Math.PI);
+
+    // ── F. SELF-SPIN — gentle card Z-rotation ──
+    const selfSpin = Math.sin(t * R_SPIN_SPD * spinDir + spinPhase) * R_SPIN_AMP;
+
+    el.style.transform = [
+      `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, ${z.toFixed(2)}px)`,
+      `rotateY(${facingDeg.toFixed(2)}deg)`,
+      `rotateZ(${selfSpin.toFixed(2)}deg)`,
+      `scale(${scale.toFixed(3)})`,
+    ].join(' ');
+
+    el.style.opacity  = opacity.toFixed(3);
+    el.style.zIndex   = Math.round(depth * 100);
+    el.style.filter   = `brightness(${bright.toFixed(3)}) saturate(${(0.7 + depth * 0.5).toFixed(2)})`;
+  });
+
+  requestAnimationFrame(animateRing);
+}
+
+// ══════════════════════════════════════
+// PROGRESS BAR
+// ══════════════════════════════════════
+window.addEventListener('scroll',()=>{
+  const s=document.documentElement.scrollTop;
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  document.getElementById('progress-bar').style.width=h>0?(s/h*100)+'%':'0%';
+},{passive:true});
+
+// ══════════════════════════════════════
+// SCROLL INDICATOR — exact index.html logic
+// ══════════════════════════════════════
+(function setupScrollIndicator(){
+  const scrollEl=document.getElementById('hero-scroll-indicator');
+  if(!scrollEl)return;
+  setTimeout(()=>{ scrollEl.style.opacity='1'; },1400);
+  window.addEventListener('scroll',()=>{
+    const inHero=window.scrollY<window.innerHeight*0.25;
+    scrollEl.style.opacity=inHero?'1':'0';
+  },{passive:true});
+})();
+
+// ══════════════════════════════════════
+// KANJI BG
+// ══════════════════════════════════════
+(function(){
+  const KANJI=['愛','剣','炎','鬼','夢','空','神','魂','力','闇','光','戦','命','勇','希'];
+  const bg=document.getElementById('kanji-bg');
+  for(let i=0;i<20;i++){
+    const el=document.createElement('span'); el.className='kanji-char';
+    el.style.cssText=`font-size:${40+Math.random()*80}px;left:${Math.random()*100}%;animation-duration:${10+Math.random()*15}s;animation-delay:${-Math.random()*20}s;`;
+    el.textContent=KANJI[i%KANJI.length]; bg.appendChild(el);
+  }
+})();
+
+// ══════════════════════════════════════
+// SCROLL REVEAL
+// ══════════════════════════════════════
+const revealObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObs.unobserve(e.target);}});
+},{threshold:0.07});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+
+// ══════════════════════════════════════
+// STEP ANIMATION
+// ══════════════════════════════════════
+function animateSteps(){
+  const ids=['step1','step2','step3'];
+  ids.forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  ids.forEach((id,i)=>setTimeout(()=>{
+    document.getElementById(id)?.classList.add('active');
+    if(i===2)setTimeout(()=>ids.forEach(id2=>document.getElementById(id2)?.classList.remove('active')),900);
+  },i*430));
+}
+setInterval(animateSteps,4500); setTimeout(animateSteps,900);
+
+// ══════════════════════════════════════
+// PARTICLE CANVAS
+// ══════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('particle-canvas'),ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  window.addEventListener('resize',resize);resize();
+  function P(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*1.5+0.3;this.vx=(Math.random()-0.5)*0.3;this.vy=(Math.random()-0.5)*0.3;this.a=Math.random()*0.3+0.07;}
+  P.prototype.update=function(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H){this.x=Math.random()*W;this.y=Math.random()*H;}};
+  for(let i=0;i<80;i++)particles.push(new P());
+  function draw(){ctx.clearRect(0,0,W,H);particles.forEach(p=>{p.update();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(232,50,26,${p.a})`;ctx.fill();});requestAnimationFrame(draw);}
+  draw();
+})();
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init(){
+  buildStrips();
+  buildTop10();
+  buildRing();
+  const aboutEl=document.getElementById('ch-about');
+  if(aboutEl)statObs.observe(aboutEl);
+}
+
+loadData();
+</script>
+</body>
+</html>
