@@ -8,6 +8,7 @@
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="theme.css">
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -30,7 +31,6 @@
 
     /* Striking visual indication for unread notifications */
     .mail-row.unread { background: rgba(0, 168, 132, 0.04) !important; }
-    html.light .mail-row.unread { background: rgba(0, 168, 132, 0.06) !important; }
     ::-webkit-scrollbar-track{background:#0a0a0a}
     ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}
     ::-webkit-scrollbar-thumb:hover{background:#3a3a3a}
@@ -71,6 +71,8 @@
     #sidebar.expanded .sb-btn{width:100%;justify-content:flex-start;padding:0 12px;gap:14px;border-radius:10px;height:42px}
     #sidebar.expanded .sb-btn i{width:20px;text-align:center;flex-shrink:0;font-size:1rem}
     #sidebar.expanded .sb-label{display:inline}
+    #sidebar.expanded .sb-btn .save-dirty-dot{right:auto!important;left:24px;top:2px}
+    @media(max-width:1023px){ #sbSaveDirty{display:none!important} }
     #sidebar.expanded .sb-tip{display:none!important}
     #sidebar.expanded .sb-sep{width:calc(100% - 24px);margin:6px 12px}
     .sb-sep{width:28px;height:1px;background:#2a2a2a;margin:6px 0;flex-shrink:0}
@@ -256,64 +258,8 @@ html{--mnav-h:4.5rem}
     }
 
     /* ── Light mode support ── */
-    html.light body{background:#f5f5f5;color:#111}
-    html.light #sidebar{background:rgba(245,245,245,0.95);border-color:#e0e0e0}
-    html.light .sb-btn:hover{background:#eee;color:#111}
-    html.light .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.08)}
-    html.light .sb-tip{background:#fff;border-color:#e0e0e0;color:#111}
-    html.light .sb-sep{background:#e0e0e0}
-    html.light #sbToggle span{background:#111}
-    html.light #sbToggle:hover{background:#eee}
-    html.light #mobileNavBar{background:rgba(245,245,245,0.92)!important;border-color:#e0e0e0}
-    html.light .mnav-btn .mnav-icon,.html.light .mnav-btn .mnav-label{color:#999}
-    html.light .mnav-btn.active .mnav-icon,.html.light .mnav-btn.active .mnav-label{color:#e63946}
-    html.light nav{background:rgba(245,245,245,0.85)!important}
-    html.light #settingsOverlay{border-color:#e0e0e0;background:#f5f5f5}
-    html.light .st-head h2{color:#111}
-    html.light .st-back{color:#111}
-    html.light .st-back:active{background:#eee}
-    html.light .stat-card{background:#fff;border-color:#e0e0e0}
-    html.light .st-item-icon.gray{background:rgba(0,0,0,0.05);color:#555}
-    html.light .st-head{background:#f5f5f5;border-color:#e0e0e0}
-    html.light .st-item.confirming.random-active{background:rgba(56,189,248,0.04);border-color:rgba(56,189,248,0.2)}
-    html.light .st-random-confirm .st-no{background:#e0e0e0;color:#111}
-    html.light .st-item{background:#fff;border-color:#e0e0e0}
-    html.light .st-item.danger{border-color:rgba(230,57,70,0.15)}
-    html.light .st-item-icon.red{background:rgba(230,57,70,0.08)}
-    html.light .st-item-confirm .st-no{background:#e0e0e0;color:#111}
-    html.light .st-item.confirming{background:rgba(230,57,70,0.04);border-color:rgba(230,57,70,0.2)}
-    html.light .stat-card::after{background:radial-gradient(circle,rgba(230,57,70,0.03) 0%,transparent 70%)}
-    html.light .st-item-title{color:#111}
-    html.light .st-about{background:#fff;border-color:#e0e0e0}
-    html.light .st-about h3{color:#111}
-    html.light #inboxPane{background:rgba(245,245,245,0.96);border-color:#e0e0e0}
-    html.light .mail-row:hover{background:#eee}
-    html.light .mail-row.active{background:#e8e8e8}
-    html.light .mail-sender{color:#333}
-    html.light .mail-subject{color:#555}
-    html.light #readHeader{border-color:#e0e0e0}
-    html.light .bg-orb{opacity:0.05}
-    html.light ::-webkit-scrollbar-track{background:#f5f5f5}
-    html.light ::-webkit-scrollbar-thumb{background:#ddd}
-    html.light .toast{background:#fff}
-    html.light .skeleton{background:linear-gradient(90deg,#e8e8e8 25%,#f0f0f0 50%,#e8e8e8 75%);background-size:200% 100%}
 
     /* Gmail/WhatsApp style layout Light Mode fixes */
-    html.light #appShell { background: #f0f2f5 !important; }
-    html.light #inboxPane { background: #ffffff !important; border-color: #e0e0e0 !important; }
-    html.light #inboxHeader { background: #f0f2f5 !important; border-color: #e0e0e0 !important; color: #111111 !important; }
-    html.light .mail-row { border-bottom: 1px solid #f0f2f5 !important; }
-    html.light .mail-row:hover { background: #f0f2f5 !important; }
-    html.light .mail-row.active { background: #e1f5fe !important; }
-    html.light .mail-meta { border-color: #f0f2f5 !important; }
-    html.light .mail-sender { color: #111b21 !important; }
-    html.light .mail-subject { color: #667781 !important; }
-    html.light .mail-time { color: #667781 !important; }
-    html.light #readPane, html.light #readContent { background: #f0f2f5 !important; }
-    html.light #readHeader { background: #f0f2f5 !important; border-color: #e0e0e0 !important; color: #111111 !important; }
-    html.light #readBody { background: #ffffff !important; color: #111111 !important; }
-    html.light #readEmpty { background: #f0f2f5 !important; color: #667781 !important; }
-    html.light #readHeader h2, html.light #inboxHeader h2 { color: #111111 !important; }
 
     /* ── save-dirty-dot (for save badge, same as other pages) ── */
     .save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1}
@@ -561,12 +507,15 @@ html{--mnav-h:4.5rem}
       <div class="st-group">
         <div class="st-group-title">Personalization</div>
         <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
-          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-sun"></i></div>
+          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-circle-half-stroke"></i></div>
           <div class="st-item-text">
-            <div class="st-item-title">Light Mode</div>
-            <div class="st-item-desc">Switch to light theme</div>
+            <div class="st-item-title">Theme</div>
           </div>
-          <button class="st-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+          <select id="themeSelect" onchange="setTheme(this.value)" style="background:#2a2a2a;color:#f0f0f0;border:1px solid #3a3a3a;border-radius:8px;padding:6px 10px;font-size:0.8rem;font-family:'Outfit',sans-serif;cursor:pointer;outline:none">
+            <option value="default">Default</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
         </div>
         <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
           <div class="st-item-icon gray"><i class="fas fa-magnifying-glass"></i></div>
@@ -771,32 +720,32 @@ html{--mnav-h:4.5rem}
 
     /* ====== Theme Toggle ====== */
     (function(){
-      var toggle = document.getElementById('themeToggle');
       var icon = document.getElementById('themeIcon');
+      var select = document.getElementById('themeSelect');
       var themeMeta = document.querySelector('meta[name="theme-color"]');
+      var ICONS={'default':'fa-circle-half-stroke','light':'fa-sun','dark':'fa-moon'};
+      var META={'default':'#0a0a0a','light':'#ffffff','dark':'#141414'};
 
-      function applyTheme(light){
-        if(light){
-          document.documentElement.classList.add('light');
-          if(toggle) toggle.classList.add('active');
-          if(icon) icon.innerHTML = '<i class="fas fa-moon"></i>';
-          if(themeMeta) themeMeta.setAttribute('content','#ffffff');
-        } else {
-          document.documentElement.classList.remove('light');
-          if(toggle) toggle.classList.remove('active');
-          if(icon) icon.innerHTML = '<i class="fas fa-sun"></i>';
-          if(themeMeta) themeMeta.setAttribute('content','#0a0a0a');
-        }
+      function applyTheme(t){
+        document.documentElement.classList.remove('light','dark');
+        if(t==='light'||t==='dark') document.documentElement.classList.add(t);
+        if(icon) icon.innerHTML='<i class="fas '+ICONS[t]+'"></i>';
+        if(themeMeta) themeMeta.setAttribute('content',META[t]);
+        if(select) select.value=t;
       }
 
-      function getTheme(){ var s=localStorage.getItem('aw_theme'); return s?s==='light':false; }
+      function getTheme(){
+        var s=localStorage.getItem('aw_theme');
+        return(s==='light'||s==='dark'||s==='default')?s:'default';
+      }
+
       applyTheme(getTheme());
 
-      window.toggleTheme = function(){
-        var isLight = document.documentElement.classList.contains('light');
-        localStorage.setItem('aw_theme', isLight ? 'dark' : 'light');
-        applyTheme(!isLight);
-        showToast(isLight ? 'Dark mode enabled' : 'Light mode enabled', 'info');
+      window.setTheme = function(t){
+        localStorage.setItem('aw_theme',t);
+        applyTheme(t);
+        var label=t==='light'?'Light mode enabled':t==='dark'?'Dark mode enabled':'Default mode enabled';
+        showToast(label,'info');
       };
     })();
 
