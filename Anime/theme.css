@@ -1,0 +1,353 @@
+/* ==========================================================================
+   AnimeWave — Shared Theme  (Light + Dark)
+   Used by: index.html, save.html, notification.html
+
+   Toggle via class on <html>:
+     html.light { ... }   ← bright mode
+     html.dark  { ... }   ← soft dark mode
+
+   ── Light palette ──────────────────────────────────────────────────────────
+   bg         #f5f5f5   page background
+   bg2        #eeeeee   secondary surface
+   card       #ffffff   cards / panels
+   border     #e0e0e0   dividers / outlines
+   text       #111111   primary text
+   muted      #666666   secondary text
+
+   ── Dark palette ───────────────────────────────────────────────────────────
+   bg         #141414   page background        (softer than pure black)
+   bg2        #1c1c1c   secondary surface
+   card       #1f1f1f   cards / panels
+   border     #2e2e2e   dividers / outlines
+   text       #e8e8e8   primary text
+   muted      #7a7a7a   secondary text
+   inbox-bg   #111b21   notification app-shell (WhatsApp-style)
+   inbox-pane #202c33   inbox header / active rows
+   ========================================================================== */
+
+
+/* ==========================================================================
+   LIGHT MODE  (html.light)
+   ========================================================================== */
+
+/* ---- Base page ---- */
+html.light body{background:#f5f5f5;color:#111}
+html.light ::-webkit-scrollbar-track{background:#f5f5f5}
+html.light ::-webkit-scrollbar-thumb{background:#d0d0d0}
+html.light ::-webkit-scrollbar-thumb:hover{background:#b0b0b0}
+html.light .bg-orb{opacity:0.05}
+html.light #loadingScreen{background:#f5f5f5}
+html.light .glow-line{opacity:0.4}
+
+/* ---- Tailwind color utility overrides ---- */
+html.light .bg-aw-bg{background-color:#f5f5f5!important}
+html.light .bg-aw-bg\/80{background-color:rgba(245,245,245,0.85)!important}
+html.light .bg-aw-bg2{background-color:#eeeeee!important}
+html.light .bg-aw-card{background-color:#ffffff!important}
+html.light .border-aw-border{border-color:#e0e0e0!important}
+html.light .text-aw-fg{color:#111111!important}
+html.light .text-aw-muted{color:#666666!important}
+html.light .text-aw-fg\/75{color:rgba(17,17,17,0.75)!important}
+
+/* ---- Top nav / mobile nav bar ---- */
+html.light nav{background:rgba(245,245,245,0.85)!important}
+html.light #mobileNavBar{background:rgba(245,245,245,0.92)!important;border-color:#e0e0e0}
+html.light .mnav-btn .mnav-icon{color:#999}
+html.light .mnav-btn .mnav-label{color:#999}
+html.light .mnav-btn.active .mnav-icon{color:#e63946}
+html.light .mnav-btn.active .mnav-label{color:#e63946}
+html.light #mobileExtraBtns button{color:#666}
+html.light #mobileExtraBtns button:hover{background:#eee}
+
+/* ---- Sidebar ---- */
+html.light #sidebar{background:rgba(245,245,245,0.95);border-color:#e0e0e0}
+html.light #sbToggle:hover{background:#eee}
+html.light #sbToggle span{background:#111}
+html.light .sb-btn:hover{background:#eee;color:#111}
+html.light .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.08)}
+html.light .sb-tip{background:#fff;border-color:#e0e0e0;color:#111;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+html.light .sb-sep{background:#e0e0e0}
+
+/* ---- Search (top bar + mobile overlay) ---- */
+html.light #mobileSearchOverlay,html.light #settingsOverlay{background:#f5f5f5}
+html.light .ms-field input{background:#eee;border-color:#e0e0e0;color:#111}
+html.light .ms-field input::placeholder{color:#888}
+html.light .ms-field .ms-si{color:#888}
+html.light .ms-field .ms-x{background:#e0e0e0;color:#666}
+html.light .search-dropdown{background:#fff;border-color:#e0e0e0;box-shadow:0 20px 50px rgba(0,0,0,0.1)}
+html.light .search-suggestion:hover,html.light .search-suggestion.highlighted{background:#f0f0f0}
+html.light .search-suggestion.touched{background:#e8e8e8}
+html.light #searchInput,html.light #savedSearch{background:#eee;border-color:#e0e0e0;color:#111}
+html.light #searchInput::placeholder,html.light #savedSearch::placeholder{color:#888}
+html.light .search-wrap i{color:#888}
+html.light .search-hint{color:#bbb}
+html.light .search-clear{background:#e0e0e0;color:#666}
+
+/* ---- Sort dropdown ---- */
+html.light .sort-dropdown{background:#fff;border-color:#e0e0e0;box-shadow:0 16px 48px rgba(0,0,0,0.08)}
+html.light .sort-option:hover{background:#f0f0f0}
+
+/* ---- Genre chips / scroll arrows ---- */
+html.light .genre-chip{border-color:#e0e0e0}
+html.light .genre-chip .gc-count{background:rgba(0,0,0,0.06)}
+html.light .scroll-arrow{background:rgba(255,255,255,0.9);border-color:#e0e0e0;color:#111}
+
+/* ---- Cards / posters ---- */
+html.light .hcard{background:#fff}
+html.light .poster-card{background:#fff}
+html.light .skeleton{background:linear-gradient(90deg,#e8e8e8 25%,#f0f0f0 50%,#e8e8e8 75%);background-size:200% 100%}
+html.light .stat-card{background:#fff;border-color:#e0e0e0}
+html.light .stat-card::after{background:radial-gradient(circle,rgba(230,57,70,0.03) 0%,transparent 70%)}
+
+/* ---- Horizontal scroll rows ---- */
+@media(hover:hover){
+  html.light .hscroll-row,html.light .drag-scroll-row{
+    scrollbar-color:#e63946 transparent;
+  }
+  html.light .hscroll-row::-webkit-scrollbar-track,html.light .drag-scroll-row::-webkit-scrollbar-track{
+    background:rgba(0,0,0,0.05);
+  }
+  html.light .hscroll-row::-webkit-scrollbar-thumb,html.light .drag-scroll-row::-webkit-scrollbar-thumb{
+    background:linear-gradient(90deg,#e63946,#ff6b6b);
+  }
+}
+
+/* ---- Hero (index.html) ---- */
+html.light .hero-bottom{background:linear-gradient(to top,#f5f5f5 0%,transparent 100%)}
+html.light .hero-gradient{background:linear-gradient(135deg,rgba(230,57,70,0.12) 0%,rgba(245,245,245,0.88) 50%,rgba(245,245,245,1) 100%)}
+html.light .hero-arrow{background:rgba(255,255,255,0.7)!important;border-color:rgba(0,0,0,0.1)!important;color:#111!important}
+html.light .hero-arrow:hover{background:rgba(230,57,70,0.85)!important;border-color:rgba(230,57,70,0.5)!important;color:#fff!important}
+html.light .hero-dot:not(.active){background:rgba(0,0,0,0.15)!important}
+html.light .hero-dot:not(.active):hover{background:rgba(0,0,0,0.3)!important}
+html.light #heroProgressBar{background:linear-gradient(to right,rgba(0,0,0,0.1),rgba(0,0,0,0.1))}
+html.light #heroProgressBar.hero-progress-bar{animation-name:heroProgressFillLight}
+html.light .hero-progress-bar{background:linear-gradient(to right,rgba(230,57,70,0.6),rgba(230,57,70,0.8))!important}
+html.light .hcard-play>div,html.light .card-play>div{box-shadow:0 8px 24px rgba(230,57,70,0.2)}
+
+/* ---- What's New overlay ---- */
+html.light #whatsNewOverlay{background:rgba(0,0,0,0.8)}
+html.light .wn-badge.new-badge{background:rgba(230,57,70,0.95)}
+html.light .wn-badge.improved-badge{background:rgba(2,132,199,0.95)}
+html.light .wn-badge.fast-badge{background:rgba(22,163,74,0.95)}
+html.light .wn-nav-btn{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff}
+html.light .wn-counter{color:rgba(255,255,255,0.4)}
+html.light .wn-progress .wn-dot{background:rgba(255,255,255,0.2)}
+
+/* ---- Generic modal ---- */
+html.light .modal-backdrop{background:rgba(0,0,0,0.3)}
+html.light .modal-box{background:#fff;border-color:#e0e0e0;box-shadow:0 25px 60px rgba(0,0,0,0.1)}
+
+/* ---- Toast ---- */
+html.light .toast{background:#fff}
+
+/* ---- Continue/cast sheet + settings panel backdrop ---- */
+html.light #csBackdrop{background:rgba(0,0,0,0.15)}
+html.light #csOverlay{border-color:#e0e0e0;box-shadow:-20px 0 60px rgba(0,0,0,0.06)}
+html.light #settingsBackdrop{background:rgba(0,0,0,0.15)}
+html.light #settingsOverlay{background:#f5f5f5;border-color:#e0e0e0;box-shadow:-20px 0 60px rgba(0,0,0,0.06)}
+html.light #shortsOverlay{background:#f5f5f5}
+html.light .st-back{color:#111}
+html.light .st-back:active{background:#eee}
+html.light .st-head{background:#f5f5f5;border-color:#e0e0e0}
+html.light .st-head h2{color:#111}
+html.light .st-body{background:#f5f5f5}
+
+/* ---- Settings list items ---- */
+html.light .st-item{background:#fff;border-color:#e0e0e0}
+html.light .st-item.danger{border-color:rgba(230,57,70,0.15)}
+html.light .st-item.confirming{background:rgba(230,57,70,0.04);border-color:rgba(230,57,70,0.2)}
+html.light .st-item.confirming.random-active{background:rgba(56,189,248,0.04);border-color:rgba(56,189,248,0.2)}
+html.light .st-item-title{color:#111}
+html.light .st-item-icon.red{background:rgba(230,57,70,0.08)}
+html.light .st-item-icon.gray{background:rgba(0,0,0,0.05);color:#555}
+html.light .st-item-confirm .st-no{background:#e0e0e0;color:#111}
+html.light .st-random-confirm .st-no{background:#e0e0e0;color:#111}
+html.light .st-about{background:#fff;border-color:#e0e0e0}
+html.light .st-about h3{color:#111}
+html.light .st-ver{color:#bbb;border-color:#e0e0e0}
+
+/* ---- Footer ---- */
+html.light footer{border-color:#e0e0e0}
+
+/* ---- Notification page (app shell / inbox / read pane) ---- */
+html.light #appShell{background:#f5f5f5!important}
+html.light #inboxPane{background:#ffffff!important;border-color:#e0e0e0!important}
+html.light #inboxHeader{background:#eeeeee!important;border-color:#e0e0e0!important;color:#111111!important}
+html.light #inboxHeader h2,html.light #readHeader h2{color:#111111!important}
+html.light .mail-row{border-bottom:1px solid #eeeeee!important}
+html.light .mail-row:hover{background:#eeeeee!important}
+html.light .mail-row.active{background:rgba(230,57,70,0.08)!important}
+html.light .mail-row.unread{background:rgba(0,168,132,0.06)!important}
+html.light .mail-meta{border-color:#eeeeee!important}
+html.light .mail-sender{color:#111111!important}
+html.light .mail-subject{color:#666666!important}
+html.light .mail-time{color:#666666!important}
+html.light #readPane,html.light #readContent{background:#f5f5f5!important}
+html.light #readHeader{background:#eeeeee!important;border-color:#e0e0e0!important;color:#111111!important}
+html.light #readBody{background:#ffffff!important;color:#111111!important}
+html.light #readEmpty{background:#f5f5f5!important;color:#666666!important}
+
+
+/* ==========================================================================
+   DARK MODE  (html.dark)
+   Softer dark — grey tones, easy on the eyes at night.
+   ========================================================================== */
+
+/* ---- Base page ---- */
+html.dark body{background:#141414;color:#e8e8e8}
+html.dark ::-webkit-scrollbar-track{background:#141414}
+html.dark ::-webkit-scrollbar-thumb{background:#3a3a3a}
+html.dark ::-webkit-scrollbar-thumb:hover{background:#4a4a4a}
+html.dark .bg-orb{opacity:0.10}
+html.dark #loadingScreen{background:#141414}
+html.dark .glow-line{opacity:0.7}
+
+/* ---- Tailwind color utility overrides ---- */
+html.dark .bg-aw-bg{background-color:#141414!important}
+html.dark .bg-aw-bg\/80{background-color:rgba(20,20,20,0.85)!important}
+html.dark .bg-aw-bg2{background-color:#1c1c1c!important}
+html.dark .bg-aw-card{background-color:#1f1f1f!important}
+html.dark .border-aw-border{border-color:#2e2e2e!important}
+html.dark .text-aw-fg{color:#e8e8e8!important}
+html.dark .text-aw-muted{color:#7a7a7a!important}
+html.dark .text-aw-fg\/75{color:rgba(232,232,232,0.75)!important}
+
+/* ---- Top nav / mobile nav bar ---- */
+html.dark nav{background:rgba(20,20,20,0.88)!important}
+html.dark #mobileNavBar{background:rgba(20,20,20,0.95)!important;border-color:#2e2e2e}
+html.dark .mnav-btn .mnav-icon{color:#7a7a7a}
+html.dark .mnav-btn .mnav-label{color:#7a7a7a}
+html.dark .mnav-btn.active .mnav-icon{color:#e63946}
+html.dark .mnav-btn.active .mnav-label{color:#e63946}
+html.dark #mobileExtraBtns button{color:#7a7a7a}
+html.dark #mobileExtraBtns button:hover{background:#242424}
+
+/* ---- Sidebar ---- */
+html.dark #sidebar{background:rgba(20,20,20,0.97);border-color:#2e2e2e}
+html.dark #sbToggle:hover{background:#242424}
+html.dark #sbToggle span{background:#e8e8e8}
+html.dark .sb-btn:hover{background:#252525;color:#e8e8e8}
+html.dark .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.10)}
+html.dark .sb-tip{background:#1f1f1f;border-color:#2e2e2e;color:#e8e8e8;box-shadow:0 4px 12px rgba(0,0,0,0.45)}
+html.dark .sb-sep{background:#2e2e2e}
+
+/* ---- Search (top bar + mobile overlay) ---- */
+html.dark #mobileSearchOverlay,html.dark #settingsOverlay{background:#141414}
+html.dark .ms-field input{background:#1c1c1c;border-color:#2e2e2e;color:#e8e8e8}
+html.dark .ms-field input::placeholder{color:#7a7a7a}
+html.dark .ms-field .ms-si{color:#7a7a7a}
+html.dark .ms-field .ms-x{background:#2e2e2e;color:#7a7a7a}
+html.dark .search-dropdown{background:#1f1f1f;border-color:#2e2e2e;box-shadow:0 20px 50px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.03)}
+html.dark .search-suggestion:hover,html.dark .search-suggestion.highlighted{background:#272727}
+html.dark .search-suggestion.touched{background:#2e2e2e;transform:scale(0.98)}
+html.dark #searchInput,html.dark #savedSearch{background:#1c1c1c;border-color:#2e2e2e;color:#e8e8e8}
+html.dark #searchInput::placeholder,html.dark #savedSearch::placeholder{color:#7a7a7a}
+html.dark .search-wrap i{color:#7a7a7a}
+html.dark .search-hint{color:#3e3e3e}
+html.dark .search-clear{background:#2e2e2e;color:#7a7a7a}
+
+/* ---- Sort dropdown ---- */
+html.dark .sort-dropdown{background:#1f1f1f;border-color:#2e2e2e;box-shadow:0 16px 48px rgba(0,0,0,0.5)}
+html.dark .sort-option:hover{background:#272727}
+
+/* ---- Genre chips / scroll arrows ---- */
+html.dark .genre-chip{border-color:#2e2e2e}
+html.dark .genre-chip .gc-count{background:rgba(255,255,255,0.07)}
+html.dark .scroll-arrow{background:rgba(31,31,31,0.92);border-color:#2e2e2e;color:#e8e8e8}
+
+/* ---- Cards / posters ---- */
+html.dark .hcard{background:#1f1f1f}
+html.dark .poster-card{background:#1f1f1f}
+html.dark .skeleton{background:linear-gradient(90deg,#1f1f1f 25%,#282828 50%,#1f1f1f 75%);background-size:200% 100%}
+html.dark .stat-card{background:#1f1f1f;border-color:#2e2e2e}
+html.dark .stat-card::after{background:radial-gradient(circle,rgba(230,57,70,0.05) 0%,transparent 70%)}
+
+/* ---- Horizontal scroll rows ---- */
+@media(hover:hover){
+  html.dark .hscroll-row,html.dark .drag-scroll-row{
+    scrollbar-color:#e63946 transparent;
+  }
+  html.dark .hscroll-row::-webkit-scrollbar-track,html.dark .drag-scroll-row::-webkit-scrollbar-track{
+    background:rgba(255,255,255,0.04);
+  }
+  html.dark .hscroll-row::-webkit-scrollbar-thumb,html.dark .drag-scroll-row::-webkit-scrollbar-thumb{
+    background:linear-gradient(90deg,#e63946,#ff6b6b);
+  }
+}
+
+/* ---- Hero (index.html) ---- */
+html.dark .hero-bottom{background:linear-gradient(to top,#141414 0%,transparent 100%)}
+html.dark .hero-gradient{background:linear-gradient(135deg,rgba(230,57,70,0.20) 0%,rgba(20,20,20,0.88) 50%,rgba(20,20,20,1) 100%)}
+html.dark .hero-arrow{background:rgba(31,31,31,0.75)!important;border-color:rgba(255,255,255,0.08)!important;color:#e8e8e8!important}
+html.dark .hero-arrow:hover{background:rgba(230,57,70,0.85)!important;border-color:rgba(230,57,70,0.5)!important;color:#fff!important}
+html.dark .hero-dot:not(.active){background:rgba(255,255,255,0.18)!important}
+html.dark .hero-dot:not(.active):hover{background:rgba(255,255,255,0.35)!important}
+html.dark #heroProgressBar{background:linear-gradient(to right,rgba(255,255,255,0.08),rgba(255,255,255,0.08))}
+html.dark #heroProgressBar.hero-progress-bar{animation-name:heroProgressFillDark}
+html.dark .hero-progress-bar{background:linear-gradient(to right,rgba(230,57,70,0.7),rgba(230,57,70,0.9))!important}
+html.dark .hcard-play>div,html.dark .card-play>div{box-shadow:0 8px 24px rgba(230,57,70,0.25)}
+@keyframes heroProgressFillDark{from{width:0%}to{width:100%}}
+
+/* ---- What's New overlay ---- */
+html.dark #whatsNewOverlay{background:rgba(0,0,0,0.85)}
+html.dark .wn-badge.new-badge{background:rgba(230,57,70,0.95)}
+html.dark .wn-badge.improved-badge{background:rgba(2,132,199,0.95)}
+html.dark .wn-badge.fast-badge{background:rgba(22,163,74,0.95)}
+html.dark .wn-nav-btn{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.08);color:#e8e8e8}
+html.dark .wn-counter{color:rgba(255,255,255,0.35)}
+html.dark .wn-progress .wn-dot{background:rgba(255,255,255,0.15)}
+
+/* ---- Generic modal ---- */
+html.dark .modal-backdrop{background:rgba(0,0,0,0.6)}
+html.dark .modal-box{background:#1f1f1f;border-color:#2e2e2e;box-shadow:0 25px 60px rgba(0,0,0,0.55)}
+
+/* ---- Toast ---- */
+html.dark .toast{background:#1f1f1f}
+
+/* ---- Continue/cast sheet + settings panel backdrop ---- */
+html.dark #csBackdrop{background:rgba(0,0,0,0.45)}
+html.dark #csOverlay{border-color:#2e2e2e;box-shadow:-20px 0 60px rgba(0,0,0,0.4)}
+html.dark #settingsBackdrop{background:rgba(0,0,0,0.45)}
+html.dark #settingsOverlay{background:#141414;border-color:#2e2e2e;box-shadow:-20px 0 60px rgba(0,0,0,0.4)}
+html.dark #shortsOverlay{background:#141414}
+html.dark .st-back{color:#e8e8e8}
+html.dark .st-back:active{background:#242424}
+html.dark .st-head{background:#141414;border-color:#2e2e2e}
+html.dark .st-head h2{color:#e8e8e8}
+html.dark .st-body{background:#141414}
+
+/* ---- Settings list items ---- */
+html.dark .st-item{background:#1c1c1c;border-color:#2e2e2e}
+html.dark .st-item.danger{border-color:rgba(230,57,70,0.22)}
+html.dark .st-item.confirming{background:rgba(230,57,70,0.06);border-color:rgba(230,57,70,0.28)}
+html.dark .st-item.confirming.random-active{background:rgba(56,189,248,0.06);border-color:rgba(56,189,248,0.28)}
+html.dark .st-item-title{color:#e8e8e8}
+html.dark .st-item-icon.red{background:rgba(230,57,70,0.12)}
+html.dark .st-item-icon.gray{background:rgba(255,255,255,0.06);color:#8a8a8a}
+html.dark .st-item-confirm .st-no{background:#2e2e2e;color:#e8e8e8}
+html.dark .st-random-confirm .st-no{background:#2e2e2e;color:#e8e8e8}
+html.dark .st-about{background:#1c1c1c;border-color:#2e2e2e}
+html.dark .st-about h3{color:#e8e8e8}
+html.dark .st-ver{color:#5a5a5a;border-color:#2e2e2e}
+
+/* ---- Footer ---- */
+html.dark footer{border-color:#2e2e2e}
+
+/* ---- Notification page (app shell / inbox / read pane) ---- */
+html.dark #appShell{background:#141414!important}
+html.dark #inboxPane{background:#111b21!important;border-color:#1f2c34!important}
+html.dark #inboxHeader{background:#202c33!important;border-color:#1f2c34!important;color:#e9edef!important}
+html.dark #inboxHeader h2,html.dark #readHeader h2{color:#e9edef!important}
+html.dark .mail-row{border-bottom:1px solid #1f2c34!important}
+html.dark .mail-row:hover{background:#202c33!important}
+html.dark .mail-row.active{background:#2a3942!important}
+html.dark .mail-row.unread{background:rgba(0,168,132,0.05)!important}
+html.dark .mail-meta{border-color:#1f2c34!important}
+html.dark .mail-sender{color:#e9edef!important}
+html.dark .mail-subject{color:#8696a0!important}
+html.dark .mail-time{color:#8696a0!important}
+html.dark #readPane,html.dark #readContent{background:#0b141a!important}
+html.dark #readHeader{background:#202c33!important;border-color:#1f2c34!important;color:#e9edef!important}
+html.dark #readBody{background:#0d1f27!important;color:#e9edef!important}
+html.dark #readEmpty{background:#0b141a!important;color:#7a7a7a!important}
+html.light #themeSelect{background:#eeeeee!important;color:#111111!important;border-color:#e0e0e0!important}
