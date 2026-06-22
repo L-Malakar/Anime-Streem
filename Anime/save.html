@@ -7,6 +7,7 @@
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="theme.css">
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -111,19 +112,14 @@
     #sidebar.expanded .sb-btn{width:100%;justify-content:flex-start;padding:0 12px;gap:14px;border-radius:10px;height:42px}
     #sidebar.expanded .sb-btn i{width:20px;text-align:center;flex-shrink:0;font-size:1rem}
     #sidebar.expanded .sb-label{display:inline}
+    #sidebar.expanded .sb-btn #sbNotifDot{right:auto!important;left:24px;top:4px}
+    @media(max-width:1023px){ #sbNotifDot{display:none!important} }
     #sidebar.expanded .sb-tip{display:none!important}
     #sidebar.expanded .sb-sep{width:calc(100% - 24px);margin:6px 12px}
     .sb-sep{width:28px;height:1px;background:#2a2a2a;margin:6px 0;flex-shrink:0}
     @media(max-width:1023px){#sidebar{display:none!important}}
     #mainWrap{transition:margin-left 0.25s cubic-bezier(0.4,0,0.2,1)}
     @media(min-width:1024px){body.sb-expanded #mainWrap{margin-left:200px!important}}
-    html.light #sbToggle:hover{background:#eee}
-    html.light #sbToggle span{background:#111}
-    html.light #sidebar{background:rgba(245,245,245,0.95);border-color:#e0e0e0}
-    html.light .sb-btn:hover{background:#eee;color:#111}
-    html.light .sb-btn.active{color:#e63946;background:rgba(230,57,70,0.08)}
-    html.light .sb-tip{background:#fff;border-color:#e0e0e0;color:#111;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
-    html.light .sb-sep{background:#e0e0e0}
 
     /* ===== Mobile Bottom Nav ===== */
     #mobileNavBar{position:fixed;bottom:0;left:0;right:0;z-index:998;background:rgba(10,10,10,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #2a2a2a;padding-bottom:env(safe-area-inset-bottom)}
@@ -135,11 +131,6 @@
     .mnav-btn.active .mnav-label{color:#e63946}
     .mnav-btn:not(.active):hover .mnav-icon,.mnav-btn:not(.active):hover .mnav-label{color:#f0f0f0}
     @media(min-width:1024px){#mobileNavBar{display:none!important}}
-    html.light .mnav-btn .mnav-icon{color:#999}
-    html.light .mnav-btn .mnav-label{color:#999}
-    html.light .mnav-btn.active .mnav-icon{color:#e63946}
-    html.light .mnav-btn.active .mnav-label{color:#e63946}
-    html.light #mobileNavBar{background:rgba(245,245,245,0.92)!important;border-color:#e0e0e0}
 
     /* ===== Settings Overlay Styles ===== */
     #settingsBackdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity 0.3s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -155,8 +146,6 @@
       #settingsOverlay .st-group{margin-bottom:24px}
       #settingsOverlay .st-about{padding:24px}
     }
-    html.light #settingsBackdrop{background:rgba(0,0,0,0.15)}
-    html.light #settingsOverlay{border-color:#e0e0e0;box-shadow:-20px 0 60px rgba(0,0,0,0.06)}
     .st-head{display:flex;align-items:center;gap:10px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:1px solid #2a2a2a;flex-shrink:0}
     .st-head h2{font-family:'Dela Gothic One',cursive;font-size:1.1rem;color:#f0f0f0}
     .st-back{width:40px;height:40px;border-radius:50%;border:none;background:none;color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background 0.15s}
@@ -204,53 +193,15 @@
     .st-random-confirm .st-yes:active{background:#0ea5e9}
     .st-random-confirm .st-no{background:#2a2a2a;color:#f0f0f0}
     .st-random-confirm .st-no:active{background:#3a3a3a}
-    html.light .st-item.confirming.random-active{background:rgba(56,189,248,0.04);border-color:rgba(56,189,248,0.2)}
-    html.light .st-random-confirm .st-no{background:#e0e0e0;color:#111}
-    html.light .st-item{background:#fff;border-color:#e0e0e0}
-    html.light .st-item.danger{border-color:rgba(230,57,70,0.15)}
-    html.light .st-head{border-color:#e0e0e0}
-    html.light .st-body{background:#f5f5f5}
-    html.light .st-about{background:#fff;border-color:#e0e0e0}
-    html.light .st-item-icon.red{background:rgba(230,57,70,0.08)}
-    html.light .st-item-icon.gray{background:rgba(0,0,0,0.05)}
-    html.light .st-ver{color:#bbb;border-color:#e0e0e0}
-    html.light .st-item-confirm .st-no{background:#e0e0e0;color:#111}
-    html.light .st-item.confirming{background:rgba(230,57,70,0.04);border-color:rgba(230,57,70,0.2)}
     .stat-card{position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease}
     .stat-card:hover{transform:translateY(-2px);border-color:rgba(230,57,70,0.3)}
     .stat-card::after{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(230,57,70,0.06) 0%,transparent 70%);pointer-events:none}
-    html.light .stat-card::after{background:radial-gradient(circle,rgba(230,57,70,0.03) 0%,transparent 70%)}
     .st-toggle{position:relative;width:44px;height:24px;border-radius:12px;background:#2a2a2a;border:none;cursor:pointer;transition:background 0.25s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
     .st-toggle.active{background:#e63946}
     .st-toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 1px 3px rgba(0,0,0,0.2)}
     .st-toggle.active::after{transform:translateX(20px)}
 
     /* Light mode additions */
-    html.light body{background:#f5f5f5;color:#111}
-    html.light ::-webkit-scrollbar-track{background:#f5f5f5}
-    html.light ::-webkit-scrollbar-thumb{background:#d0d0d0}
-    html.light .bg-aw-bg{background-color:#f5f5f5!important}
-    html.light .bg-aw-bg\/80{background-color:rgba(245,245,245,0.85)!important}
-    html.light .bg-aw-bg2{background-color:#eeeeee!important}
-    html.light .bg-aw-card{background-color:#ffffff!important}
-    html.light .border-aw-border{border-color:#e0e0e0!important}
-    html.light .text-aw-fg{color:#111111!important}
-    html.light .text-aw-muted{color:#666666!important}
-    html.light .text-aw-fg\/75{color:rgba(17,17,17,0.75)!important}
-    html.light nav{background:rgba(245,245,245,0.85)!important}
-    html.light .toast{background:#fff}
-    html.light .skeleton{background:linear-gradient(90deg,#e8e8e8 25%,#f0f0f0 50%,#e8e8e8 75%);background-size:200% 100%}
-    html.light #savedSearch{background:#eee;border-color:#e0e0e0;color:#111}
-    html.light #savedSearch::placeholder{color:#888}
-    html.light .search-wrap i{color:#888}
-    html.light .bg-orb{opacity:0.05}
-    html.light #loadingScreen{background:#f5f5f5}
-    html.light .poster-card{background:#fff}
-    html.light .glow-line{opacity:0.4}
-    html.light .modal-backdrop{background:rgba(0,0,0,0.3)}
-    html.light .modal-box{background:#fff;border-color:#e0e0e0;box-shadow:0 25px 60px rgba(0,0,0,0.1)}
-    html.light #mobileExtraBtns button{color:#666}
-    html.light #mobileExtraBtns button:hover{background:#eee}
 
     /* ===== Mobile Search Bar Toggle ===== */
     @media(max-width:1023px){
@@ -492,12 +443,15 @@
       <div class="st-group">
         <div class="st-group-title">Personalization</div>
         <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
-          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-sun"></i></div>
+          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-circle-half-stroke"></i></div>
           <div class="st-item-text">
-            <div class="st-item-title">Light Mode</div>
-            <div class="st-item-desc">Switch to light theme</div>
+            <div class="st-item-title">Theme</div>
           </div>
-          <button class="st-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+          <select id="themeSelect" onchange="setTheme(this.value)" style="background:#2a2a2a;color:#f0f0f0;border:1px solid #3a3a3a;border-radius:8px;padding:6px 10px;font-size:0.8rem;font-family:'Outfit',sans-serif;cursor:pointer;outline:none">
+            <option value="default">Default</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
         </div>
         <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
           <div class="st-item-icon gray"><i class="fas fa-magnifying-glass"></i></div>
@@ -930,41 +884,32 @@
 
     /* ====== Theme Toggle ====== */
     (function(){
-      var toggle = document.getElementById('themeToggle');
       var icon = document.getElementById('themeIcon');
-      var desc = document.querySelector('#themeIcon').closest('.st-item').querySelector('.st-item-desc');
+      var select = document.getElementById('themeSelect');
       var themeMeta = document.querySelector('meta[name="theme-color"]');
+      var ICONS={'default':'fa-circle-half-stroke','light':'fa-sun','dark':'fa-moon'};
+      var META={'default':'#0a0a0a','light':'#ffffff','dark':'#141414'};
 
-      function applyTheme(light){
-        if(light){
-          document.documentElement.classList.add('light');
-          toggle.classList.add('active');
-          icon.innerHTML = '<i class="fas fa-moon"></i>';
-          if(desc) desc.textContent = 'Switch to dark theme';
-          if(themeMeta) themeMeta.setAttribute('content','#ffffff');
-        } else {
-          document.documentElement.classList.remove('light');
-          toggle.classList.remove('active');
-          icon.innerHTML = '<i class="fas fa-sun"></i>';
-          if(desc) desc.textContent = 'Switch to light theme';
-          if(themeMeta) themeMeta.setAttribute('content','#0a0a0a');
-        }
+      function applyTheme(t){
+        document.documentElement.classList.remove('light','dark');
+        if(t==='light'||t==='dark') document.documentElement.classList.add(t);
+        icon.innerHTML='<i class="fas '+ICONS[t]+'"></i>';
+        if(themeMeta) themeMeta.setAttribute('content',META[t]);
+        if(select) select.value=t;
       }
 
       function getTheme(){
-        var stored = localStorage.getItem('aw_theme');
-        if(stored) return stored === 'light';
-        return false;
+        var stored=localStorage.getItem('aw_theme');
+        return(stored==='light'||stored==='dark'||stored==='default')?stored:'default';
       }
 
       applyTheme(getTheme());
 
-      window.toggleTheme = function(){
-        var isLight = document.documentElement.classList.contains('light');
-        var next = !isLight;
-        localStorage.setItem('aw_theme', next ? 'light' : 'dark');
-        applyTheme(next);
-        showToast(next ? 'Light mode enabled' : 'Dark mode enabled', 'info');
+      window.setTheme = function(t){
+        localStorage.setItem('aw_theme',t);
+        applyTheme(t);
+        var label=t==='light'?'Light mode enabled':t==='dark'?'Dark mode enabled':'Default mode enabled';
+        showToast(label,'info');
       };
     })();
 
