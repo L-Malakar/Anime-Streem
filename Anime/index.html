@@ -375,7 +375,7 @@
     #mainWrap{transition:margin-left 0.25s cubic-bezier(0.4,0,0.2,1)}
     @media(min-width:1024px){body.sb-expanded #mainWrap{margin-left:200px!important}}
 
-    .save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1;animation:dirtyPulse 2s ease infinite}
+    .save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1;animation:dirtyPulse 2s ease infinite;font-variant-numeric:tabular-nums}
     .save-dirty-dot.show{display:flex}
     @keyframes dirtyPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 
@@ -488,7 +488,7 @@
       </button>
       <button id="notifBtn" onclick="window.location.href='notification.html'" class="ml-auto shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">
         <i class="fas fa-bell text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
-        <span id="notifDot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-aw-accent rounded-full"></span>
+        <span id="notifDot" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-aw-accent rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none" style="font-variant-numeric:tabular-nums"></span>
       </button>
     </div>
   </nav>
@@ -522,7 +522,7 @@
       <div class="sb-sep"></div>
       <button class="sb-btn" data-sb="notif" onclick="window.location.href='notification.html'" title="Notifications (N)" id="sbNotifBtn" style="display:none">
         <i class="fas fa-bell"></i><span class="sb-label">Notifications</span><span class="sb-tip">Notifications (N)</span>
-        <span id="sbNotifDot" class="hidden absolute top-1 right-1 w-2 h-2 bg-aw-accent rounded-full"></span>
+        <span id="sbNotifDot" class="save-dirty-dot" style="display:none"></span>
       </button>
       <button class="sb-btn" data-sb="settings" onclick="openSettings();setSbActive(this)" title="Settings">
         <i class="fas fa-gear"></i><span class="sb-label">Settings</span><span class="sb-tip">Settings</span>
@@ -698,8 +698,11 @@
         <i class="fas fa-clapperboard mnav-icon"></i>
         <span class="mnav-label">Shorts</span>
       </button>
-      <button class="mnav-btn no-select" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
-        <i class="fas fa-bookmark mnav-icon"></i>
+      <button class="mnav-btn no-select relative" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
+        <span class="relative inline-flex items-center justify-center">
+          <i class="fas fa-bookmark mnav-icon"></i>
+          <span class="save-dirty-dot" id="mnavSaveDirty"></span>
+        </span>
         <span class="mnav-label">Save</span>
       </button>
       <button class="mnav-btn no-select" onclick="openSettings()" title="Settings" aria-label="Settings">
@@ -1041,7 +1044,6 @@
       else { s.push(id); showToast(`Saved "${name}"`, 'success'); }
       setSaved(s);
       updateSaveBadge();
-      localStorage.setItem('aw_save_dirty', 'true');
       updateSaveDirtyIndicator();
       return s.indexOf(id) !== -1;
     }
@@ -1054,16 +1056,16 @@
     }
 
     function updateSaveDirtyIndicator() {
-      var dirty = localStorage.getItem('aw_save_dirty') === 'true';
+      var count = getSaved().length;
+      var label = count > 99 ? '99+' : String(count);
       var sbDot = document.getElementById('sbSaveDirty');
       var mnavDot = document.getElementById('mnavSaveDirty');
-      if (sbDot) sbDot.classList.toggle('show', dirty);
-      if (mnavDot) mnavDot.classList.toggle('show', dirty);
+      if(sbDot){ sbDot.textContent = count > 0 ? label : ''; sbDot.classList.toggle('show', count > 0); }
+      if(mnavDot){ mnavDot.textContent = count > 0 ? label : ''; mnavDot.classList.toggle('show', count > 0); }
     }
 
     function clearSaveDirty() {
-      localStorage.removeItem('aw_save_dirty');
-      updateSaveDirtyIndicator();
+      /* no-op: save count badge now always reflects live count */
     }
 
     function handleNotif() {
@@ -1573,7 +1575,7 @@
     let loadedCount = 0;
     let isLoadingMore = false;
     let sentinelObserver = null;
-    const BATCH_ROWS = 3;
+    const BATCH_SIZE = 25;
 
     function getItemsPerRow() {
       const w = window.innerWidth;
@@ -1585,8 +1587,8 @@
       return 2;
     }
 
-    function getBatchSize() { return getItemsPerRow() * BATCH_ROWS; }
-    function getInitialBatchSize() { return getItemsPerRow() * 6; }
+    function getBatchSize() { return BATCH_SIZE; }
+    function getInitialBatchSize() { return BATCH_SIZE; }
 
     function resetLoaded() {
       loadedCount = 0;
@@ -1689,7 +1691,7 @@
     function appendNewCards() {
       const total = displayedAnime.length;
       const grid = document.getElementById('animeGrid');
-      const prevCount = loadedCount - getBatchSize();
+      const prevCount = loadedCount - BATCH_SIZE;
       const newItems = displayedAnime.slice(prevCount, loadedCount);
 
       const fragment = document.createDocumentFragment();
@@ -2727,14 +2729,16 @@
       fetch('tnew.json')
         .then(function(r){ return r.ok ? r.json() : []; })
         .then(function(data){
-          var hasNotif = Array.isArray(data) && data.length > 0;
           var readState = {};
           try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
-          var unread = hasNotif && !readState[0];
+          var total = Array.isArray(data) ? data.length : 0;
+          var unreadCount = 0;
+          for(var i = 0; i < total; i++){ if(!readState[i]) unreadCount++; }
+          var label = unreadCount > 99 ? '99+' : String(unreadCount);
           var navDot = document.getElementById('notifDot');
           var sbDot = document.getElementById('sbNotifDot');
-          if(navDot) navDot.classList.toggle('hidden', !unread);
-          if(sbDot) sbDot.classList.toggle('hidden', !unread);
+          if(navDot){ if(unreadCount > 0){ navDot.textContent = label; navDot.classList.remove('hidden'); } else { navDot.classList.add('hidden'); } }
+          if(sbDot){ if(unreadCount > 0){ sbDot.textContent = label; sbDot.classList.add('show'); sbDot.style.display=''; } else { sbDot.classList.remove('show'); sbDot.style.display='none'; } }
         })
         .catch(function(){});
     }
