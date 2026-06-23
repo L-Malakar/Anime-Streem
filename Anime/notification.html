@@ -308,7 +308,7 @@ html{--mnav-h:4.5rem}
       <div class="ml-auto flex items-center gap-2">
         <button id="notifBtn" onclick="window.location.href='notification.html'" class="shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">
           <i class="fas fa-bell text-aw-accent text-lg"></i>
-          <span id="notifDot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-aw-accent rounded-full"></span>
+          <span id="notifDot" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-aw-accent rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none" style="font-variant-numeric:tabular-nums"></span>
         </button>
       </div>
     </div>
@@ -329,7 +329,7 @@ html{--mnav-h:4.5rem}
       <button class="sb-btn" id="sbRandomBtn" data-sb="random" onclick="goRandom()" title="Random (R)">
         <i class="fas fa-dice"></i><span class="sb-label">Random</span><span class="sb-tip">Random (R)</span>
       </button>
-      <button class="sb-btn" data-sb="saved" onclick="localStorage.removeItem('aw_save_dirty');window.location.href='save.html'" title="Saved (S)">
+      <button class="sb-btn" data-sb="saved" onclick="window.location.href='save.html'" title="Saved (S)">
         <i class="fas fa-bookmark"></i><span class="sb-label">Saved</span><span class="sb-tip">Saved (S)</span>
         <span class="save-dirty-dot" id="sbSaveDirty"></span>
       </button>
@@ -895,11 +895,13 @@ html{--mnav-h:4.5rem}
       }
     }
 
-    /* ====== Save dirty dot ====== */
+    /* ====== Save count dot ====== */
     (function(){
-      var dirty = localStorage.getItem('aw_save_dirty') === 'true';
+      var count = 0;
+      try { count = JSON.parse(localStorage.getItem('aw_saved') || '[]').length; } catch(e){}
+      var label = count > 99 ? '99+' : String(count);
       var dot = document.getElementById('sbSaveDirty');
-      if(dot) dot.classList.toggle('show', dirty);
+      if(dot){ dot.textContent = count > 0 ? label : ''; dot.classList.toggle('show', count > 0); }
     })();
 
     /* ====== Notification data & state ====== */
