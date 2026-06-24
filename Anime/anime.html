@@ -344,6 +344,8 @@
 
     function showToast(msg, type = 'info') {
       const c = document.getElementById('toastContainer');
+      const existing = c.querySelectorAll('.toast:not(.toast-out)');
+      if (existing.length >= 3) existing[0].remove();
       const t = document.createElement('div');
       const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-circle-xmark' };
       const colors = { info: 'border-aw-accent', success: 'border-green-500', error: 'border-red-500' };
@@ -610,7 +612,7 @@
 
     /* ── Data ── */
     let allAnime = [];
-    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","altName":"異世界失格","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","genre":["Adventure","Comedy","Drama","Fantasy","Isekai","Parody"],"date":"2026-05","season":"Season 1","language":"English Hindi Japanese Tamil Telugu","seasons":["Season 1"],"episodeLinks":{"s1":{"e1":"https://as-cdn21.top/video/88a839f2f6f1427879fc33ee4acf4f66","e2":"https://as-cdn21.top/video/f8e59f4b2fe7c5705bf878bbd494ccdf","e3":"https://as-cdn21.top/video/9978b7063e297d84bb2ac8e46c1c845f","e4":"https://as-cdn21.top/video/7bc1ec1d9c3426357e69acd5bf320061","e5":"https://as-cdn21.top/video/d1a21da7bca4abff8b0b61b87597de73","e6":"https://as-cdn21.top/video/491442df5f88c6aa018e86dac21d3606","e7":"https://as-cdn21.top/video/fb2fcd534b0ff3bbed73cc51df620323","e8":"https://as-cdn21.top/video/b571ecea16a9824023ee1af16897a582","e9":"https://as-cdn21.top/video/211c1e0b83b9c69fa9c4bdede203c1e3","e10":"https://as-cdn21.top/video/0234c510bc6d908b28c70ff313743079","e11":"https://as-cdn21.top/video/bb1662b7c5f22a0f905fd59e718ca05e","e12":"https://as-cdn21.top/video/5d79099fcdf499f12b79770834c0164a"}},"details":"https://www.imdb.com/title/tt31186547/","state":"watched","rating":7,"tear":"B+","episodes":12,"studio":"Atelier Pontdarc","year":2024,"review":"Pulled into an otherworldly adventure with cute sidekicks and superpowers, you'd think Osamu hit the jackpot. Nope! From a time before pixels, the early 20th-century gloomy author just wants to find a quiet place to meet his maker, not to rack up XP.","tags":["Go","Watch","Good anime"]}];
+    const FALLBACK = [];
 
     async function loadData() {
       try {
