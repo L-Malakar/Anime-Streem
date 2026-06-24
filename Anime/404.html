@@ -226,6 +226,8 @@
     /* Toast */
     function showToast(msg, type = 'info') {
       const c = document.getElementById('toastContainer');
+      const existing = c.querySelectorAll('.toast:not(.toast-out)');
+      if (existing.length >= 3) existing[0].remove();
       const t = document.createElement('div');
       const icons = { info: 'fa-circle-info', success: 'fa-circle-check' };
       const colors = { info: 'border-aw-accent', success: 'border-green-500' };
@@ -255,7 +257,7 @@
 
     /* Random Anime */
     let allAnime = [];
-    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","rating":7,"year":2024,"episodes":12,"genre":["Adventure","Fantasy"],"state":"watched"}];
+    const FALLBACK = [];
 
     async function loadSuggestion() {
       try {
@@ -270,7 +272,7 @@
         function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
 
     function showSuggestion() {
-      if (!allAnime.length) return;
+      if (!allAnime.length) { showToast('No anime data available in demo', 'info'); return; }
       const pool = allAnime.filter(a => !isUpcoming(a));
       if (!pool.length) return;
       const a = pool[Math.floor(Math.random() * pool.length)];
@@ -322,7 +324,7 @@
     }
 
     function goRandom() {
-      if (!allAnime.length) { showToast('No anime data loaded yet', 'info'); return; }
+      if (!allAnime.length) { showToast('No anime data loaded in demo', 'info'); return; }
       const a = allAnime[Math.floor(Math.random() * allAnime.length)];
       showToast(`Random pick: ${a.name}`, 'info');
       setTimeout(() => { window.location.href = 'anime.html?id=' + encodeURIComponent(a.id); }, 600);
