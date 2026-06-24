@@ -1075,7 +1075,7 @@
     let allAnime = [];
     let shuffledAnime = [];
     let displayedAnime = [];
-    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","altName":"異世界失格","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","genre":["Adventure","Comedy","Drama","Fantasy","Isekai","Parody"],"date":"2026-05","season":"Season 1","language":"English Hindi Japanese Tamil Telugu","link":"","videoUrl":"","seasons":["Season 1"],"episodeLinks":{"s1":{"e1":"https://as-cdn21.top/video/88a839f2f6f1427879fc33ee4acf4f66"}},"details":"https://www.imdb.com/title/tt31186547/","state":"watched","sst":"","rank":null,"rating":7,"tear":"B+","episodes":12,"studio":"Atelier Pontdarc","year":2024,"review":"Pulled into an otherworldly adventure with cute sidekicks and superpowers.","tags":["Go","Watch","Good anime"]}];
+    const FALLBACK = [];
 
     function isRunning(a) { const s = (a.state || '').toLowerCase(); return s === 'watching' || s === 'running' || s === 'ongoing'; }
     function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
@@ -1101,7 +1101,7 @@
         if (!Array.isArray(allAnime)) allAnime = [allAnime];
       } catch(e) {
         allAnime = FALLBACK;
-        showToast('Using sample data — place details.json alongside index.html', 'error');
+        showToast('This is demo so, could not load anime.', 'error');
       }
       shuffledAnime = shuffleArray(allAnime);
       displayedAnime = [...shuffledAnime];
