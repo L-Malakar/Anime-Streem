@@ -546,6 +546,8 @@
     /* ====== Toast ====== */
     function showToast(msg, type = 'info') {
       const c = document.getElementById('toastContainer');
+      const existing = c.querySelectorAll('.toast:not(.toast-out)');
+      if (existing.length >= 3) existing[0].remove();
       const t = document.createElement('div');
       const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-circle-xmark' };
       const colors = { info: 'border-aw-accent', success: 'border-green-500', error: 'border-red-500' };
@@ -572,7 +574,7 @@
     /* ====== Data ====== */
     let allAnime = [];
     let currentSavedList = [];
-    const FALLBACK = [{"id":"No-Longer-Allowed-in-Another-World","name":"No Longer Allowed in Another World","altName":"異世界失格","image":"https://image.tmdb.org/t/p/w342/mKOeQuH7BRrd6Fu4Exx2r0rJF5b.jpg","genre":["Adventure","Comedy","Drama","Fantasy","Isekai","Parody"],"rating":7,"tear":"B+","episodes":12,"studio":"Atelier Pontdarc","year":2024,"review":"Pulled into an otherworldly adventure with cute sidekicks and superpowers.","state":"watched","tags":["Go","Watch","Good anime"]}];
+    const FALLBACK = [];
 
     function showSkeletons() {
       document.getElementById('savedGrid').innerHTML = Array(8).fill('').map(() => `
@@ -1251,5 +1253,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-  </html>
-  
+</html>
