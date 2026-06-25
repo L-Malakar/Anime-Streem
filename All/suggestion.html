@@ -574,6 +574,7 @@
   </div>
 </div>
 
+<script src="data-loader.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -594,9 +595,9 @@
 
   // ── Anime data (loaded once) ──
   let allAnime = [];
-  async function loadAnimeData() {
+  async function loadAnimeDataCached() {
     if (allAnime.length) return allAnime;
-    try { const r = await fetch('details.json'); allAnime = await r.json(); } catch(e) { allAnime = []; }
+    allAnime = await loadAnimeData();
     return allAnime;
   }
 
@@ -774,8 +775,7 @@
           PRE-FILLED FROM ANIME PAGE — ONLY "WHY" FIELD IS YOURS TO WRITE
         </div>
         ${pImage ? `<div class="prefill-anime-banner">
-          <img src="${pImage}" alt="${pName}" onerror="this.style.display='none'" />
-          <div class="prefill-anime-banner-info">
+          <img src="${pImage}" alt="${pName}" onerror="this.src='https://via.placeholder.com/44x66/14141f/e8321a?text=${encodeURIComponent((pName||'?')[0])}'" />          <div class="prefill-anime-banner-info">
             <div class="prefill-anime-banner-name">${pName}</div>
             <div class="prefill-anime-banner-sub">UPCOMING · REQUEST TO ADD</div>
           </div>
