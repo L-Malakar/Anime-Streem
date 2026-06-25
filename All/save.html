@@ -701,6 +701,7 @@
   <p class="footer-copy">© ANIvalted — Your Anime Universe</p>
 </footer>
 
+<script src="data-loader.js"></script>
 <script>
   const SAVE_KEY = 'anivalted_saved';
   const TEAR_ORDER = ['SSS','SS','S','A+','A','B+','B','C','D','E','F+','F','F-'];
@@ -964,10 +965,7 @@
   // ===== INIT =====
   async function init() {
     savedIds = getSavedIds();
-    try {
-      const res = await fetch('details.json');
-      ALL_ANIME = await res.json();
-    } catch(e) { ALL_ANIME = []; }
+    ALL_ANIME = await loadAnimeData();
 
     updateHeaderMeta();
     applyFilters();
