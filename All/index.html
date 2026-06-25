@@ -1257,7 +1257,7 @@
   <div class="footer-copy">© 2025 ANIvalted · Free for all anime fans. All rights to respective owners.</div>
 </footer>
 
-
+<script src="data-loader.js"></script>
 <script>
   // ===== CONTENT PROTECTION =====
   document.addEventListener('contextmenu', e => e.preventDefault());
@@ -1330,10 +1330,7 @@
     }
   })();
   async function loadData() {
-    try {
-      const res = await fetch('details.json');
-      ALL_ANIME = await res.json();
-    } catch(e) { ALL_ANIME = []; }
+    ALL_ANIME = await loadAnimeData();
     init();
   }
 
@@ -1453,7 +1450,7 @@
     card.href = getAnimeUrl(anime);
     card.innerHTML = `
       <img src="${anime.image}" alt="${anime.name}" loading="lazy"
-        onerror="this.src='https://via.placeholder.com/300x450/14141f/e8321a?text=${encodeURIComponent(anime.name)}'" />
+        onerror="this.src='https://placehold.co/300x450/14141f/e8321a?text=${encodeURIComponent(anime.name[0])}'" />
       <div class="${getStateClass(anime.state)} anime-card-state">${getStateLabel(anime.state)}</div>
       <div class="page-anime-card-info">
         <div class="page-anime-card-name">${anime.name}</div>
@@ -1539,7 +1536,7 @@
         <button class="live-del-btn" onclick="event.preventDefault();deleteLiveEntry('${entry.animeId}')" title="Remove">✕</button>
         <a href="${entry.url || '#'}" style="text-decoration:none;color:inherit;display:block">
           <div class="live-card-thumb-wrap">
-            <img src="${entry.animeImage || ''}" alt="${entry.animeName || ''}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(entry.animeName||'?')}'" />
+            <img src="${entry.animeImage || ''}" alt="${entry.animeName || ''}" loading="lazy" onerror="this.src='https://placehold.co/160x240/14141f/e8321a?text=${encodeURIComponent(entry.animeName||'?')}'" />
             <div class="live-progress-bar"><div class="live-progress-fill" style="width:${progress}%"></div></div>
           </div>
           <div class="live-card-title">${entry.animeName || '—'}</div>
@@ -1560,7 +1557,7 @@
       card.className = 'watching-card';
       card.href = getAnimeUrl(anime);
       card.innerHTML = `
-        <img class="watching-thumb" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(anime.name)}'" />
+        <img class="watching-thumb" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://placehold.co/160x240/14141f/e8321a?text=${encodeURIComponent(anime.name[0])}'" />
         <div class="watching-pulse"><span class="pulse-dot"></span> RUNNING</div>
         <div class="watching-title">${anime.name}</div>
         <div class="watching-eps">${anime.season || ''}</div>
@@ -1580,7 +1577,7 @@
       card.className = 'watching-card';
       card.href = getAnimeUrl(anime);
       card.innerHTML = `
-        <img class="watching-thumb" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/60a5fa?text=${encodeURIComponent(anime.name)}'" />
+        <img class="watching-thumb" src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://placehold.co/160x240/14141f/60a5fa?text=${encodeURIComponent(anime.name[0])}'" />
         <div class="watching-pulse" style="color:#60a5fa;border-color:rgba(96,165,250,0.3)"><span class="pulse-dot" style="background:#60a5fa;box-shadow:0 0 6px #60a5fa"></span> UPCOMING</div>
         <div class="watching-title">${anime.name}</div>
         <div class="watching-eps">${anime.season || ''}</div>
@@ -1779,7 +1776,7 @@
       card.className = 'page-anime-card';
       card.href = getAnimeUrl(anime);
       card.innerHTML = `
-        <img src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(anime.name)}'" />
+        <img src="${anime.image}" alt="${anime.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/160x240/14141f/e8321a?text=${encodeURIComponent(anime.name[0])}'" />
         <div class="page-anime-card-info">
           <div class="page-anime-card-name">${anime.name}</div>
           <div class="page-anime-card-meta">${anime.tear} Tier · ${anime.rating??'?'}/10 · ${getStateLabel(anime.state)}</div>
@@ -1936,7 +1933,7 @@
         item.className = 'search-result-item';
         item.href = getAnimeUrl(anime);
         item.innerHTML = `
-          <img src="${anime.image}" alt="${anime.name}" onerror="this.src='https://via.placeholder.com/40x60/14141f/e8321a?text=${anime.name[0]}'" />
+          <img src="${anime.image}" alt="${anime.name}" onerror="this.src='https://placehold.co/40x60/14141f/e8321a?text=${anime.name[0]}'" />
           <div>
             <div class="search-result-name">${anime.name}</div>
             <div class="search-result-meta">${anime.tear} Tier · ${anime.rating ?? '?'}/10 · ${getStateLabel(anime.state)}</div>
@@ -2069,4 +2066,4 @@
 </script>
 <script src="miniplayer.js"></script>
 </body>
-</html>
+      </html>
