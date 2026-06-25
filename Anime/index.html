@@ -1100,8 +1100,16 @@
         allAnime = await res.json();
         if (!Array.isArray(allAnime)) allAnime = [allAnime];
       } catch(e) {
-        allAnime = FALLBACK;
-        showToast('This is demo so, could not load anime.', 'error');
+        try {
+          const demo = await fetch('demo.json');
+          if (!demo.ok) throw new Error();
+          allAnime = await demo.json();
+          if (!Array.isArray(allAnime)) allAnime = [allAnime];
+          showToast('details.json not found — showing demo data', 'info');
+        } catch {
+          allAnime = FALLBACK;
+          showToast('Could not load anime data', 'error');
+        }
       }
       shuffledAnime = shuffleArray(allAnime);
       displayedAnime = [...shuffledAnime];
@@ -2745,4 +2753,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-</html>
+        </html>
