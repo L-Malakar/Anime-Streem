@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Details — AnimeWave</title>
+  <title>Watching — AnimeWave</title>
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -22,173 +23,94 @@
   </script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
-    input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
-    html{scrollbar-width:none}
-    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden;scrollbar-width:none}
-    html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0;height:0;display:none}
-    *{scrollbar-width:none}
+    input,textarea,select{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden}
+    ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#3a3a3a}
 
-    @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-    .skel{background:linear-gradient(90deg,#1a1a1a 25%,#252525 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
-    .skel-circle{border-radius:50%}
-    .skel-text{height:14px;border-radius:6px}
-    .skel-title{height:32px;border-radius:10px;width:70%}
-    .skel-btn{height:48px;border-radius:12px;width:180px}
+    .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:0.08;pointer-events:none;z-index:0}
+    .bg-orb-1{width:400px;height:400px;background:#e63946;top:-100px;left:-100px;animation:orbF1 22s ease-in-out infinite}
+    .bg-orb-2{width:350px;height:350px;background:#ff6b6b;bottom:-80px;right:-80px;animation:orbF2 28s ease-in-out infinite}
+    @keyframes orbF1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,100px)}}
+    @keyframes orbF2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-80px)}}
+    @media(prefers-reduced-motion:reduce){.bg-orb{animation:none!important}}
 
-    .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s cubic-bezier(0.22,1,0.36,1),transform 0.7s cubic-bezier(0.22,1,0.36,1)}
-    .reveal.visible{opacity:1;transform:translateY(0)}
-    .reveal-delay-1{transition-delay:0.08s}
-    .reveal-delay-2{transition-delay:0.16s}
-    .reveal-delay-3{transition-delay:0.24s}
+    .video-wrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;box-shadow:0 0 0 1px rgba(255,255,255,0.04),0 20px 60px -15px rgba(0,0,0,0.6)}
+    .video-wrap video{width:100%;height:100%;display:block}
+    .video-wrap .controls-overlay{position:absolute;bottom:0;left:0;right:0;padding:14px 18px;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.4) 60%,transparent 100%);opacity:0;transition:opacity 0.3s ease;display:flex;flex-direction:column;gap:8px}
+    .video-wrap:hover .controls-overlay,.video-wrap.show-controls .controls-overlay{opacity:1}
+    .video-wrap .big-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);cursor:pointer;transition:opacity 0.25s}
+    .video-wrap .big-play.hidden{opacity:0;pointer-events:none}
+    .big-play-circle{width:64px;height:64px;border-radius:50%;background:rgba(230,57,70,0.92);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(230,57,70,0.4);transition:transform 0.2s}
+    .big-play:hover .big-play-circle{transform:scale(1.08)}
+    .big-play:active .big-play-circle{transform:scale(0.95)}
 
-    .poster-enter{animation:posterEnter 0.9s cubic-bezier(0.22,1,0.36,1) forwards}
-    @keyframes posterEnter{from{opacity:0;transform:scale(0.88) translateY(40px)}to{opacity:1;transform:scale(1) translateY(0)}}
-    .bg-enter{animation:bgEnter 1.2s ease forwards}
-    @keyframes bgEnter{from{opacity:0;transform:scale(1.08)}to{opacity:1;transform:scale(1)}}
-    .poster-shadow{
-      box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 25px 80px -12px rgba(0,0,0,0.8),0 0 120px -20px rgba(230,57,70,0.15);
-      transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),box-shadow 0.4s ease;
-    }
-    .poster-shadow:hover{
-      transform:scale(1.03) translateY(-4px);
-      box-shadow:0 0 0 1px rgba(255,255,255,0.1),0 35px 100px -12px rgba(0,0,0,0.9),0 0 160px -20px rgba(230,57,70,0.25);
-    }
+    .progress-bar{width:100%;height:4px;background:rgba(255,255,255,0.12);border-radius:99px;cursor:pointer;position:relative;transition:height 0.15s}
+    .progress-bar:hover{height:7px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#e63946,#ff6b6b);border-radius:99px;position:relative;pointer-events:none}
+    .progress-fill::after{content:'';position:absolute;right:-7px;top:50%;transform:translateY(-50%) scale(0);width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,0.5);transition:transform 0.15s}
+    .progress-bar:hover .progress-fill::after{transform:translateY(-50%) scale(1)}
+    .progress-buffer{position:absolute;top:0;left:0;height:100%;background:rgba(255,255,255,0.1);border-radius:99px;pointer-events:none}
 
-    .poster-orb{
-      position:absolute;width:500px;height:500px;border-radius:50%;pointer-events:none;z-index:1;
-      background:radial-gradient(circle,rgba(230,57,70,0.18) 0%,rgba(230,57,70,0.06) 40%,transparent 70%);
-      filter:blur(60px);animation:orbFloat 10s ease-in-out infinite;
-    }
-    @keyframes orbFloat{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.25)}}
-
-    .vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.5) 100%)}
-
-    .poster-watch-enter{animation:posterWatchIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s forwards;opacity:0}
-    @keyframes posterWatchIn{0%{opacity:0;transform:translateY(30px) scale(0.85);filter:blur(6px)}60%{opacity:1;transform:translateY(-4px) scale(1.02);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-    .poster-watch-float{animation:posterFloat 3s ease-in-out 1.4s infinite}
-    @keyframes posterFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-    .poster-watch-btn{position:relative;overflow:hidden;transition:all 0.35s cubic-bezier(0.22,1,0.36,1)}
-    .poster-watch-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);transition:left 0.6s ease}
-    .poster-watch-btn:hover::before{left:100%}
-    .poster-watch-btn::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:0 0 0 1px rgba(230,57,70,0.35),0 0 30px rgba(230,57,70,0.25),0 0 60px rgba(230,57,70,0.1);opacity:1;animation:glowPulse 2.5s ease-in-out infinite}
-    @keyframes glowPulse{0%,100%{opacity:0.7}50%{opacity:1}}
-    .poster-watch-btn:hover{transform:translateY(-3px) scale(1.06);box-shadow:0 0 0 1px rgba(255,107,107,0.5),0 12px 40px -4px rgba(230,57,70,0.5),0 0 80px -10px rgba(230,57,70,0.35)}
-    .poster-watch-btn:active{transform:translateY(0) scale(0.97);transition-duration:0.1s}
-    .play-icon-bounce{animation:playBounce 1.8s ease-in-out 1.8s infinite}
-    @keyframes playBounce{0%,100%{transform:scale(1)}15%{transform:scale(1.25) translateX(1px)}30%{transform:scale(1)}}
-    .ripple-effect{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);animation:ripple 0.6s ease-out forwards;pointer-events:none}
-    @keyframes ripple{to{transform:scale(4);opacity:0}}
-    .poster-watch-coming{animation:posterWatchIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s forwards,pulse-muted 2s ease-in-out 1.4s infinite;opacity:0}
-    @keyframes pulse-muted{0%,100%{opacity:0.5}50%{opacity:1}}
-
-    .poster-quick-btn{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:11px 20px;
-      background:rgba(230,57,70,0.92);backdrop-filter:blur(14px);
-      border-radius:14px;color:#fff;text-decoration:none;
-      font-weight:700;font-size:0.8rem;
-      box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 30px rgba(230,57,70,0.45),0 0 50px rgba(230,57,70,0.12);
-      transition:all 0.3s cubic-bezier(0.22,1,0.36,1);
-      cursor:pointer;position:relative;overflow:hidden;
-      animation:quickBtnIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.5s forwards;opacity:0;
-      white-space:nowrap;
-    }
-    .poster-quick-btn::before{
-      content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-      box-shadow:0 0 40px rgba(230,57,70,0.2);
-      animation:glowPulse 2.5s ease-in-out infinite;
-    }
-    .poster-quick-btn::after{
-      content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
-      transition:left 0.5s ease;pointer-events:none;
-    }
-    .poster-quick-btn:hover::after{left:100%}
-    .poster-quick-btn:hover{
-      transform:translateY(-2px) scale(1.05);
-      box-shadow:0 0 0 1px rgba(255,255,255,0.14),0 14px 40px rgba(230,57,70,0.6),0 0 80px rgba(230,57,70,0.22);
-      background:rgba(230,57,70,1);
-    }
-    .poster-quick-btn:active{transform:scale(0.94);transition-duration:0.08s}
-    .poster-quick-btn i{transition:transform 0.2s ease}
-    .poster-quick-btn:hover i{transform:scale(1.15)}
-    @keyframes quickBtnIn{from{opacity:0;transform:translateY(12px) scale(0.85)}to{opacity:1;transform:translateY(0) scale(1)}}
-
-    .ep-card{transition:all 0.2s ease}
-    .ep-card:hover{background:#252525;border-color:rgba(230,57,70,0.4)}
-    .ep-card.watched{border-left:3px solid #22c55e}
-    .ep-card.current{border-left:3px solid #e63946;background:rgba(230,57,70,0.06)}
-    .ep-card.watched:hover{border-left-color:#22c55e}
-    .ep-card.current:hover{border-left-color:#e63946}
+    .ep-item{transition:all 0.2s ease;border:1px solid transparent}
+    .ep-item:hover{background:#1e1e1e;border-color:#333}
+    .ep-item.active{background:rgba(230,57,70,0.1);border-color:rgba(230,57,70,0.35)}
+    .ep-item.watched .ep-num{background:rgba(34,197,94,0.15);color:#22c55e}
+    .ep-item.current .ep-num{background:rgba(230,57,70,0.2);color:#e63946}
+    .ep-num{width:32px;height:32px;border-radius:8px;background:#1a1a1a;color:#8a8a8a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all 0.2s;flex-shrink:0}
+    .ep-item:hover .ep-num{background:rgba(230,57,70,0.15);color:#ff6b6b}
     .ep-current-dot{width:6px;height:6px;border-radius:50%;background:#e63946;animation:dotPulse 1.5s ease-in-out infinite;flex-shrink:0}
-    @keyframes dotPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+    @keyframes dotPulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
 
-    .progress-track{height:3px;background:#1a1a1a;overflow:hidden}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#e63946,#ff6b6b);transition:width 0.5s cubic-bezier(0.22,1,0.36,1);border-radius:0 2px 2px 0}
-
-    .rating-track{height:6px;background:#1a1a1a;border-radius:99px;overflow:hidden;position:relative}
-    .rating-fill{height:100%;border-radius:99px;position:relative;transition:width 0.8s cubic-bezier(0.22,1,0.36,1)}
-    .rating-fill::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,0.5)}
-
-    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:2}
-    .line-clamp-4{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:4}
-    #aboutText.expanded{display:block;-webkit-line-clamp:unset;line-clamp:unset;overflow:visible}
-    #readMoreBtn{display:none;cursor:pointer}
-    #readMoreBtn.visible{display:inline-flex}
-
-    .rec-card{transition:all 0.25s ease}
-    .rec-card:hover{transform:translateY(-4px)}
-    .rec-card:hover .rec-img{transform:scale(1.05)}
-    .rec-img{transition:transform 0.35s ease}
-    .rec-btn-wrap{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.15) 70%,transparent 100%);z-index:2;pointer-events:none}
-    .rec-btn-wrap>*{pointer-events:auto}
-    .rec-watch-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;color:#fff;background:rgba(230,57,70,0.9);transition:all 0.2s ease;cursor:pointer;text-decoration:none;box-shadow:0 4px 12px rgba(230,57,70,0.3)}
-    .rec-watch-btn:hover{background:rgba(230,57,70,1);transform:scale(1.05);box-shadow:0 6px 16px rgba(230,57,70,0.4)}
-    .rec-watch-btn:active{transform:scale(0.97)}
-    .rec-shuffle{transition:all 0.3s ease}
-    .rec-shuffle:hover{background:#e63946;border-color:#e63946;color:#fff}
-    .rec-shuffle.spinning i{animation:spin 0.5s ease}
-    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-    .rec-grid-transition .rec-card{
-      animation:recCardIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards;
-      opacity:0;
-    }
-    @keyframes recCardIn{from{opacity:0;transform:translateY(12px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .mep-card{transition:all 0.2s ease;border:1px solid transparent}
+    .mep-card:hover{border-color:rgba(230,57,70,0.3)}
+    .mep-card.active{background:rgba(230,57,70,0.1);border-color:rgba(230,57,70,0.4)}
+    .mep-card.watched .mep-num{color:#22c55e}
 
     .toast{animation:slideIn 0.3s ease forwards}
     @keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
     .toast-out{animation:slideOut 0.3s ease forwards}
     @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
 
-    .action-btn{transition:all 0.25s cubic-bezier(0.22,1,0.36,1);position:relative;overflow:hidden}
-    .action-btn:hover{transform:translateY(-2px)}
-    .action-btn:active{transform:translateY(0) scale(0.97);transition-duration:0.08s}
+    .fade-in{animation:fadeIn 0.4s ease forwards}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulse 3s ease infinite}
+    @keyframes glowPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    .action-btn{transition:all 0.2s ease}
+    .action-btn:hover{transform:translateY(-1px)}
+    .action-btn:active{transform:scale(0.97)}
+
+    kbd{display:inline-block;padding:1px 5px;border-radius:4px;background:#1a1a1a;border:1px solid #2a2a2a;font-family:'Outfit',sans-serif;font-size:10px;color:#8a8a8a;line-height:1.6}
 
     .back-btn{transition:all 0.2s ease}
-    .back-btn:hover{background:rgba(255,255,255,0.08)}
+    .back-btn:hover{background:rgba(255,255,255,0.06)}
     .back-btn:active{transform:scale(0.92)}
 
-    .genre-pill{transition:all 0.2s ease}
-    .genre-pill:hover{border-color:rgba(230,57,70,0.4);color:#ff6b6b;background:rgba(230,57,70,0.08)}
+    .season-drawer-trigger{transition:all 0.2s ease;cursor:pointer}
+    .season-drawer-trigger:hover{background:rgba(255,255,255,0.04)}
+    .season-drawer-trigger:active{transform:scale(0.98)}
+    .season-drawer-panel{max-height:0;overflow:hidden;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease;opacity:0}
+    .season-drawer-panel.open{max-height:300px;opacity:1}
+    .season-option{transition:all 0.15s ease;cursor:pointer}
+    .season-option:hover{background:rgba(230,57,70,0.08)}
+    .season-option.active{background:rgba(230,57,70,0.12);color:#e63946}
+    .season-option.playing-indicator{position:relative}
 
-    .info-card{position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease}
-    .info-card:hover{transform:translateY(-2px);border-color:rgba(230,57,70,0.3)}
-    .info-card::after{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(230,57,70,0.04) 0%,transparent 70%);pointer-events:none}
+    .ep-nav-btn{transition:all 0.2s ease;position:relative;overflow:hidden}
+    .ep-nav-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(230,57,70,0.15),rgba(255,107,107,0.08));opacity:0;transition:opacity 0.2s}
+    .ep-nav-btn:hover::before{opacity:1}
+    .ep-nav-btn:hover{border-color:rgba(230,57,70,0.4);transform:translateY(-1px)}
+    .ep-nav-btn:active{transform:scale(0.97)}
+    .ep-nav-btn:disabled{opacity:0.3;pointer-events:none}
+    .ep-nav-btn:disabled::before{display:none}
 
-    .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulseLine 3s ease infinite}
-    @keyframes glowPulseLine{0%,100%{opacity:0.3}50%{opacity:1}}
+    .playing-season-badge{font-size:9px;background:rgba(230,57,70,0.2);color:#e63946;padding:1px 6px;border-radius:4px;font-weight:600;margin-left:6px}
 
-    .bg-orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:0.1;pointer-events:none;z-index:0}
-    .bg-orb-1{width:400px;height:400px;background:#e63946;bottom:-100px;left:-100px;animation:orbBg1 25s ease-in-out infinite}
-    .bg-orb-2{width:350px;height:350px;background:#ff6b6b;top:50%;right:-80px;animation:orbBg2 20s ease-in-out infinite}
-    @keyframes orbBg1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
-    @keyframes orbBg2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-80px)}}
-    @media(prefers-reduced-motion:reduce){.bg-orb,.poster-orb{animation:none!important}}
-
-    #backToTop{transition:opacity 0.3s ease,transform 0.3s ease}
-    #backToTop.show{opacity:1!important;pointer-events:auto!important;transform:translateY(0)!important}
-    #backToTop:not(.show){transform:translateY(20px)!important}
+    @media(max-width:1023px){
+      .video-wrap{border-radius:0;aspect-ratio:auto;height:56.25vw}
+    }
+    @media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
 
     #aw-miniplayer #aw-mp-video-wrap{height:200px;position:relative;overflow:hidden;transition:height 0.3s ease,opacity 0.3s ease}
     #aw-miniplayer #aw-mp-video-wrap img,#aw-miniplayer #aw-mp-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -201,147 +123,181 @@
     #aw-miniplayer #aw-mp-controls button:hover{background:#e63946}
     #aw-miniplayer #aw-mp-progress{height:3px;background:#2a2a2a}
     #aw-miniplayer #aw-mp-bar{height:100%;background:#e63946;transition:width 0.3s ease;width:0}
-
-    .footer-link{transition:color 0.2s ease}
-    .footer-link:hover{color:#f0f0f0}
-
-    @media (max-width:640px){.poster-orb{width:300px;height:300px}}
-    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
   </style>
 </head>
 <body class="min-h-screen">
 
+  <!-- Background Orbs -->
   <div class="bg-orb bg-orb-1"></div>
   <div class="bg-orb bg-orb-2"></div>
 
-  <div id="skeleton" class="min-h-screen">
-    <div class="h-16 bg-aw-bg border-b border-aw-border flex items-center px-4 sm:px-6">
-      <div class="skel w-9 h-9 skel-circle"></div>
-      <div class="skel w-28 h-5 ml-3 hidden sm:block"></div>
-    </div>
-    <div class="relative bg-aw-bg flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding-top:4rem">
-      <div class="skel w-[260px] sm:w-[320px] rounded-2xl" style="aspect-ratio:3/4"></div>
-    </div>
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
-      <div class="grid lg:grid-cols-[1fr_380px] gap-8">
-        <div>
-          <div class="flex gap-3 mb-4"><div class="skel w-20 h-7"></div><div class="skel w-20 h-7"></div></div>
-          <div class="skel skel-title mb-3"></div>
-          <div class="skel skel-text w-48 mb-6"></div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div class="skel h-20 rounded-xl"></div><div class="skel h-20 rounded-xl"></div>
-            <div class="skel h-20 rounded-xl"></div><div class="skel h-20 rounded-xl"></div>
-          </div>
-          <div class="flex gap-2 mb-6"><div class="skel w-16 h-6 rounded-full"></div><div class="skel w-20 h-6 rounded-full"></div><div class="skel w-14 h-6 rounded-full"></div><div class="skel w-18 h-6 rounded-full"></div></div>
-          <div class="space-y-2 mb-8"><div class="skel skel-text w-full"></div><div class="skel skel-text w-full"></div><div class="skel skel-text w-3/4"></div></div>
-          <div class="flex gap-3"><div class="skel skel-btn"></div><div class="skel skel-btn w-32"></div></div>
-        </div>
-        <div>
-          <div class="bg-aw-card border border-aw-border rounded-2xl overflow-hidden">
-            <div class="p-4 border-b border-aw-border"><div class="skel w-24 h-5"></div></div>
-            <div class="p-3 space-y-2">
-              <div class="skel w-full h-12 rounded-xl"></div><div class="skel w-full h-12 rounded-xl"></div>
-              <div class="skel w-full h-12 rounded-xl"></div><div class="skel w-full h-12 rounded-xl"></div>
-              <div class="skel w-full h-12 rounded-xl"></div><div class="skel w-full h-12 rounded-xl"></div>
-            </div>
-          </div>
-        </div>
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/90 backdrop-blur-xl border-b border-aw-border">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+      <button onclick="history.back()" class="back-btn w-9 h-9 flex items-center justify-center rounded-full shrink-0" title="Go back">
+        <i class="fas fa-arrow-left text-aw-muted text-sm"></i>
+      </button>
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-lg object-cover">
+        <span class="font-display text-aw-fg text-base hidden sm:block">AnimeWave</span>
+      </a>
+      <div class="flex-1 min-w-0">
+        <h1 id="navTitle" class="text-sm font-medium text-aw-fg truncate"></h1>
       </div>
-    </div>
-  </div>
-
-  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border" style="opacity:0;transition:opacity 0.4s ease">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <button onclick="history.back()" class="back-btn w-10 h-10 flex items-center justify-center rounded-full" aria-label="Go back" title="Go back (Alt+Left)">
-          <i class="fas fa-arrow-left text-aw-muted text-sm"></i>
-        </button>
-        <a href="index.html" class="flex items-center gap-2 shrink-0 ml-1">
-          <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
-          <span class="font-display text-aw-fg text-lg hidden sm:block">AnimeWave</span>
-        </a>
-      </div>
-      <div class="flex items-center gap-1">
-        <button id="shareBtnNav" onclick="shareAnime()" class="shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors" title="Share">
-          <i class="fas fa-share-nodes text-aw-muted text-lg"></i>
-        </button>
-        <a href="save.html" class="relative shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors" title="Saved">
-          <i class="fas fa-bookmark text-aw-muted text-lg"></i>
-          <span id="saveBadge" class="hidden absolute -top-0.5 -right-0.5 w-5 h-5 bg-aw-accent rounded-full text-[10px] font-bold flex items-center justify-center text-white">0</span>
-        </a>
-      </div>
+      <button id="saveBtnNav" onclick="handleSave()" class="shrink-0 w-9 h-9 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors" title="Save">
+        <i class="fas fa-bookmark text-aw-muted"></i>
+      </button>
     </div>
   </nav>
 
-  <section id="posterSection" class="relative overflow-hidden bg-aw-bg" style="min-height:calc(100vh - 4rem);padding-top:4rem;display:none">
-    <img id="posterBg" src="" alt="" class="bg-enter absolute inset-0 w-full h-full object-cover object-center" style="will-change:transform">
-    <div class="absolute inset-0 z-[1]" style="background:linear-gradient(to bottom,rgba(10,10,10,0.55) 0%,rgba(10,10,10,0.65) 50%,rgba(10,10,10,0.92) 85%,rgba(10,10,10,1) 100%)"></div>
-    <div class="poster-orb" style="top:40%;left:50%"></div>
-    <div class="vignette"></div>
-    <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
-      <div class="flex flex-col items-center">
-        <div class="poster-enter poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" onclick="scrollToContent()">
-          <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onerror="handleImgError(this)">
-        </div>
-        <div id="posterQuickBtn" class="mt-4"></div>
-        <div id="posterWatchWrap" class="mt-5"></div>
-      </div>
-    </div>
-    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-aw-bg to-transparent z-[4] pointer-events-none"></div>
-  </section>
-
-  <div id="glowLine" class="max-w-[1600px] mx-auto relative z-10" style="display:none"><div class="glow-line"></div></div>
-
-  <main id="mainContent" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-12 relative z-10" style="display:none"></main>
-
-  <section id="recSection" class="border-t border-aw-border relative z-10" style="display:none"></section>
-
-  <footer id="mainFooter" class="border-t border-aw-border relative z-10" style="display:none">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="sm:col-span-2 lg:col-span-1">
-          <div class="flex items-center gap-2 mb-3">
-            <img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-lg">
-            <span class="font-display text-lg text-aw-fg">AnimeWave</span>
+  <!-- Main -->
+  <main class="pt-14 max-w-[1600px] mx-auto relative z-[1]">
+    <div class="grid lg:grid-cols-[1fr_360px]">
+      <!-- Player Area -->
+      <div class="fade-in">
+        <div class="video-wrap show-controls" id="videoWrap">
+          <video id="mainVideo" playsinline style="display:none"></video>
+          <iframe id="mainIframe"
+            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"
+            referrerpolicy="no-referrer"
+            style="display:none;width:100%;height:100%;border:none;position:absolute;inset:0;z-index:1">
+          </iframe>
+          <div class="big-play" id="bigPlay">
+            <div class="big-play-circle"><i class="fas fa-play text-white text-xl ml-1"></i></div>
           </div>
-          <p class="text-aw-muted text-sm leading-relaxed max-w-xs">Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
+          <div class="controls-overlay" id="controlsOverlay">
+            <div class="progress-bar" id="progressBar">
+              <div class="progress-buffer" id="progressBuffer" style="width:0%"></div>
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 sm:gap-3">
+                <button id="btnPlayPause" class="text-white text-base w-9 h-9 flex items-center justify-center hover:text-aw-accentL transition-colors"><i class="fas fa-play"></i></button>
+                <button id="btnPrev" class="text-white/60 text-sm w-8 h-8 flex items-center justify-center hover:text-white transition-colors" title="Previous (P)"><i class="fas fa-step-backward"></i></button>
+                <button id="btnNext" class="text-white/60 text-sm w-8 h-8 flex items-center justify-center hover:text-white transition-colors" title="Next (N)"><i class="fas fa-step-forward"></i></button>
+                <div class="hidden sm:flex items-center gap-2 ml-1">
+                  <button id="btnVol" class="text-white/60 text-sm hover:text-white transition-colors"><i class="fas fa-volume-up"></i></button>
+                  <input type="range" id="volSlider" min="0" max="1" step="0.05" value="1" class="w-20 accent-[#e63946] h-1 cursor-pointer">
+                </div>
+                <span id="timeDisplay" class="text-white/50 text-xs ml-1 font-mono hidden sm:inline">0:00 / 0:00</span>
+              </div>
+              <div class="flex items-center gap-1.5 sm:gap-2">
+                <select id="speedSelect" class="bg-transparent text-white/60 text-xs border border-white/15 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none hidden sm:block">
+                  <option value="0.5">0.5x</option><option value="0.75">0.75x</option>
+                  <option value="1" selected>1x</option><option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option><option value="2">2x</option>
+                </select>
+                <button id="btnFullscreen" class="text-white/60 text-sm hover:text-white transition-colors" title="Fullscreen (F)"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+          </div>
+          <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none" style="display:none">
+            <div class="flex flex-col items-center gap-3">
+              <i class="fas fa-spinner fa-spin text-2xl text-aw-accent"></i>
+              <span class="text-white/50 text-xs">Loading...</span>
+            </div>
+          </div>
+          <div id="errorOverlay" class="absolute inset-0 flex items-center justify-center bg-black/80 pointer-events-none" style="display:none">
+            <div class="text-center px-4">
+              <i class="fas fa-exclamation-triangle text-3xl text-aw-accent mb-3"></i>
+              <p class="text-white/80 text-sm mb-1">Failed to load video</p>
+              <p class="text-white/40 text-xs">Check the URL or try another episode</p>
+            </div>
+          </div>
         </div>
-        <div>
-          <h4 class="font-semibold text-aw-fg mb-3 text-sm uppercase tracking-wider">Navigate</h4>
-          <ul class="space-y-2.5 text-sm text-aw-muted">
-            <li><a href="index.html" class="footer-link flex items-center gap-2"><i class="fas fa-home text-xs w-4"></i> Home</a></li>
-            <li><a href="save.html" class="footer-link flex items-center gap-2"><i class="fas fa-bookmark text-xs w-4"></i> Saved List</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold text-aw-fg mb-3 text-sm uppercase tracking-wider">Shortcuts</h4>
-          <ul class="space-y-2.5 text-sm text-aw-muted">
-            <li class="flex items-center gap-2"><kbd class="inline-block px-1.5 py-0.5 rounded bg-aw-bg2 border border-aw-border text-[10px] font-mono">Ctrl+S</kbd> Save</li>
-          </ul>
+
+        <!-- Info below player -->
+        <div class="p-4 sm:p-5">
+          <div class="glow-line mb-5"></div>
+          <div class="flex items-start justify-between gap-4 mb-3">
+            <div class="min-w-0">
+              <h2 id="epTitle" class="font-display text-lg sm:text-xl text-aw-fg mb-1 truncate"></h2>
+              <div id="epMeta" class="flex flex-wrap items-center gap-2 text-xs text-aw-muted"></div>
+            </div>
+            <a id="detailLink" href="#" class="action-btn shrink-0 inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-4 py-2 rounded-lg text-xs">
+              <i class="fas fa-info-circle"></i> <span class="hidden sm:inline">Details</span>
+            </a>
+          </div>
         </div>
       </div>
-      <div class="border-t border-aw-border mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-aw-muted text-xs">
-        <p>AnimeWave &copy; 2025 — Built for anime lovers</p>
-        <p class="flex items-center gap-1.5">Made with <i class="fas fa-heart text-aw-accent text-[10px]"></i> for the community</p>
-      </div>
+
+      <!-- Desktop Episode Sidebar -->
+      <aside class="border-l border-aw-border bg-aw-bg2 hidden lg:flex flex-col">
+        <div class="sticky top-14 max-h-[calc(100vh-56px)] flex flex-col">
+          <div class="shrink-0 border-b border-aw-border">
+            <div class="p-4 pb-3 flex items-center justify-between">
+              <h3 class="font-display text-base text-aw-fg">Episodes</h3>
+              <span id="epCountDesktop" class="text-xs text-aw-muted bg-aw-bg px-2.5 py-0.5 rounded-full"></span>
+            </div>
+            <div id="seasonDrawerDesktop" class="px-4 pb-3" style="display:none">
+              <button class="season-drawer-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('desktop')">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-layer-group text-aw-accent text-xs"></i>
+                  <span id="seasonDrawerLabelDesktop" class="text-sm font-medium text-aw-fg"></span>
+                </div>
+                <i id="seasonDrawerChevronDesktop" class="fas fa-chevron-down text-aw-muted text-xs transition-transform duration-300"></i>
+              </button>
+              <div id="seasonDrawerPanelDesktop" class="season-drawer-panel mt-1.5 rounded-lg border border-aw-border bg-aw-bg overflow-hidden">
+                <div id="seasonDrawerOptionsDesktop" class="py-1"></div>
+              </div>
+            </div>
+          </div>
+          <div class="shrink-0 p-3 flex gap-2 border-b border-aw-border">
+            <button id="epNavPrevDesktop" onclick="goEpSidebar(-1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+              <i class="fas fa-chevron-left text-[10px]"></i> Previous
+            </button>
+            <button id="epNavNextDesktop" onclick="goEpSidebar(1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+              Next <i class="fas fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+          <div class="p-2 flex-1 overflow-y-auto" id="epList"></div>
+        </div>
+      </aside>
     </div>
-  </footer>
 
-  <button id="backToTop" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-full bg-aw-accent text-white flex items-center justify-center shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-110 active:scale-95" aria-label="Back to top">
-    <i class="fas fa-arrow-up text-sm"></i>
-  </button>
+    <!-- Mobile Episode Section -->
+    <div class="lg:hidden border-t border-aw-border bg-aw-bg2">
+      <div class="sticky top-14 z-10 bg-aw-bg2 border-b border-aw-border">
+        <div class="p-4 pb-2 flex items-center justify-between">
+          <h3 class="font-display text-base text-aw-fg">Episodes</h3>
+          <span id="epCountMobile" class="text-xs text-aw-muted bg-aw-bg px-2.5 py-0.5 rounded-full"></span>
+        </div>
+        <div id="seasonDrawerMobile" class="px-4 pb-2" style="display:none">
+          <button class="season-drawer-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('mobile')">
+            <div class="flex items-center gap-2">
+              <i class="fas fa-layer-group text-aw-accent text-xs"></i>
+              <span id="seasonDrawerLabelMobile" class="text-sm font-medium text-aw-fg"></span>
+            </div>
+            <i id="seasonDrawerChevronMobile" class="fas fa-chevron-down text-aw-muted text-xs transition-transform duration-300"></i>
+          </button>
+          <div id="seasonDrawerPanelMobile" class="season-drawer-panel mt-1.5 rounded-lg border border-aw-border bg-aw-bg overflow-hidden">
+            <div id="seasonDrawerOptionsMobile" class="py-1"></div>
+          </div>
+        </div>
+        <div class="px-4 pb-3 flex gap-2">
+          <button id="epNavPrevMobile" onclick="goEpSidebar(-1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+            <i class="fas fa-chevron-left text-[10px]"></i> Previous
+          </button>
+          <button id="epNavNextMobile" onclick="goEpSidebar(1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
+            Next <i class="fas fa-chevron-right text-[10px]"></i>
+          </button>
+        </div>
+      </div>
+      <div id="epListMobile" class="p-3 pb-24 grid grid-cols-1 gap-2"></div>
+    </div>
+  </main>
 
-  <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2"></div>
+  <!-- Toast -->
+  <div id="toastContainer" class="fixed top-16 right-4 z-[10000] flex flex-col gap-2"></div>
 
   <script>
+    /* Security */
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('copy', e => { if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') e.preventDefault(); });
-    document.addEventListener('selectstart', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return; e.preventDefault(); });
+    document.addEventListener('selectstart', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return; e.preventDefault(); });
     document.addEventListener('dragstart', e => e.preventDefault());
 
-    const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420' fill='%231a1a1a'%3E%3Crect width='300' height='420'/%3E%3Crect x='120' y='170' width='60' height='80' rx='4' fill='%232a2a2a'/%3E%3Ccircle cx='144' cy='190' r='8' fill='%23333'/%3E%3Cpolygon points='139,210 139,230 156,220' fill='%23333'/%3E%3Ctext x='150' y='280' text-anchor='middle' fill='%23333' font-family='sans-serif' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
-    function handleImgError(img) { if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = IMG_FALLBACK; } }
-
+    /* Toast */
     function showToast(msg, type = 'info') {
       const c = document.getElementById('toastContainer');
       const existing = c.querySelectorAll('.toast:not(.toast-out)');
@@ -355,6 +311,9 @@
       setTimeout(() => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 300); }, 2800);
     }
 
+    function fmt(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ':' + (sec < 10 ? '0' : '') + sec; }
+
+    /* Saved */
     function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch { return []; } }
     function isSaved(id) { return getSaved().includes(id); }
     function toggleSave(id, name) {
@@ -362,257 +321,127 @@
       if (s.includes(id)) { s = s.filter(x => x !== id); showToast(`Removed "${name}"`, 'info'); }
       else { s.push(id); showToast(`Saved "${name}"`, 'success'); }
       localStorage.setItem('aw_saved', JSON.stringify(s));
-      updateSaveBadge();
       return s.includes(id);
     }
-    function updateSaveBadge() {
-      const b = document.getElementById('saveBadge');
-      const c = getSaved().length;
-      if (c > 0) { b.textContent = c > 99 ? '99+' : c; b.classList.remove('hidden'); b.classList.add('flex'); }
-      else { b.classList.add('hidden'); b.classList.remove('flex'); }
+
+    /* Watch History */
+    function addToHistory(id, season, episode) {
+      try {
+        let h = JSON.parse(localStorage.getItem('aw_history') || '[]');
+        h = h.filter(x => x.id !== id);
+        h.unshift({ id, ts: Date.now(), s: season || 1, e: episode || 1 });
+        if (h.length > 50) h = h.slice(0, 50);
+        localStorage.setItem('aw_history', JSON.stringify(h));
+      } catch (e) {}
     }
 
-    function getProgress(animeId) { try { return parseInt(localStorage.getItem('aw_prog_' + animeId) || '0'); } catch { return 0; } }
-    function setProgress(animeId, epNum) { const prev = getProgress(animeId); if (epNum > prev) localStorage.setItem('aw_prog_' + animeId, String(epNum)); }
-    function clearProgress(animeId) { localStorage.removeItem('aw_prog_' + animeId); }
-
-    function shareAnime() {
-      const a = getAnime(); if (!a) return;
-      const url = window.location.href;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard!', 'success')).catch(() => fallbackCopy(url));
-      } else { fallbackCopy(url); }
+    /* Progress — per season */
+    function getProgress(animeId, s) {
+      try { return parseInt(localStorage.getItem('aw_prog_' + animeId + '_s' + s) || '0'); } catch { return 0; }
     }
-    function fallbackCopy(text) {
-      const ta = document.createElement('textarea');
-      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); showToast('Link copied!', 'success'); }
-      catch { showToast('Could not copy link', 'error'); }
-      document.body.removeChild(ta);
+    function setProgress(animeId, epNum, s) {
+      const key = 'aw_prog_' + animeId + '_s' + s;
+      try {
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        if (epNum > prev) localStorage.setItem(key, String(epNum));
+      } catch (e) { }
     }
 
-    let aboutExpanded = false;
-    function checkAboutOverflow() {
-      const el = document.getElementById('aboutText'), btn = document.getElementById('readMoreBtn');
-      if (!el || !btn) return;
-      const wasExpanded = el.classList.contains('expanded');
-      if (!wasExpanded) { el.style.display = 'block'; el.style.webkitLineClamp = 'unset'; el.style.lineClamp = 'unset'; el.style.overflow = 'visible'; }
-      const fullH = el.scrollHeight;
-      if (!wasExpanded) { el.style.display = ''; el.style.webkitLineClamp = ''; el.style.lineClamp = ''; el.style.overflow = ''; }
-      if (!wasExpanded && fullH > el.scrollHeight + 2) btn.classList.add('visible');
-      else if (!wasExpanded) btn.classList.remove('visible');
-    }
-    function toggleAbout() {
-      const el = document.getElementById('aboutText'), btn = document.getElementById('readMoreBtn');
-      if (!el || !btn) return;
-      aboutExpanded = !aboutExpanded;
-      if (aboutExpanded) { el.classList.add('expanded'); btn.innerHTML = '<i class="fas fa-chevron-up text-[10px] mr-1"></i> Show less'; }
-      else { el.classList.remove('expanded'); btn.innerHTML = 'Read more <i class="fas fa-chevron-down text-[10px] ml-1"></i>'; }
-    }
-
-    function getPosterUrl(u) { return u ? u.replace(/\/w(342|500|185)\//, '/w780/') : ''; }
-    function getBgUrl(u) { return u ? u.replace(/\/w(342|500|185)\//, '/original/') : ''; }
-
-    function createRipple(e) {
-      const btn = e.currentTarget, rect = btn.getBoundingClientRect();
-      const r = document.createElement('span');
-      const sz = Math.max(rect.width, rect.height);
-      r.style.width = r.style.height = sz + 'px';
-      r.style.left = (e.clientX - rect.left - sz / 2) + 'px';
-      r.style.top = (e.clientY - rect.top - sz / 2) + 'px';
-      r.classList.add('ripple-effect');
-      btn.appendChild(r);
-      setTimeout(() => r.remove(), 600);
-    }
-
-    function shuffleArray(arr) {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-      return a;
-    }
-
-    function epDuration(animeId, epNum) {
-      let hash = 0; const str = animeId + '-' + epNum;
-      for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
-      return 21 + Math.abs(hash % 6);
-    }
-
-    function initParallax() {
-      const bg = document.getElementById('posterBg'), section = document.getElementById('posterSection');
-      if (!bg || !section) return;
-      let ticking = false;
-      window.addEventListener('scroll', () => {
-        if (!ticking) {
-          requestAnimationFrame(() => {
-            const rect = section.getBoundingClientRect();
-            if (rect.bottom > 0) bg.style.transform = `scale(1.05) translateY(${-rect.top * 0.15}px)`;
-            ticking = false;
-          });
-          ticking = true;
-        }
-      }, { passive: true });
-    }
-
-    function initScrollReveal() {
-      const obs = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-    }
-
-    function scrollToContent() {
-      const el = document.getElementById('mainContent');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    const backToTop = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => { backToTop.classList.toggle('show', window.scrollY > 600); }, { passive: true });
-    backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-
-    function ratingColor(r) {
-      if (r >= 8) return 'from-green-500 to-emerald-400';
-      if (r >= 6) return 'from-aw-accent to-aw-accentL';
-      if (r >= 4) return 'from-yellow-500 to-amber-400';
-      return 'from-red-500 to-red-400';
-    }
-    function ratingLabel(r) {
-      if (r >= 9) return 'Masterpiece'; if (r >= 8) return 'Excellent'; if (r >= 7) return 'Great';
-      if (r >= 6) return 'Good'; if (r >= 5) return 'Average'; if (r >= 4) return 'Below Avg'; return 'Poor';
-    }
-
-    function isRunning(a) { const s = (a.state || '').toLowerCase(); return s === 'watching' || s === 'running' || s === 'ongoing'; }
-    function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
-    function isAvailable(a) { return (a.state || '').toLowerCase() === 'watched'; }
-    function isWatchable(a) { return isRunning(a) || isAvailable(a); }
-    function getStateTag(a) {
-      if (isRunning(a)) return { text: 'Running', cls: 'bg-aw-accent/20 text-aw-accentL border-aw-accent/30', icon: 'fa-spinner' };
-      if (isUpcoming(a)) return { text: 'Upcoming', cls: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: 'fa-clock' };
-      if (isAvailable(a)) return { text: 'Available', cls: 'bg-green-500/20 text-green-400 border-green-500/30', icon: 'fa-check-circle' };
-      return null;
-    }
-
-    /* ── Dynamic Grid Logic ── */
-    function getRecBaseColumns() {
-      const w = window.innerWidth;
-      if (w >= 1280) return 8;
-      if (w >= 1024) return 6;
-      if (w >= 768) return 5;
-      if (w >= 640) return 4;
-      return 3;
-    }
-
-    function getRecGrid(poolSize) {
-      if (poolSize === 0) return { cols: 0, rows: 0, total: 0 };
-
-      const baseCols = getRecBaseColumns();
-      let best = { cols: 0, rows: 0, total: 0 };
-
-      /* Prefer 2–4 rows: try columns from base down to 2 */
-      const minCols = Math.max(2, Math.floor(baseCols / 2));
-      for (let c = baseCols; c >= minCols; c--) {
-        const maxRows = Math.min(4, Math.floor(poolSize / c));
-        if (maxRows < 2) continue;
-        const total = c * maxRows;
-        if (maxRows > best.rows || (maxRows === best.rows && total > best.total)) {
-          best = { cols: c, rows: maxRows, total };
-        }
-      }
-
-      /* Fallback: 1 full row with as many columns as possible */
-      if (best.total === 0) {
-        for (let c = baseCols; c >= 1; c--) {
-          if (poolSize >= c) { best = { cols: c, rows: 1, total: c }; break; }
-        }
-      }
-
-      return best;
-    }
-
-    /* ── Recommendations State ── */
-    let recShuffledPool = [];
-    let currentRecGrid = { cols: 0, rows: 0, total: 0 };
-    let currentRecId = null;
-
-    function renderRecommendations(currentId, forceShuffle) {
-      const section = document.getElementById('recSection');
-      const pool = allAnime.filter(a => a.id !== currentId && !isUpcoming(a));
-
-      if (!pool.length) { section.innerHTML = ''; section.style.display = 'none'; return; }
-
-      /* Build shuffled pool once per anime page (or on force shuffle) */
-      if (forceShuffle || !recShuffledPool.length || currentRecId !== currentId) {
-        recShuffledPool = shuffleArray(pool);
-        currentRecId = currentId;
-      }
-
-      const grid = getRecGrid(recShuffledPool.length);
-      currentRecGrid = grid;
-
-      if (grid.total === 0) { section.innerHTML = ''; section.style.display = 'none'; return; }
-
-      section.style.display = '';
-      const picks = recShuffledPool.slice(0, grid.total);
-      const gap = grid.cols <= 3 ? '12px' : '16px';
-
-      section.innerHTML = `
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-12">
-          <div class="flex items-center justify-between mb-8 reveal">
-            <div>
-              <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-1">You Might Also Like</h2>
-              <p class="text-aw-muted text-sm">${grid.cols} × ${grid.rows} &middot; ${grid.total} picks</p>
-            </div>
-            <button onclick="reshuffleRecs('${currentId}')" id="recShuffleBtn" class="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted text-sm font-medium cursor-pointer rec-shuffle">
-              <i class="fas fa-shuffle"></i> <span class="hidden sm:inline">Shuffle</span>
-            </button>
-          </div>
-          <div id="recGrid" class="grid rec-grid-transition" style="grid-template-columns:repeat(${grid.cols},minmax(0,1fr));gap:${gap}">
-            ${picks.map((a, i) => {
-              const tag = getStateTag(a);
-              const hasEps = countEpisodes(a) > 0;
-              let btnOverlay = '';
-              if (hasEps) {
-                btnOverlay = `<div class="rec-btn-wrap" onclick="event.preventDefault();event.stopPropagation();window.location.href='watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1'"><span class="rec-watch-btn"><i class="fas fa-play text-[9px]"></i> Watch </span></div>`;
-              }
-              return `
-              <a href="anime.html?id=${encodeURIComponent(a.id)}" class="rec-card group block" style="animation-delay:${i * 30}ms">
-                <div class="aspect-[5/7] rounded-xl overflow-hidden bg-aw-card border border-aw-border mb-2 relative">
-                  <img class="rec-img w-full h-full object-cover object-center" src="${a.image}" alt="${a.name}" loading="lazy" onerror="handleImgError(this)">
-                  ${btnOverlay}
-                  ${tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
-                  ${a.rating ? `<div class="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
-                </div>
-                <p class="text-[11px] sm:text-xs font-medium text-aw-fg line-clamp-2 leading-snug group-hover:text-aw-accentL transition-colors">${a.name}</p>
-                ${a.year ? `<p class="text-[10px] text-aw-muted mt-0.5">${a.year}${a.episodes ? ' · ' + a.episodes + ' Ep' : ''}</p>` : ''}
-              </a>`;
-            }).join('')}
-          </div>
-        </div>`;
-      initScrollReveal();
-    }
-
-    function reshuffleRecs(currentId) {
-      const btn = document.getElementById('recShuffleBtn');
-      if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 500); }
-      renderRecommendations(currentId, true);
-    }
-
-    /* ── Resize: re-render grid only when dimensions change ── */
-    let recResizeTimer = null;
-    window.addEventListener('resize', () => {
-      if (!currentRecId || !recShuffledPool.length) return;
-      clearTimeout(recResizeTimer);
-      recResizeTimer = setTimeout(() => {
-        const newGrid = getRecGrid(recShuffledPool.length);
-        if (newGrid.cols !== currentRecGrid.cols || newGrid.rows !== currentRecGrid.rows) {
-          renderRecommendations(currentRecId, false);
-        }
-      }, 300);
-    }, { passive: true });
-
-    /* ── Data ── */
+    /* Data */
     let allAnime = [];
     const FALLBACK = [];
+
+    let anime = null, videoUrl = '';
+    /* playSeason/playEp = what is currently playing (loaded in the video player) */
+    let playSeason = 1, playEp = 1;
+    /* viewSeason = which season's episodes are shown in the sidebar */
+    let viewSeason = 1;
+    let hlsInstance = null, saveTimer = null, controlsTimeout = null;
+    let seasonDrawerOpen = { desktop: false, mobile: false };
+    let channel = null;
+    try { channel = new BroadcastChannel('aw_player_sync'); } catch (e) { }
+
+    function broadcastState(action) {
+      if (!channel || !anime) return;
+      const v = document.getElementById('mainVideo');
+      channel.postMessage({
+        type: action, state: {
+          active: action !== 'stop', animeId: anime.id, animeName: anime.name,
+          animeImage: anime.image, season: playSeason, episode: playEp,
+          videoUrl: videoUrl, currentTime: v ? v.currentTime : 0, duration: v ? v.duration : 0
+        }
+      });
+    }
+
+    /* ── Season Drawer ── */
+    function toggleSeasonDrawer(prefix) {
+      seasonDrawerOpen[prefix] = !seasonDrawerOpen[prefix];
+      const panel = document.getElementById('seasonDrawerPanel' + capitalize(prefix));
+      const chevron = document.getElementById('seasonDrawerChevron' + capitalize(prefix));
+      if (seasonDrawerOpen[prefix]) {
+        panel.classList.add('open');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.remove('open');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function renderSeasonDrawer() {
+      const keys = getSeasonKeys();
+      const hasMultiple = keys.length > 1;
+
+      /* Build option HTML (shared for desktop & mobile) */
+      function buildOptions() {
+        return keys.map(sk => {
+          const num = parseInt(sk.replace('s', ''));
+          const count = Object.keys(anime.episodeLinks[sk]).length;
+          const isViewing = num === viewSeason;
+          const isPlaying = num === playSeason;
+          let activeClass = isViewing ? 'active font-semibold' : 'text-aw-muted';
+          let playingBadge = '';
+          if (isPlaying && !isViewing) {
+            playingBadge = '<span class="playing-season-badge">Now Playing</span>';
+          }
+          return `<button class="season-option w-full flex items-center justify-between px-4 py-2.5 text-sm ${activeClass}" onclick="switchViewSeason(${num})">
+            <span class="flex items-center">Season ${num}${playingBadge}</span>
+            <span class="text-xs ${isViewing ? 'text-aw-accent' : 'text-aw-border'}">${count} ep${count !== 1 ? 's' : ''}</span>
+          </button>`;
+        }).join('');
+      }
+
+      /* Desktop */
+      const dd = document.getElementById('seasonDrawerDesktop');
+      if (dd) {
+        dd.style.display = hasMultiple ? 'block' : 'none';
+        if (hasMultiple) {
+          const label = 'Season ' + viewSeason + (viewSeason !== playSeason ? ' (Playing S' + playSeason + ')' : '');
+          document.getElementById('seasonDrawerLabelDesktop').textContent = label;
+          document.getElementById('seasonDrawerOptionsDesktop').innerHTML = buildOptions();
+        }
+      }
+
+      /* Mobile */
+      const dm = document.getElementById('seasonDrawerMobile');
+      if (dm) {
+        dm.style.display = hasMultiple ? 'block' : 'none';
+        if (hasMultiple) {
+          const label = 'Season ' + viewSeason + (viewSeason !== playSeason ? ' (Playing S' + playSeason + ')' : '');
+          document.getElementById('seasonDrawerLabelMobile').textContent = label;
+          document.getElementById('seasonDrawerOptionsMobile').innerHTML = buildOptions();
+        }
+      }
+
+      /* Reset drawer open state */
+      seasonDrawerOpen = { desktop: false, mobile: false };
+      ['Desktop', 'Mobile'].forEach(p => {
+        const panel = document.getElementById('seasonDrawerPanel' + p);
+        const chevron = document.getElementById('seasonDrawerChevron' + p);
+        if (panel) panel.classList.remove('open');
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      });
+    }
 
     async function loadData() {
       try {
@@ -620,7 +449,7 @@
         if (!res.ok) throw new Error();
         allAnime = await res.json();
         if (!Array.isArray(allAnime)) allAnime = [allAnime];
-      } catch {
+      } catch (e) {
         try {
           const demo = await fetch('demo.json');
           if (!demo.ok) throw new Error();
@@ -629,342 +458,444 @@
           showToast('details.json not found — showing demo data', 'info');
         } catch { allAnime = FALLBACK; showToast('Could not load anime data', 'error'); }
       }
-      showPage();
+      initPlayer();
     }
 
-    function getAnime() {
-      const id = new URLSearchParams(window.location.search).get('id');
-      return allAnime.find(a => a.id === id) || null;
-    }
-
-    function countEpisodes(a) {
-      const links = a.episodeLinks;
-      if (!links || typeof links !== 'object') return 0;
-      let c = 0;
-      for (const sk of Object.keys(links)) {
-        const eps = links[sk];
-        if (!eps || typeof eps !== 'object') continue;
-        for (const ek of Object.keys(eps)) { if (eps[ek] && typeof eps[ek] === 'string' && eps[ek].trim()) c++; }
-      }
-      return c;
-    }
-
-    function getAllEpisodes(a) {
-      const all = [];
-      const links = a.episodeLinks || {};
-      for (const [sk, eps] of Object.entries(links)) {
-        if (!eps || typeof eps !== 'object') continue;
-        for (const [ek, url] of Object.entries(eps)) {
-          if (url && typeof url === 'string' && url.trim()) {
-            all.push({ sk, ek, num: parseInt(ek.replace('e', '')), url: url.trim() });
-          }
-        }
-      }
-      all.sort((a, b) => a.num - b.num);
-      return all;
-    }
-
-    function showPage() {
-      const skel = document.getElementById('skeleton');
-      skel.style.transition = 'opacity 0.4s ease';
-      skel.style.opacity = '0';
-      setTimeout(() => {
-        skel.style.display = 'none';
-        document.getElementById('mainNav').style.opacity = '1';
-        document.getElementById('posterSection').style.display = '';
-        document.getElementById('glowLine').style.display = '';
-        document.getElementById('mainContent').style.display = '';
-        document.getElementById('mainFooter').style.display = '';
-        renderPage();
-        initParallax();
-      }, 400);
-    }
-
-    function renderPage() {
-      const a = getAnime();
-      if (!a) { window.location.href = 'index.html'; return; }
-      document.title = `${a.name} — AnimeWave`;
-      const saved = isSaved(a.id);
-      aboutExpanded = false;
-      recShuffledPool = [];
-      currentRecId = null;
-
-      document.getElementById('posterBg').src = getBgUrl(a.image);
-      document.getElementById('posterBg').onerror = function(){ this.style.display='none'; };
-      document.getElementById('posterImg').src = getPosterUrl(a.image);
-      document.getElementById('posterImg').alt = a.name;
-      document.getElementById('posterImg').onerror = handleImgError;
-
-      const seasonKeys = Object.keys(a.episodeLinks || {});
-      const totalEps = countEpisodes(a);
-      const hasEps = totalEps > 0;
-      const progress = getProgress(a.id);
-      const nextEp = Math.min(progress + 1, totalEps);
-      const hasProgress = progress > 0 && nextEp <= totalEps;
-      const allFinished = progress >= totalEps && totalEps > 0;
-      const progressPct = totalEps > 0 ? Math.round(progress / totalEps * 100) : 0;
-      const watchable = isWatchable(a);
-
-      const quickBtn = document.getElementById('posterQuickBtn');
-      if (hasEps && watchable && !allFinished) {
-        quickBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=${hasProgress ? nextEp : 1}"
-             class="poster-quick-btn" title="${hasProgress ? 'Continue from Episode ' + nextEp : 'Play Episode 1'}">
-            <i class="fas ${hasProgress ? 'fa-forward' : 'fa-play'} text-sm"></i>
-            <span>${hasProgress ? 'Continue' : 'Watch Now'}</span>
-            ${hasProgress ? `<span class="text-white/60 text-xs font-normal">Ep ${nextEp}</span>` : ''}
-          </a>`;
-      } else if (hasEps && watchable && allFinished) {
-        quickBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1"
-             class="poster-quick-btn" title="Re-watch from Episode 1" style="background:rgba(26,26,26,0.9);box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 30px rgba(0,0,0,0.4)">
-            <i class="fas fa-rotate-right text-sm text-green-400"></i>
-            <span class="text-green-400">Re-watch</span>
-          </a>`;
-      } else { quickBtn.innerHTML = ''; }
-
-      const posterBtn = document.getElementById('posterWatchWrap');
-      if (hasEps && !allFinished) {
-        const label = hasProgress ? 'Continue Watching' : 'Watch Now';
-        const icon = hasProgress ? 'fa-forward' : 'fa-play';
-        posterBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=${hasProgress ? nextEp : 1}"
-             onclick="createRipple(event)"
-             class="poster-watch-btn poster-watch-enter poster-watch-float inline-flex items-center gap-2.5 bg-aw-accent hover:bg-aw-accentD text-white font-bold px-7 py-3.5 rounded-2xl text-base whitespace-nowrap relative z-10">
-            <i class="fas ${icon} text-sm play-icon-bounce"></i>
-            <span>${label}</span>
-            ${hasProgress ? `<span class="text-aw-accentL/80 text-sm font-normal ml-0.5">Ep ${nextEp}</span>` : ''}
-          </a>`;
-      } else if (hasEps && allFinished) {
-        posterBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1"
-             onclick="createRipple(event)"
-             class="poster-watch-btn poster-watch-enter poster-watch-float inline-flex items-center gap-2.5 bg-aw-bg2 border border-aw-border hover:border-green-500/40 text-aw-fg font-bold px-7 py-3.5 rounded-2xl text-base whitespace-nowrap relative z-10">
-            <i class="fas fa-rotate-right text-sm text-green-400 play-icon-bounce"></i>
-            <span>Re-watch</span>
-            <span class="text-green-400/80 text-sm font-normal ml-0.5"><i class="fas fa-check text-xs mr-1"></i>Completed</span>
-          </a>`;
-      } else {
-        posterBtn.innerHTML = `
-          <button disabled class="poster-watch-coming inline-flex items-center gap-2.5 bg-aw-bg2 border border-aw-border text-aw-muted font-medium px-7 py-3.5 rounded-2xl text-base whitespace-nowrap cursor-not-allowed">
-            <i class="fas fa-clock text-sm"></i><span>Coming...</span>
-          </button>`;
-      }
-
-      const r = a.rating || 0;
-      const rPct = Math.max(0, Math.min(100, r * 10));
-      const rGrad = ratingColor(r);
-      const rLabel = r > 0 ? ratingLabel(r) : '';
-      const ratingHTML = r > 0 ? `
-        <div class="reveal mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <i class="fas fa-star text-yellow-500"></i>
-              <span class="text-aw-fg font-bold text-lg">${r}</span>
-              <span class="text-aw-muted text-sm">/ 10</span>
-            </div>
-            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gradient-to-r ${rGrad} text-white">${rLabel}</span>
-          </div>
-          <div class="rating-track">
-            <div class="rating-fill bg-gradient-to-r ${rGrad}" style="width:${rPct}%"></div>
-          </div>
-        </div>` : '';
-
-      const infoCards = [];
-      if (a.year) infoCards.push({ icon: 'fa-calendar-alt', label: 'Year', value: a.year });
-      if (a.studio) infoCards.push({ icon: 'fa-film', label: 'Studio', value: a.studio });
-      if (totalEps > 0) infoCards.push({ icon: 'fa-play-circle', label: 'Episodes', value: totalEps + ' ep' });
-      if (seasonKeys.length > 1) infoCards.push({ icon: 'fa-layer-group', label: 'Seasons', value: seasonKeys.length + ' seasons' });
-      if (a.language) infoCards.push({ icon: 'fa-language', label: 'Language', value: a.language.split(' ').slice(0, 3).join(', ') });
-
-      const infoCardsHTML = infoCards.length ? `
-        <div class="grid grid-cols-2 sm:grid-cols-${Math.min(infoCards.length, 5)} gap-3 mb-6 reveal reveal-delay-1">
-          ${infoCards.map(c => `
-            <div class="info-card bg-aw-card border border-aw-border rounded-xl p-4 text-center">
-              <i class="fas ${c.icon} text-aw-accent/60 text-base mb-2"></i>
-              <div class="text-sm font-bold text-aw-fg">${c.value}</div>
-              <div class="text-[10px] text-aw-muted mt-1 uppercase tracking-wide">${c.label}</div>
-            </div>`).join('')}
-        </div>` : '';
-
-      const tagsHTML = (a.tags && a.tags.length) ? `
-        <div class="mb-8 reveal reveal-delay-3">
-          <h2 class="font-semibold text-aw-fg text-lg mb-3">Tags</h2>
-          <div class="flex flex-wrap gap-2">${a.tags.map(t => `<span class="px-3 py-1 rounded-lg bg-aw-accent/10 text-aw-accentL text-sm border border-aw-accent/20">${t}</span>`).join('')}</div>
-        </div>` : '';
-
-      document.getElementById('mainContent').innerHTML = `
-        <div class="grid lg:grid-cols-[1fr_380px] gap-8">
-          <div>
-            <div class="flex flex-wrap items-center gap-3 mb-4 reveal">
-              ${a.tear ? `<span class="px-3 py-1 bg-aw-accent/20 text-aw-accentL text-sm font-bold rounded-lg border border-aw-accent/30">TIER ${a.tear}</span>` : ''}
-              ${(() => { const t = getStateTag(a); return t ? `<span class="px-3 py-1 ${t.cls} text-sm font-bold rounded-lg border"><i class="fas ${t.icon} text-xs mr-1"></i>${t.text}</span>` : ''; })()}
-              ${allFinished ? '<span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-bold rounded-lg border border-green-500/30"><i class="fas fa-trophy text-xs mr-1"></i>COMPLETED</span>' : ''}
-            </div>
-
-            <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl text-aw-fg mb-2 leading-tight line-clamp-2 reveal reveal-delay-1">${a.name}</h1>
-            ${a.altName ? `<p class="text-aw-muted text-base mb-6 reveal reveal-delay-1">${a.altName}</p>` : ''}
-
-            ${infoCardsHTML}
-            ${ratingHTML}
-
-            <div class="flex flex-wrap gap-2 mb-6 reveal reveal-delay-2">
-              ${(a.genre || []).map(g => `<span class="genre-pill px-3 py-1 rounded-full bg-aw-bg2 border border-aw-border text-xs text-aw-muted cursor-default">${g}</span>`).join('')}
-            </div>
-
-            <div class="mb-8 reveal reveal-delay-3">
-              <h2 class="font-semibold text-aw-fg text-lg mb-3">About</h2>
-              <p id="aboutText" class="text-aw-muted leading-relaxed line-clamp-4">${a.review || 'No synopsis available.'}</p>
-              <button id="readMoreBtn" onclick="toggleAbout()" class="mt-2 inline-flex items-center gap-1 text-aw-accent hover:text-aw-accentL text-sm font-medium transition-colors">
-                Read more <i class="fas fa-chevron-down text-[10px]"></i>
-              </button>
-            </div>
-
-            ${tagsHTML}
-
-            <div class="flex flex-wrap gap-3 mb-8 reveal reveal-delay-3">
-              ${hasEps
-                ? `<a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=${hasProgress ? nextEp : 1}" class="action-btn inline-flex items-center gap-2 bg-aw-accent hover:bg-aw-accentD text-white font-semibold px-8 py-3 rounded-lg text-lg shadow-lg shadow-aw-accent/20">
-                     <i class="fas ${allFinished ? 'fa-rotate-right' : hasProgress ? 'fa-forward' : 'fa-play'}"></i>
-                     ${allFinished ? 'Re-watch' : hasProgress ? 'Continue' : 'Start'}
-                   </a>`
-                : `<button disabled class="inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted font-semibold px-8 py-3 rounded-lg text-lg cursor-not-allowed">
-                     <i class="fas fa-clock"></i> Coming...
-                   </button>`
-              }
-              <button id="saveBtn" onclick="handleSave()" class="action-btn inline-flex items-center gap-2 ${saved ? 'bg-aw-accent/20 text-aw-accentL border-aw-accent/40' : 'bg-aw-bg2 text-aw-muted border-aw-border hover:text-aw-fg'} border font-medium px-6 py-3 rounded-lg">
-                <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Save'}
-              </button>
-              <button onclick="shareAnime()" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-5 py-3 rounded-lg" title="Copy link">
-                <i class="fas fa-share-nodes"></i> <span class="hidden sm:inline">Share</span>
-              </button>
-              ${a.details ? `<a href="${a.details}" target="_blank" rel="noopener" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-5 py-3 rounded-lg">
-                <i class="fab fa-imdb"></i> <span class="hidden sm:inline">IMDB</span>
-              </a>` : ''}
-            </div>
-          </div>
-
-          <div class="reveal" style="transition-delay:0.2s">
-            <div class="bg-aw-card border border-aw-border rounded-2xl overflow-hidden sticky top-24">
-              <div class="p-4 border-b border-aw-border flex items-center justify-between">
-                <h2 class="font-display text-lg text-aw-fg">Episodes</h2>
-                <div class="flex items-center gap-2">
-                  ${hasEps && progress > 0 ? `<span class="text-[10px] text-aw-muted bg-aw-bg2 px-2 py-0.5 rounded-full">${progressPct}%</span>` : ''}
-                  <span class="text-xs text-aw-muted bg-aw-bg2 px-2.5 py-1 rounded-full">${totalEps} ep${totalEps !== 1 ? 's' : ''}</span>
-                </div>
-              </div>
-              ${hasEps ? `<div class="progress-track"><div class="progress-fill" style="width:${progressPct}%"></div></div>` : ''}
-              ${hasEps && progress > 0 ? `
-              <div class="flex border-b border-aw-border">
-                <button onclick="markAllWatched()" class="flex-1 py-2 text-[11px] font-medium text-aw-muted hover:text-green-400 transition-colors flex items-center justify-center gap-1">
-                  <i class="fas fa-check-double text-[9px]"></i> Mark all watched
-                </button>
-                <div class="w-px bg-aw-border"></div>
-                <button onclick="resetProgress()" class="flex-1 py-2 text-[11px] font-medium text-aw-muted hover:text-aw-accent transition-colors flex items-center justify-center gap-1">
-                  <i class="fas fa-rotate-left text-[9px]"></i> Reset
-                </button>
-              </div>` : ''}
-              ${hasEps && seasonKeys.length > 1 ? `
-              <div class="flex border-b border-aw-border" id="seasonTabs">
-                ${seasonKeys.map((sk, i) => `<button class="flex-1 py-2.5 text-sm font-medium transition-colors ${i === 0 ? 'text-aw-accent border-b-2 border-aw-accent' : 'text-aw-muted hover:text-aw-fg'}" data-season="${sk}" onclick="switchSeason('${sk}')">Season ${i + 1}</button>`).join('')}
-              </div>` : ''}
-              <div id="episodeList" class="max-h-[60vh] overflow-y-auto p-2"></div>
-            </div>
-          </div>
-        </div>`;
-
-      if (hasEps) { renderEpisodes(a, seasonKeys[0] || 's1'); }
-      else {
-        const list = document.getElementById('episodeList');
-        if (list) list.innerHTML = `
-          <div class="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div class="w-14 h-14 rounded-2xl bg-aw-bg2 border border-aw-border flex items-center justify-center mb-4">
-              <i class="fas fa-film text-xl text-aw-border"></i>
-            </div>
-            <p class="text-aw-muted text-sm font-medium mb-1">No episodes available yet</p>
-            <p class="text-aw-border text-xs">Check back later for updates</p>
-          </div>`;
-      }
-
-      updateSaveBadge();
-      requestAnimationFrame(() => { checkAboutOverflow(); initScrollReveal(); });
-      window.addEventListener('resize', checkAboutOverflow);
-      renderRecommendations(a.id);
-    }
-
-    let currentAnime = null;
-    function renderEpisodes(a, sk) {
-      currentAnime = a;
-      const eps = a.episodeLinks[sk] || {};
-      const list = document.getElementById('episodeList');
-      if (!list) return;
-      const progress = getProgress(a.id);
-      const allEps = getAllEpisodes(a);
-
-      list.innerHTML = Object.entries(eps).map(([ek, url]) => {
-        const en = parseInt(ek.replace('e', ''));
-        const isWatched = en <= progress;
-        const isCurrent = en === progress + 1 && progress > 0 && progress < allEps.length;
-        let stateClass = '';
-        if (isWatched) stateClass = 'watched';
-        else if (isCurrent) stateClass = 'current';
-        const dur = epDuration(a.id, en);
-        return `
-        <a href="watch.html?id=${encodeURIComponent(a.id)}&s=${sk.replace('s', '')}&e=${en}"
-           onclick="setProgress('${a.id.replace(/'/g, "\\'")}', ${en})"
-           class="ep-card ${stateClass} flex items-center gap-3 p-3 rounded-xl border border-transparent cursor-pointer group">
-          <div class="w-9 h-9 rounded-lg bg-aw-bg2 flex items-center justify-center text-sm font-bold text-aw-muted group-hover:bg-aw-accent/20 group-hover:text-aw-accentL transition-colors shrink-0">
-            ${isWatched ? '<i class="fas fa-check text-green-400 text-xs"></i>' : isCurrent ? '<i class="fas fa-play text-aw-accent text-[10px]"></i>' : en}
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-aw-fg truncate">Episode ${en}</p>
-            <p class="text-[11px] text-aw-muted mt-0.5">${isWatched ? '<span class="text-green-400/80">Watched</span>' : isCurrent ? '<span class="text-aw-accentL">Up next</span>' : dur + ' min'}</p>
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            ${isCurrent ? '<div class="ep-current-dot"></div>' : ''}
-            <i class="fas fa-play text-xs text-aw-muted group-hover:text-aw-accent transition-colors opacity-0 group-hover:opacity-100"></i>
-          </div>
-        </a>`;
-      }).join('');
-    }
-
-    function switchSeason(sk) {
-      if (!currentAnime) return;
-      document.querySelectorAll('#seasonTabs button').forEach(b => {
-        const active = b.dataset.season === sk;
-        b.classList.toggle('text-aw-accent', active);
-        b.classList.toggle('border-b-2', active);
-        b.classList.toggle('border-aw-accent', active);
-        b.classList.toggle('text-aw-muted', !active);
+    function getSeasonKeys() {
+      if (!anime || !anime.episodeLinks) return [];
+      return Object.keys(anime.episodeLinks).filter(sk => {
+        const eps = anime.episodeLinks[sk];
+        return eps && typeof eps === 'object' && Object.keys(eps).length > 0;
       });
-      renderEpisodes(currentAnime, sk);
+    }
+
+    function getSortedEpNums(s) {
+      const sk = 's' + s;
+      const eps = anime.episodeLinks && anime.episodeLinks[sk] ? anime.episodeLinks[sk] : {};
+      return Object.keys(eps).map(k => parseInt(k.replace('e', ''))).sort((a, b) => a - b);
+    }
+
+    function initPlayer() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const s = parseInt(params.get('s') || '1');
+      const e = parseInt(params.get('e') || '1');
+      anime = allAnime.find(a => a.id === id);
+      if (!anime) { window.location.href = 'index.html'; return; }
+
+      /* Both play and view start at the URL season/episode */
+      playSeason = s;
+      playEp = e;
+      viewSeason = s;
+
+      const sk = 's' + playSeason;
+      const ek = 'e' + playEp;
+      videoUrl = (anime.episodeLinks && anime.episodeLinks[sk] && anime.episodeLinks[sk][ek]) || '';
+
+      document.title = `${anime.name} S${playSeason}E${playEp} — AnimeWave`;
+      document.getElementById('navTitle').textContent = `${anime.name} · Season ${playSeason} · Episode ${playEp}`;
+      document.getElementById('epTitle').textContent = `Season ${playSeason} · Episode ${playEp}`;
+
+      const metaParts = [];
+      if (anime.rating) metaParts.push(`<span><i class="fas fa-star text-yellow-500 mr-1"></i>${anime.rating}</span>`);
+      if (anime.studio) metaParts.push(`<span>${anime.studio}</span>`);
+      if (anime.year) metaParts.push(`<span>${anime.year}</span>`);
+      if (anime.episodes) metaParts.push(`<span>${anime.episodes} Episodes</span>`);
+      document.getElementById('epMeta').innerHTML = metaParts.join('<span class="text-aw-border">&middot;</span>');
+
+      document.getElementById('detailLink').href = `anime.html?id=${encodeURIComponent(anime.id)}`;
+      updateSaveBtn();
+      loadVideo(videoUrl);
+      renderSeasonDrawer();
+      renderEpList();
+      updateEpNavButtons();
+      bindControls();
+      setProgress(anime.id, playEp, playSeason);
+      addToHistory(anime.id, playSeason, playEp);
+      broadcastState('play');
+    }
+
+    function updateSaveBtn() {
+      const btn = document.getElementById('saveBtnNav');
+      const saved = isSaved(anime.id);
+      btn.innerHTML = `<i class="fas fa-bookmark ${saved ? 'text-aw-accent' : 'text-aw-muted'}"></i>`;
     }
 
     function handleSave() {
-      const a = getAnime(); if (!a) return;
-      const now = toggleSave(a.id, a.name);
-      const btn = document.getElementById('saveBtn');
-      btn.className = `action-btn inline-flex items-center gap-2 ${now ? 'bg-aw-accent/20 text-aw-accentL border-aw-accent/40' : 'bg-aw-bg2 text-aw-muted border-aw-border hover:text-aw-fg'} border font-medium px-6 py-3 rounded-lg`;
-      btn.innerHTML = `<i class="fas fa-bookmark"></i> ${now ? 'Saved' : 'Save'}`;
+      if (!anime) return;
+      toggleSave(anime.id, anime.name);
+      updateSaveBtn();
     }
 
-    function markAllWatched() {
-      const a = getAnime(); if (!a) return;
-      const total = getAllEpisodes(a).length;
-      if (total > 0) { localStorage.setItem('aw_prog_' + a.id, String(total)); showToast(`Marked all ${total} episodes as watched`, 'success'); renderPage(); }
+    /* ── Season switching (sidebar only, does NOT change playing video) ── */
+    function switchViewSeason(num) {
+      if (num === viewSeason) return;
+      viewSeason = num;
+      renderSeasonDrawer();
+      renderEpList();
+      updateEpNavButtons();
     }
 
-    function resetProgress() {
-      const a = getAnime(); if (!a) return;
-      clearProgress(a.id); showToast('Progress reset', 'info'); renderPage();
+    /* ── Episode Navigation ── */
+    function updateEpNavButtons() {
+      const nums = getSortedEpNums(viewSeason);
+      /* Determine the "current" episode in the viewed season for nav purposes */
+      const currentInView = (viewSeason === playSeason) ? playEp : (nums.length > 0 ? nums[0] : 0);
+      const idx = nums.indexOf(currentInView);
+      const hasPrev = idx > 0;
+      const hasNext = idx < nums.length - 1;
+
+      const pd = document.getElementById('epNavPrevDesktop');
+      const nd = document.getElementById('epNavNextDesktop');
+      if (pd) pd.disabled = !hasPrev;
+      if (nd) nd.disabled = !hasNext;
+
+      const pm = document.getElementById('epNavPrevMobile');
+      const nm = document.getElementById('epNavNextMobile');
+      if (pm) pm.disabled = !hasPrev;
+      if (nm) nm.disabled = !hasNext;
     }
 
-    document.addEventListener('keydown', e => {
-      const tag = document.activeElement.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') { if (e.key === 'Escape') document.activeElement.blur(); return; }
-      if (e.key === 'ArrowLeft' && e.altKey) { e.preventDefault(); history.back(); }
-      if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSave(); }
-    });
+    /* Sidebar prev/next: navigates within the VIEWED season */
+    function goEpSidebar(delta) {
+      const nums = getSortedEpNums(viewSeason);
+      const currentInView = (viewSeason === playSeason) ? playEp : (nums.length > 0 ? nums[0] : 0);
+      const idx = nums.indexOf(currentInView);
+      const target = nums[idx + delta];
+      if (target !== undefined) {
+        window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${target}`;
+      } else {
+        showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
+      }
+    }
+
+    /* Player controls prev/next: navigates within the PLAYING season */
+    function goEpPlayer(delta) {
+      const nums = getSortedEpNums(playSeason);
+      const idx = nums.indexOf(playEp);
+      const target = nums[idx + delta];
+      if (target !== undefined) {
+        window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${playSeason}&e=${target}`;
+      } else {
+        showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
+      }
+    }
+
+    /* ── Video Loading ── */
+    function isDirectMedia(url) {
+      try {
+        const u = new URL(url);
+        const path = u.pathname.toLowerCase();
+        if (/\.(mp4|webm|ogg|ogv|mov|mkv|m3u8|ts)(\?|$)/.test(path)) return true;
+        if (/\/(stream|hls|media|video\.m3u8|master\.m3u8)/.test(path)) return true;
+        return false;
+      } catch { return false; }
+    }
+
+    function loadVideo(url) {
+      const v       = document.getElementById('mainVideo');
+      const iframe  = document.getElementById('mainIframe');
+      const spinner = document.getElementById('loadingSpinner');
+      const bigPlay = document.getElementById('bigPlay');
+      const wrap    = document.getElementById('videoWrap');
+      const errorOv = document.getElementById('errorOverlay');
+      const ctrlOverlay = document.getElementById('controlsOverlay');
+
+      errorOv.style.display = 'none';
+      spinner.style.display = 'flex';
+      wrap.classList.add('show-controls');
+
+      if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+      v.style.display = 'none';
+      v.pause();
+      v.removeAttribute('src');
+      v.load();
+      iframe.style.display = 'none';
+      iframe.removeAttribute('src');
+      ctrlOverlay.style.display = '';
+
+      if (!url) {
+        spinner.style.display = 'none';
+        errorOv.style.display = 'flex';
+        showToast('No video URL for this episode', 'error');
+        return;
+      }
+
+      /* IFRAME PATH */
+      if (!isDirectMedia(url)) {
+        bigPlay.classList.add('hidden');
+        ctrlOverlay.style.display = 'none';
+        iframe.style.display = 'block';
+        iframe.onload = () => { spinner.style.display = 'none'; };
+        iframe.onerror = () => { spinner.style.display = 'none'; errorOv.style.display = 'flex'; showToast('Failed to load video', 'error'); };
+        iframe.src = url;
+        setTimeout(() => { spinner.style.display = 'none'; }, 8000);
+        return;
+      }
+
+      /* NATIVE / HLS PATH */
+      v.style.display = 'block';
+      bigPlay.classList.remove('hidden');
+
+      function onReady() { spinner.style.display = 'none'; }
+      function onError() {
+        spinner.style.display = 'none';
+        errorOv.style.display = 'flex';
+        showToast('Failed to load video', 'error');
+      }
+
+      if (url.includes('.m3u8')) {
+        if (Hls.isSupported()) {
+          hlsInstance = new Hls({ enableWorker: true, maxBufferLength: 30 });
+          hlsInstance.loadSource(url);
+          hlsInstance.attachMedia(v);
+          hlsInstance.on(Hls.Events.MANIFEST_PARSED, onReady);
+          hlsInstance.on(Hls.Events.ERROR, (ev, data) => {
+            if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hlsInstance.startLoad();
+              else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hlsInstance.recoverMediaError();
+              else onError();
+            }
+          });
+        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+          v.addEventListener('loadedmetadata', onReady, { once: true });
+          v.addEventListener('error', onError, { once: true });
+          v.src = url;
+        } else {
+          showToast('HLS not supported in this browser', 'error');
+          spinner.style.display = 'none';
+          errorOv.style.display = 'flex';
+        }
+      } else {
+        v.addEventListener('canplay', onReady, { once: true });
+        v.addEventListener('error', onError, { once: true });
+        v.src = url;
+        v.load();
+      }
+    }
+
+    /* ── Episode List ── */
+    function renderEpList() {
+      if (!anime) return;
+      const sk = 's' + viewSeason;
+      const eps = anime.episodeLinks && anime.episodeLinks[sk] ? anime.episodeLinks[sk] : {};
+      const entries = Object.entries(eps);
+      /* Progress is per-season now */
+      const progress = getProgress(anime.id, viewSeason);
+      const allEps = entries.map(([ek]) => parseInt(ek.replace('e', ''))).sort((a, b) => a - b);
+      const totalEps = allEps.length;
+      const isViewingPlayingSeason = (viewSeason === playSeason);
+
+      /* Ep count badges */
+      const dc = document.getElementById('epCountDesktop');
+      if (dc) dc.textContent = totalEps + ' ep' + (totalEps !== 1 ? 's' : '');
+      const mc = document.getElementById('epCountMobile');
+      if (mc) mc.textContent = totalEps + ' ep' + (totalEps !== 1 ? 's' : '');
+
+      /* Desktop list */
+      const list = document.getElementById('epList');
+      if (list) {
+        list.innerHTML = entries.map(([ek, url]) => {
+          const en = parseInt(ek.replace('e', ''));
+          const active = isViewingPlayingSeason && en === playEp;
+          const isWatched = en <= progress && !active;
+          const isCurrent = en === progress + 1 && progress < totalEps && !active;
+
+          let cls = '';
+          if (active) cls = 'active';
+          else if (isWatched) cls = 'watched';
+          else if (isCurrent) cls = 'current';
+
+          let statusIcon = '';
+          if (isWatched) statusIcon = '<i class="fas fa-check text-green-400 text-[9px]"></i>';
+          else if (isCurrent) statusIcon = '<div class="ep-current-dot"></div>';
+
+          return `<a href="watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${en}" class="ep-item flex items-center gap-3 px-3 py-2.5 rounded-lg ${cls} group">
+            <div class="ep-num">${isWatched ? '<i class="fas fa-check text-[10px]"></i>' : en}</div>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm ${active ? 'text-aw-accentL font-medium' : 'text-aw-fg'}">Episode ${en}</span>
+              <p class="text-[10px] text-aw-muted mt-0.5">${isWatched ? 'Watched' : isCurrent ? 'Up next' : active ? 'Playing' : ''}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${statusIcon}
+              ${active ? '<i class="fas fa-play text-aw-accent text-[10px]"></i>' : '<i class="fas fa-play text-aw-border text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>'}
+            </div>
+          </a>`;
+        }).join('');
+      }
+
+      /* Mobile list */
+      const mobile = document.getElementById('epListMobile');
+      if (mobile) {
+        mobile.innerHTML = entries.map(([ek, url]) => {
+          const en = parseInt(ek.replace('e', ''));
+          const active = isViewingPlayingSeason && en === playEp;
+          const isWatched = en <= progress && !active;
+          const isCurrent = en === progress + 1 && progress < totalEps && !active;
+
+          let cls = 'bg-aw-card';
+          if (active) cls = 'active';
+          else if (isWatched) cls += ' watched';
+
+          let indicator = '';
+          if (isWatched) indicator = '<i class="fas fa-check text-green-400 text-[10px]"></i>';
+          else if (isCurrent) indicator = '<div class="ep-current-dot"></div>';
+
+          return `<a href="watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${en}" class="mep-card flex items-center gap-3 px-3 py-3 rounded-xl ${cls} group">
+            <div class="ep-num mep-num">${isWatched ? '<i class="fas fa-check text-[10px]"></i>' : en}</div>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm ${active ? 'text-aw-accentL font-medium' : 'text-aw-fg'}">Episode ${en}</span>
+              <p class="text-[10px] text-aw-muted mt-0.5">${isWatched ? 'Watched' : isCurrent ? 'Up next' : active ? 'Playing' : ''}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              ${indicator}
+              ${active ? '<i class="fas fa-play text-aw-accent text-xs"></i>' : '<i class="fas fa-play text-aw-border text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>'}
+            </div>
+          </a>`;
+        }).join('');
+      }
+    }
+
+    /* ── Controls ── */
+    function bindControls() {
+      const v = document.getElementById('mainVideo');
+      const wrap = document.getElementById('videoWrap');
+      const bigPlay = document.getElementById('bigPlay');
+      const btnPP = document.getElementById('btnPlayPause');
+      const bar = document.getElementById('progressBar');
+      const fill = document.getElementById('progressFill');
+      const buffer = document.getElementById('progressBuffer');
+      const timeDisp = document.getElementById('timeDisplay');
+      const volSlider = document.getElementById('volSlider');
+      const btnVol = document.getElementById('btnVol');
+      const speedSel = document.getElementById('speedSelect');
+      const btnFS = document.getElementById('btnFullscreen');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+
+      function isNativeMode() { return document.getElementById('mainVideo').style.display !== 'none'; }
+
+      function updatePlayUI() {
+        if (!isNativeMode()) return;
+        const paused = v.paused;
+        wrap.classList.toggle('show-controls', paused);
+        bigPlay.classList.toggle('hidden', !paused);
+        btnPP.innerHTML = paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+      }
+
+      function togglePlay() {
+        if (!isNativeMode()) return;
+        if (v.paused) v.play().catch(() => { });
+        else v.pause();
+      }
+
+      function resetControlsTimer() {
+        wrap.classList.add('show-controls');
+        clearTimeout(controlsTimeout);
+        if (!v.paused) controlsTimeout = setTimeout(() => wrap.classList.remove('show-controls'), 3000);
+      }
+
+      bigPlay.onclick = togglePlay;
+      btnPP.onclick = togglePlay;
+      v.onclick = togglePlay;
+      wrap.addEventListener('mousemove', resetControlsTimer);
+
+      v.addEventListener('play', () => { updatePlayUI(); addToHistory(anime.id, playSeason, playEp); broadcastState('play'); });
+      v.addEventListener('pause', () => { updatePlayUI(); broadcastState('pause'); });
+      v.addEventListener('waiting', () => { document.getElementById('loadingSpinner').style.display = 'flex'; });
+      v.addEventListener('canplay', () => { document.getElementById('loadingSpinner').style.display = 'none'; });
+
+      v.addEventListener('progress', () => {
+        if (v.buffered.length > 0 && v.duration) {
+          buffer.style.width = (v.buffered.end(v.buffered.length - 1) / v.duration * 100) + '%';
+        }
+      });
+
+      v.addEventListener('timeupdate', () => {
+        if (!v.duration) return;
+        fill.style.width = (v.currentTime / v.duration * 100) + '%';
+        timeDisp.textContent = fmt(v.currentTime) + ' / ' + fmt(v.duration);
+      });
+
+      v.addEventListener('ended', () => {
+        updatePlayUI();
+        broadcastState('stop');
+      });
+
+      /* Progress bar seek */
+      let isSeeking = false;
+      bar.addEventListener('mousedown', (e) => { isSeeking = true; seekTo(e); });
+      bar.addEventListener('mousemove', (e) => { if (isSeeking) seekTo(e); });
+      document.addEventListener('mouseup', () => { isSeeking = false; });
+      bar.addEventListener('touchstart', (e) => { isSeeking = true; seekToTouch(e); }, { passive: true });
+      bar.addEventListener('touchmove', (e) => { if (isSeeking) seekToTouch(e); }, { passive: true });
+      bar.addEventListener('touchend', () => { isSeeking = false; });
+
+      function seekTo(e) {
+        const r = bar.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        if (v.duration) v.currentTime = pct * v.duration;
+      }
+      function seekToTouch(e) {
+        const r = bar.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (e.touches[0].clientX - r.left) / r.width));
+        if (v.duration) v.currentTime = pct * v.duration;
+      }
+
+      v.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        btnFS.click();
+      });
+
+      /* Volume */
+      volSlider.oninput = () => { if (!isNativeMode()) return; v.volume = parseFloat(volSlider.value); if (v.muted) v.muted = false; updateVolIcon(); };
+      btnVol.onclick = () => { if (!isNativeMode()) return; v.muted = !v.muted; updateVolIcon(); };
+      function updateVolIcon() {
+        const ico = (!isNativeMode() || v.muted || v.volume === 0) ? 'fa-volume-xmark' : v.volume < 0.5 ? 'fa-volume-low' : 'fa-volume-up';
+        btnVol.innerHTML = `<i class="fas ${ico}"></i>`;
+      }
+
+      /* Speed */
+      speedSel.onchange = () => { if (!isNativeMode()) return; v.playbackRate = parseFloat(speedSel.value); };
+
+      /* Fullscreen */
+      btnFS.onclick = () => {
+        const target = isNativeMode() ? wrap : (document.getElementById('mainIframe') || wrap);
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
+        else target.requestFullscreen().catch(() => wrap.requestFullscreen().catch(() => {}));
+      };
+      document.addEventListener('fullscreenchange', () => {
+        btnFS.innerHTML = document.fullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+      });
+
+      /* Player prev/next — uses PLAYING season */
+      btnPrev.onclick = () => goEpPlayer(-1);
+      btnNext.onclick = () => goEpPlayer(1);
+
+      /* Broadcast timer */
+      saveTimer = setInterval(() => broadcastState('update'), 3000);
+      window.addEventListener('beforeunload', () => broadcastState('stop'));
+
+      /* Keyboard */
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+        switch (e.key) {
+          case ' ': case 'k': e.preventDefault(); togglePlay(); resetControlsTimer(); break;
+          case 'ArrowLeft': if (!isNativeMode()) break; e.preventDefault(); v.currentTime = Math.max(0, v.currentTime - 10); resetControlsTimer(); break;
+          case 'ArrowRight': if (!isNativeMode()) break; e.preventDefault(); v.currentTime = Math.min(v.duration || 0, v.currentTime + 10); resetControlsTimer(); break;
+          case 'ArrowUp': if (!isNativeMode()) break; e.preventDefault(); v.volume = Math.min(1, v.volume + 0.1); volSlider.value = v.volume; updateVolIcon(); resetControlsTimer(); break;
+          case 'ArrowDown': if (!isNativeMode()) break; e.preventDefault(); v.volume = Math.max(0, v.volume - 0.1); volSlider.value = v.volume; updateVolIcon(); resetControlsTimer(); break;
+          case 'f': case 'F': e.preventDefault(); btnFS.click(); break;
+          /* Keyboard N/P use PLAYING season */
+          case 'n': case 'N': goEpPlayer(1); break;
+          case 'p': case 'P': goEpPlayer(-1); break;
+          case 'Escape':
+            if (document.fullscreenElement) document.exitFullscreen();
+            break;
+        }
+      });
+    }
 
     loadData();
   </script>
