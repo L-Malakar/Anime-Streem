@@ -549,6 +549,7 @@
   <p>© 2025 <a href="index.html">ANIvalted</a> · Built by fans, for fans · No ads. No trackers. No nonsense.</p>
 </footer>
 
+<script src="data-loader.js"></script>
 <script>
 // ══════════════════════════════════════
 // 1. BLOCK RIGHT CLICK + COPY + F12
@@ -568,8 +569,7 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════
 let ALL_ANIME = [];
 async function loadData() {
-  try { const r = await fetch('details.json'); ALL_ANIME = await r.json(); }
-  catch(e) { ALL_ANIME = []; }
+  ALL_ANIME = await loadAnimeData();
   init();
 }
 const isNotUpcoming = a => a.state !== 'plan';
