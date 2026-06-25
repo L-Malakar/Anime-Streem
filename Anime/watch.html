@@ -449,7 +449,15 @@
         if (!res.ok) throw new Error();
         allAnime = await res.json();
         if (!Array.isArray(allAnime)) allAnime = [allAnime];
-      } catch (e) { allAnime = FALLBACK; }
+      } catch (e) {
+        try {
+          const demo = await fetch('demo.json');
+          if (!demo.ok) throw new Error();
+          allAnime = await demo.json();
+          if (!Array.isArray(allAnime)) allAnime = [allAnime];
+          showToast('details.json not found — showing demo data', 'info');
+        } catch { allAnime = FALLBACK; showToast('Could not load anime data', 'error'); }
+      }
       initPlayer();
     }
 
@@ -892,4 +900,4 @@
     loadData();
   </script>
 </body>
-  </html>
+</html>
