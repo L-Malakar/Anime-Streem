@@ -419,6 +419,7 @@
 </script>
 
 <!-- MAIN -->
+<script src="data-loader.js"></script>
 <script>
   const TC = { SSS:'#f5c842',SS:'#f97316',S:'#a78bfa',A:'#34d399',B:'#60a5fa',C:'#6b6b80',D:'#f87171',F:'#ef4444' };
   const SL = { watched:'Available',watching:'Running',plan:'Upcoming' };
@@ -691,11 +692,7 @@
 
     let data = [];
     try {
-      const r = await fetch('details.json');
-      if (!r.ok) throw new Error(`HTTP ${r.status}: Could not load details.json`);
-      const parsed = await r.json();
-      if (!Array.isArray(parsed)) throw new Error('details.json is not an array');
-      data = parsed;
+      data = await loadAnimeData();
     }
     catch(e) { notFound('Could not load anime data. Please try again later.'); return; }
 
@@ -770,7 +767,7 @@
         <div class="hero-ov"></div>
         <div class="hero-ct">
           <div class="poster">
-            <img src="${a.image}" alt="${a.name}" onerror="this.src='https://via.placeholder.com/200x300/14141f/e8321a?text=${encodeURIComponent(a.name)}'" />
+            <img src="${a.image}" alt="${a.name}" onerror="this.src='https://via.placeholder.com/200x300/14141f/e8321a?text=${encodeURIComponent(a.name[0])}'" />
           </div>
           <div class="hinfo">
             <div class="eyebrow">${[a.studio,a.year].filter(Boolean).join(' · ')}</div>
