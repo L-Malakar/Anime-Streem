@@ -1,0 +1,343 @@
+[
+  {
+    "id": "Blade-of-the-Aether-Knight",
+    "name": "Blade of the Aether Knight",
+    "altName": "エーテル騎士の刃",
+    "genre": [
+      "Action",
+      "Fantasy",
+      "Adventure"
+    ],
+    "date": "2024-04",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a",
+        "e5": "n/a",
+        "e6": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 8,
+    "tear": "A",
+    "episodes": 13,
+    "studio": "Dummy Studio",
+    "year": 2024,
+    "review": "A young knight discovers a forbidden aether blade that grants immense power but slowly erases its wielder's memories. A gripping balance between strength and sacrifice."
+  },
+  {
+    "id": "Neon-Phantom-Chronicles",
+    "name": "Neon Phantom Chronicles",
+    "altName": "ネオンファントム年代記",
+    "genre": [
+      "Sci-Fi",
+      "Thriller",
+      "Mystery"
+    ],
+    "date": "2023-10",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 9,
+    "tear": "S",
+    "episodes": 24,
+    "studio": "Dummy Studio",
+    "year": 2023,
+    "review": "In a cyberpunk city run by megacorporations, a hacker discovers a ghost in the net that may be the key to unraveling a decade-old conspiracy. Stunning visuals and tight plotting."
+  },
+  {
+    "id": "Whispers-of-the-Fallen-Garden",
+    "name": "Whispers of the Fallen Garden",
+    "altName": "堕ちた庭の囁き",
+    "genre": [
+      "Drama",
+      "Romance",
+      "Slice of Life"
+    ],
+    "date": "2024-01",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a",
+        "e5": "n/a",
+        "e6": "n/a",
+        "e7": "n/a",
+        "e8": "n/a",
+        "e9": "n/a",
+        "e10": "n/a",
+        "e11": "n/a",
+        "e12": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 7,
+    "tear": "B+",
+    "episodes": 12,
+    "studio": "Dummy Studio",
+    "year": 2024,
+    "review": "Two childhood friends reconnect after years apart in a quiet seaside town. A slow-burn story about healing, memory, and the things left unsaid."
+  },
+  {
+    "id": "Iron-Serpent-Rising",
+    "name": "Iron Serpent Rising",
+    "altName": "鉄の蛇の覚醒",
+    "genre": [
+      "Action",
+      "Mecha",
+      "Sci-Fi"
+    ],
+    "date": "2023-07",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1",
+      "Season 2"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a"
+      },
+      "s2": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a",
+        "e5": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 8,
+    "tear": "A",
+    "episodes": 26,
+    "studio": "Dummy Studio",
+    "year": 2023,
+    "review": "Humanity's last defence against a mechanical serpent god are giant iron mechs piloted by teenagers who never asked to save the world. High octane battles with surprising emotional depth."
+  },
+  {
+    "id": "The-Wandering-Alchemist",
+    "name": "The Wandering Alchemist",
+    "altName": "彷徨う錬金術師",
+    "genre": [
+      "Adventure",
+      "Fantasy",
+      "Comedy"
+    ],
+    "date": "2024-07",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 7,
+    "tear": "B+",
+    "episodes": 12,
+    "studio": "Dummy Studio",
+    "year": 2024,
+    "review": "An eccentric alchemist travels the land solving problems with potions that almost always work. Light-hearted, funny, and occasionally surprisingly touching."
+  },
+  {
+    "id": "Crimson-Tide-Academy",
+    "name": "Crimson Tide Academy",
+    "altName": "クリムゾンタイド学園",
+    "genre": [
+      "Action",
+      "School",
+      "Supernatural"
+    ],
+    "date": "2023-04",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1",
+      "Season 2",
+      "Season 3"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a"
+      },
+      "s2": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a"
+      },
+      "s3": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 7,
+    "tear": "B",
+    "episodes": 24,
+    "studio": "Dummy Studio",
+    "year": 2023,
+    "review": "Students at an elite academy secretly train to hunt supernatural threats lurking in the city below. Classic school action with well-written ensemble characters."
+  },
+  {
+    "id": "Stars-Beyond-the-Veil",
+    "name": "Stars Beyond the Veil",
+    "altName": "ヴェールの彼方の星々",
+    "image": "",
+    "genre": [
+      "Sci-Fi",
+      "Drama",
+      "Space"
+    ],
+    "date": "2024-10",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {},
+    "details": "",
+    "state": "upcoming",
+    "rating": null,
+    "tear": null,
+    "episodes": 13,
+    "studio": "Dummy Studio",
+    "year": 2024,
+    "review": "",
+    "tags": [
+      "Space",
+      "Upcoming",
+      "Sci-Fi"
+    ]
+  },
+  {
+    "id": "Song-of-the-Hollow-Shrine",
+    "name": "Song of the Hollow Shrine",
+    "altName": "虚ろな社の歌",
+    "genre": [
+      "Mystery",
+      "Supernatural",
+      "Horror"
+    ],
+    "date": "2023-10",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a",
+        "e2": "n/a",
+        "e3": "n/a",
+        "e4": "n/a",
+        "e5": "n/a",
+        "e6": "n/a",
+        "e7": "n/a",
+        "e8": "n/a",
+        "e9": "n/a",
+        "e10": "n/a"
+      }
+    },
+    "state": "watched",
+    "rating": 8,
+    "episodes": 12,
+    "studio": "Dummy Studio",
+    "year": 2023,
+    "review": "A folklore researcher visits a remote mountain village where the locals still perform ancient rites. What begins as academic curiosity descends into something deeply unsettling."
+  },
+  {
+    "id": "Thunder-Fist-Dojo",
+    "name": "Thunder Fist Dojo",
+    "altName": "雷拳道場",
+    "genre": [
+      "Sports",
+      "Action",
+      "Comedy"
+    ],
+    "date": "2024-04",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "n/a"
+      }
+    },
+    "state": "watching",
+    "rating": 7,
+    "tear": "B",
+    "episodes": 25,
+    "studio": "Dummy Studio",
+    "year": 2024,
+    "review": "A broke dojo master recruits the most unqualified students imaginable and tries to build a championship martial arts team. Equal parts ridiculous and genuinely hype."
+  },
+  {
+    "id": "Echo-of-the-Last-Oracle",
+    "name": "Echo of the Last Oracle",
+    "altName": "最後の神託のエコー",
+    "image": "",
+    "genre": [
+      "Fantasy",
+      "Adventure",
+      "Isekai"
+    ],
+    "date": "2024-01",
+    "season": "Season 1",
+    "language": "Japanese",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {},
+    "details": "",
+    "state": "plan_to_watch",
+    "rating": null,
+    "tear": null,
+    "episodes": 13,
+    "studio": "Dummy Studio",
+    "year": 2024,
+    "review": "",
+    "tags": [
+      "Fantasy",
+      "Isekai",
+      "Plan to Watch"
+    ]
+  }
+]
