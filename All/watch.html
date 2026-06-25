@@ -592,6 +592,7 @@ window._mobNext = function() {
 </script>
 
 <!-- MAIN WATCH LOGIC -->
+<script src="data-loader.js"></script>
 <script>
   // ── URL params ──
   const params   = new URLSearchParams(location.search);
@@ -1171,9 +1172,8 @@ window._mobNext = function() {
       hideSplash(); return;
     }
 
-    let data = [];
-    try { const r = await fetch('details.json'); data = await r.json(); }
-    catch(e) {
+    let data = await loadAnimeData();
+    if (!data.length) {
       document.getElementById('root').innerHTML = `<div class="err-state"><h1>!</h1><p>Could not load anime data.</p></div>`;
       hideSplash(); return;
     }
