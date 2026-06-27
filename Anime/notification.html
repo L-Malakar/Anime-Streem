@@ -215,33 +215,64 @@ html{--mnav-h:4.5rem}
     #readBody::-webkit-scrollbar{width:5px}
     #readBody::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
 
-    /* Story viewer */
-    #storyViewer{display:none;flex-direction:column;align-items:center;padding:32px 32px 40px;gap:16px}
+    /* ── WhatsApp Chat Viewer ── */
+    #readBody{flex:1;padding:0;overflow-y:auto;background:#0b141a;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+    #readBody::-webkit-scrollbar{width:5px}
+    #readBody::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+
+    #storyViewer{display:none;flex-direction:column;padding:16px 12px 24px;gap:0}
     #storyViewer.visible{display:flex}
-    .story-img-wrap{width:100%;max-width:400px;border-radius:20px;overflow:hidden;background:#1a1a1a;box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);position:relative;display:flex;align-items:center;justify-content:center}
-    .story-img{width:100%;height:auto;display:block;object-fit:contain;background:#0a0a0a;max-height:55vh}
-    .story-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.1) 50%,transparent 75%);pointer-events:none}
-    .story-content{position:absolute;bottom:0;left:0;right:0;padding:20px}
-    .story-title{font-family:'Outfit',sans-serif;font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.3;text-shadow:0 1px 8px rgba(0,0,0,0.5)}
-    .story-desc{font-size:0.8rem;color:rgba(255,255,255,0.75);line-height:1.45;text-shadow:0 1px 4px rgba(0,0,0,0.6)}
+
+    /* Date chip */
+    .wa-date-chip{text-align:center;margin:12px 0 16px}
+    .wa-date-chip span{background:rgba(17,27,33,0.85);color:#8696a0;font-size:0.7rem;padding:4px 12px;border-radius:8px;backdrop-filter:blur(4px)}
+
+    /* Chat bubble row */
+    .wa-bubble-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:4px;animation:waBubbleIn 0.28s cubic-bezier(0.22,1,0.36,1) both}
+    @keyframes waBubbleIn{from{opacity:0;transform:translateY(10px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .wa-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#00a884,#025c4c);display:flex;align-items:center;justify-content:center;font-family:'Dela Gothic One',cursive;font-size:11px;color:#fff;flex-shrink:0;align-self:flex-end}
+
+    /* Bubble */
+    .wa-bubble{background:#202c33;border-radius:0 10px 10px 10px;max-width:380px;min-width:140px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.4);position:relative}
+    .wa-bubble::before{content:'';position:absolute;top:0;left:-8px;width:0;height:0;border-top:8px solid #202c33;border-left:8px solid transparent}
+
+    /* Image inside bubble */
+    .wa-bubble-img{width:100%;max-height:320px;object-fit:cover;display:block;border-radius:0 10px 0 0;cursor:pointer;transition:opacity 0.2s}
+    .wa-bubble-img:hover{opacity:0.92}
+
+    /* Slide counter pill over image */
+    .wa-img-wrap{position:relative}
+    .wa-slide-counter{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:0.65rem;font-weight:700;padding:3px 8px;border-radius:99px;backdrop-filter:blur(4px);letter-spacing:0.04em}
+
+    /* Progress dots inside bubble */
+    .wa-progress{display:flex;gap:4px;padding:8px 10px 0}
+    .wa-dot{flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.12);overflow:hidden;position:relative}
+    .wa-dot-fill{position:absolute;inset:0;border-radius:99px;background:#00a884;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease}
+    .wa-dot.filled .wa-dot-fill{transform:scaleX(1)}
+    .wa-dot.active .wa-dot-fill{transform:scaleX(1)}
+
+    /* Bubble footer: nav + time */
+    .wa-bubble-footer{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 8px;gap:8px}
+    .wa-nav-btns{display:flex;align-items:center;gap:6px}
+    .wa-nav-btn{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#aebac1;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.18s;-webkit-tap-highlight-color:transparent}
+    .wa-nav-btn:hover{background:#00a884;border-color:#00a884;color:#fff}
+    .wa-nav-btn:active{transform:scale(0.88)}
+    .wa-nav-btn:disabled{opacity:0.2;cursor:not-allowed}
+    .wa-nav-label{font-size:0.7rem;color:#8696a0;flex:1;text-align:center}
+    .wa-time{font-size:0.65rem;color:#8696a0;white-space:nowrap;display:flex;align-items:center;gap:3px;flex-shrink:0}
+    .wa-time i{color:#53bdeb;font-size:0.7rem}
+
+    /* Description text bubble */
+    .wa-desc-bubble{background:#202c33;border-radius:0 10px 10px 10px;max-width:380px;width:fit-content;padding:8px 12px 10px;box-shadow:0 1px 2px rgba(0,0,0,0.4);position:relative;margin-top:3px;margin-left:40px}
+    .wa-desc-bubble::before{content:'';position:absolute;top:0;left:-8px;width:0;height:0;border-top:8px solid #202c33;border-left:8px solid transparent}
+    .wa-desc-text{font-size:0.875rem;color:#e9edef;line-height:1.55}
+    .wa-desc-time{font-size:0.65rem;color:#8696a0;text-align:right;margin-top:4px;display:flex;align-items:center;justify-content:flex-end;gap:3px}
+    .wa-desc-time i{color:#53bdeb}
 
     .wn-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
     .wn-badge.new-badge{background:rgba(230,57,70,0.9);color:#fff;box-shadow:0 0 12px rgba(230,57,70,0.4)}
     .wn-badge.improved-badge{background:rgba(56,189,248,0.9);color:#fff;box-shadow:0 0 12px rgba(56,189,248,0.3)}
     .wn-badge.fast-badge{background:rgba(34,197,94,0.9);color:#fff;box-shadow:0 0 12px rgba(34,197,94,0.3)}
-
-    .story-nav{display:flex;align-items:center;gap:12px;margin-top:4px}
-    .story-nav-btn{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
-    .story-nav-btn:hover{background:rgba(230,57,70,0.8);border-color:#e63946}
-    .story-nav-btn:active{transform:scale(0.88)}
-    .story-nav-btn:disabled{opacity:0.25;cursor:not-allowed}
-
-    .wn-progress{display:flex;gap:5px;width:100%;max-width:400px;margin:0 auto}
-    .wn-dot{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,0.15);overflow:hidden;position:relative}
-    .wn-dot-fill{position:absolute;inset:0;border-radius:99px;background:#e63946;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease}
-    .wn-dot.filled .wn-dot-fill{transform:scaleX(1)}
-    .wn-dot.active .wn-dot-fill{transform:scaleX(1)}
-    .wn-counter{font-size:0.7rem;color:rgba(255,255,255,0.35);letter-spacing:0.05em;font-variant-numeric:tabular-nums;text-align:center}
 
     @keyframes storyEnter{from{opacity:0;transform:translateY(12px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
     .story-enter{animation:storyEnter 0.38s cubic-bezier(0.22,1,0.36,1) both}
@@ -416,10 +447,10 @@ html{--mnav-h:4.5rem}
               <button id="readBackBtn" onclick="closeMailMobile()" class="mr-2 text-xl text-aw-muted hover:text-aw-accent transition-colors" aria-label="Back to chat list">
                 <i class="fas fa-arrow-left"></i>
               </button>
-              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background:linear-gradient(135deg,#00a884,#025c4c);font-family:'Dela Gothic One',cursive">AW</div>
+              <div id="rAvatar" class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background:linear-gradient(135deg,#00a884,#025c4c);font-family:'Dela Gothic One',cursive">AW</div>
               <div>
-                <p class="text-sm font-semibold text-aw-fg">AnimeWave Updates</p>
-                <p class="text-xs text-aw-muted">updates@animewave.web.app</p>
+                <p id="rSender" class="text-sm font-semibold text-aw-fg">AnimeWave Updates</p>
+                <p id="rEmail" class="text-xs text-aw-muted">updates@animewave.web.app</p>
               </div>
               <span id="rTime" class="ml-auto text-xs text-aw-muted"></span>
             </div>
@@ -431,25 +462,31 @@ html{--mnav-h:4.5rem}
 
           <div id="readBody">
             <div id="storyViewer">
-              <div class="story-img-wrap" id="storyImgWrap">
-                <img id="sImg" src="" alt="" class="story-img">
-                <div class="story-overlay"></div>
-                <div class="story-content">
-                  <span id="sBadge" class="wn-badge" style="display:none"></span>
-                  <h3 id="sTitle" class="story-title"></h3>
-                  <p id="sDesc" class="story-desc"></p>
+              <div class="wa-date-chip"><span id="sDateChip">Today</span></div>
+              <div class="wa-bubble-row" id="storyImgWrap">
+                <div id="sAvatarChat" class="wa-avatar">AW</div>
+                <div class="wa-bubble">
+                  <div class="wa-img-wrap">
+                    <img id="sImg" src="" alt="" class="wa-bubble-img">
+                    <span id="sCounter" class="wa-slide-counter"></span>
+                  </div>
+                  <div class="wa-progress" id="sProgress"></div>
+                  <div class="wa-bubble-footer">
+                    <div class="wa-nav-btns">
+                      <button class="wa-nav-btn" id="sPrev" onclick="storyPrev()" disabled aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+                      <span id="sNavLabel" class="wa-nav-label"></span>
+                      <button class="wa-nav-btn" id="sNext" onclick="storyNext()" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <span class="wa-time"></span>
+                  </div>
                 </div>
               </div>
-              <div class="wn-progress" id="sProgress"></div>
-              <div class="wn-counter" id="sCounter"></div>
-              <div class="story-nav">
-                <button class="story-nav-btn" id="sPrev" onclick="storyPrev()" disabled aria-label="Previous">
-                  <i class="fas fa-chevron-left"></i>
-                </button>
-                <span id="sNavLabel" class="text-xs text-aw-muted flex-1 text-center"></span>
-                <button class="story-nav-btn" id="sNext" onclick="storyNext()" aria-label="Next">
-                  <i class="fas fa-chevron-right"></i>
-                </button>
+              <div id="sDescWrap" style="display:none">
+                <div class="wa-desc-bubble">
+                  <span id="sBadge" class="wn-badge" style="display:none"></span>
+                  <p id="sDesc" class="wa-desc-text"></p>
+                  <div class="wa-desc-time"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -555,7 +592,7 @@ html{--mnav-h:4.5rem}
           <img src="logo.PNG" alt="AnimeWave">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <span class="st-ver">v1.15.x34</span>
+          <span class="st-ver">v1.26x3</span>
         </div>
       </div>
     </div>
@@ -579,8 +616,11 @@ html{--mnav-h:4.5rem}
         <i class="fas fa-clapperboard mnav-icon"></i>
         <span class="mnav-label">Shorts</span>
       </button>
-      <button class="mnav-btn no-select" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
-        <i class="fas fa-bookmark mnav-icon"></i>
+      <button class="mnav-btn no-select relative" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
+        <span class="relative inline-flex items-center justify-center" style="width:35px;height:40px;">
+          <i class="fas fa-bookmark mnav-icon"></i>
+          <span class="save-dirty-dot" id="mnavSaveDirty"></span>
+        </span>
         <span class="mnav-label">Save</span>
       </button>
       <button class="mnav-btn no-select" onclick="openSettings()" title="Settings" aria-label="Settings">
@@ -902,6 +942,8 @@ html{--mnav-h:4.5rem}
       var label = count > 99 ? '99+' : String(count);
       var dot = document.getElementById('sbSaveDirty');
       if(dot){ dot.textContent = count > 0 ? label : ''; dot.classList.toggle('show', count > 0); }
+      var mdot = document.getElementById('mnavSaveDirty');
+      if(mdot){ mdot.textContent = count > 0 ? label : ''; mdot.classList.toggle('show', count > 0); }
     })();
 
     /* ====== Notification data & state ====== */
@@ -911,6 +953,8 @@ html{--mnav-h:4.5rem}
     var activeIndex = -1;
     var storyIdx = 0;
     var storyItems = [];
+    var rawNotifs = [];
+    var devMode = false;
 
     try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){ readState = {}; }
     try { timeState = JSON.parse(localStorage.getItem('aw_notif_times') || '{}'); } catch(e){ timeState = {}; }
@@ -954,6 +998,20 @@ html{--mnav-h:4.5rem}
       return d.toLocaleDateString([], { day:'2-digit', month:'2-digit', year:'numeric' });
     }
 
+    function dateChipLabel(idx){
+      var ts = getNotifTimestamp(idx);
+      var d = new Date(ts);
+      var now = new Date();
+
+      if(d.toDateString() === now.toDateString()) return 'Today';
+
+      var yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      if(d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+
+      return d.toLocaleDateString([], { day:'numeric', month:'long', year:'numeric' });
+    }
+
     function escHtml(s){
       return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
@@ -976,10 +1034,10 @@ html{--mnav-h:4.5rem}
         row.className = 'mail-row' + (isRead ? '' : ' unread');
         row.dataset.idx = i;
         row.innerHTML =
-          '<div class="mail-avatar">AW</div>' +
+          '<div class="mail-avatar">' + escHtml(item.logo || (item.sender||'AW').charAt(0).toUpperCase()) + '</div>' +
           '<div class="mail-meta">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">' +
-              '<span class="mail-sender">AnimeWave Update</span>' +
+              '<span class="mail-sender">' + escHtml(item.sender||'AnimeWave Updates') + '</span>' +
               '<span class="mail-time">' + timeSince(i) + '</span>' +
             '</div>' +
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
@@ -1018,9 +1076,15 @@ html{--mnav-h:4.5rem}
       if(item.badge){ rBadge.textContent=item.badge; rBadge.className='wn-badge '+badgeClass(item.badge); rBadge.style.display=''; }
       else { rBadge.style.display='none'; }
       document.getElementById('rTitle').textContent = item.title;
+      document.getElementById('rSender').textContent = item.sender || 'AnimeWave Updates';
+      document.getElementById('rEmail').textContent = item.email || '';
+      document.getElementById('rAvatar').textContent = item.logo || (item.sender||'AW').charAt(0).toUpperCase();
       document.getElementById('rTime').textContent = timeSince(idx);
 
-      storyItems = allItems[idx]._slides || [allItems[idx]];
+      var _notifDesc = allItems[idx].description;
+      storyItems = (allItems[idx]._slides || [allItems[idx]]).map(function(slide) {
+      return Object.assign({}, slide, { description: _notifDesc });
+      });
       storyIdx = 0;
       renderStory();
       document.getElementById('storyViewer').classList.add('visible');
@@ -1047,27 +1111,48 @@ html{--mnav-h:4.5rem}
       var isMobile = window.innerWidth < 1024;
       var imgSrc = (isMobile && item.mobile) ? item.mobile : item.image;
 
+      var sDateChip = document.getElementById('sDateChip');
+      if(sDateChip) sDateChip.textContent = dateChipLabel(activeIndex);
+
       var sImg = document.getElementById('sImg');
       sImg.src = imgSrc;
       sImg.onerror = function(){ this.src='https://placehold.co/600x400/1a1a1a/e63946?text=AnimeWave'; };
 
-      var sBadge = document.getElementById('sBadge');
-      if(item.badge){ sBadge.textContent=item.badge; sBadge.className='wn-badge '+badgeClass(item.badge); sBadge.style.display=''; }
-      else { sBadge.style.display='none'; }
-      document.getElementById('sTitle').textContent = item.title;
-      document.getElementById('sDesc').textContent = item.description;
-      document.getElementById('sCounter').textContent = (storyIdx+1) + ' / ' + storyItems.length;
+      /* counter pill */
+      document.getElementById('sCounter').textContent = storyItems.length > 1 ? (storyIdx+1) + ' / ' + storyItems.length : '';
 
+      /* progress dots */
       var prog = document.getElementById('sProgress');
-      prog.innerHTML = storyItems.map(function(_,i){
-        var cls = i < storyIdx ? 'filled' : i === storyIdx ? 'active' : '';
-        return '<div class="wn-dot '+cls+'"><div class="wn-dot-fill"></div></div>';
-      }).join('');
+      if(storyItems.length > 1){
+        prog.style.display = 'flex';
+        prog.innerHTML = storyItems.map(function(_,i){
+          var cls = i < storyIdx ? 'filled' : i === storyIdx ? 'active' : '';
+          return '<div class="wa-dot '+cls+'"><div class="wa-dot-fill"></div></div>';
+        }).join('');
+      } else {
+        prog.style.display = 'none';
+      }
 
-      document.getElementById('sNavLabel').textContent = storyIdx < storyItems.length-1 ? 'Next update →' : '✓ All caught up';
+      /* nav */
+      document.getElementById('sNavLabel').textContent = storyIdx < storyItems.length-1 ? 'Next →' : '✓ Done';
       document.getElementById('sPrev').disabled = storyIdx === 0;
       document.getElementById('sNext').disabled = storyIdx >= storyItems.length-1;
 
+      /* badge + description bubble */
+      var sBadge = document.getElementById('sBadge');
+      if(item.badge){ sBadge.textContent=item.badge; sBadge.className='wn-badge '+badgeClass(item.badge); sBadge.style.display=''; }
+      else { sBadge.style.display='none'; }
+      var sDescWrap = document.getElementById('sDescWrap');
+      var sDesc = document.getElementById('sDesc');
+      if(item.description){ sDesc.textContent=item.description; sDescWrap.style.display=''; }
+      else { sDescWrap.style.display='none'; }
+
+      /* avatar in chat */
+      var notif = allItems[activeIndex];
+      var avatarEl = document.getElementById('sAvatarChat');
+      if(avatarEl) avatarEl.textContent = (notif && notif.logo) ? notif.logo : (notif && notif.sender ? notif.sender.charAt(0).toUpperCase() : 'AW');
+
+      /* enter animation */
       var wrap = document.getElementById('storyImgWrap');
       wrap.classList.remove('story-enter');
       void wrap.offsetHeight;
@@ -1086,9 +1171,15 @@ html{--mnav-h:4.5rem}
 
     /* ====== Keyboard Shortcuts ====== */
     document.addEventListener('keydown', function(e){
+      var key = e.key;
+      if(e.ctrlKey && e.shiftKey && e.altKey && key.toLowerCase()==='a'){
+        e.preventDefault();
+        devMode = !devMode;
+        applyFilter();
+        return;
+      }
       var tag = document.activeElement ? document.activeElement.tagName : '';
       if(tag==='INPUT'||tag==='TEXTAREA') return;
-      var key = e.key;
       if(key==='ArrowRight'||key==='ArrowDown'){ e.preventDefault(); storyNext(); }
       else if(key==='ArrowLeft'||key==='ArrowUp'){ e.preventDefault(); storyPrev(); }
       else if(key==='Escape'){ closeSettings(); }
@@ -1124,23 +1215,51 @@ html{--mnav-h:4.5rem}
     window.addEventListener('orientationchange', function(){ setTimeout(syncMnavHeight, 200); });
 
     /* ====== Load Data ====== */
+    function mapNotif(n){
+      var slides = Array.isArray(n.slides) ? n.slides : [];
+      return {
+        title: n.title || "What's New on AnimeWave",
+        sender: n.sender || 'AnimeWave Updates',
+        email: n.email || '',
+        badge: n.badge || '',
+        description: n.description || '',
+        rejoin: n.rejoin || '',
+        logo: n.logo || '',
+        image: slides.length ? slides[0].image : '',
+        mobile: slides.length ? slides[0].mobile : '',
+        _slides: slides
+      };
+    }
+
+    function applyFilter(){
+      if(devMode){
+        allItems = rawNotifs.map(mapNotif);
+        showToast('🛠️ Dev mode ON — showing ALL notifications');
+      } else {
+        var now = new Date();
+        allItems = rawNotifs.filter(function(n){
+          if(n.showAfter && new Date(n.showAfter) > now) return false;
+          if(n.showBefore && new Date(n.showBefore) < now) return false;
+          return true;
+        }).map(mapNotif);
+        showToast('✅ Dev mode OFF — showing live notifications only');
+      }
+      activeIndex = -1;
+      document.getElementById('readContent').style.display = 'none';
+      document.getElementById('readEmpty').style.display = 'flex';
+      renderInbox();
+    }
+
     fetch('tnew.json')
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
       .then(function(data){
-        var slides = Array.isArray(data) ? data : [];
-        if(slides.length){
-          var grouped = {
-            title: "What's New add on to AnimeWave.",
-            badge: slides[0].badge || '',
-            description: slides[0].description || '',
-            image: slides[0].image || '',
-            mobile: slides[0].mobile || '',
-            _slides: slides
-          };
-          allItems = [grouped];
-        } else {
-          allItems = [];
-        }
+        rawNotifs = Array.isArray(data) ? data : [];
+        var now = new Date();
+        allItems = rawNotifs.filter(function(n){
+          if(n.showAfter && new Date(n.showAfter) > now) return false;
+          if(n.showBefore && new Date(n.showBefore) < now) return false;
+          return true;
+        }).map(mapNotif);
         renderInbox();
         setTimeout(function(){ document.getElementById('loadingScreen').classList.add('hide'); }, 300);
       })
