@@ -699,7 +699,7 @@
         <span class="mnav-label">Shorts</span>
       </button>
       <button class="mnav-btn no-select relative" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
-        <span class="relative inline-flex items-center justify-center">
+        <span class="relative inline-flex items-center justify-center" style="width:35px;height:40px;">
           <i class="fas fa-bookmark mnav-icon"></i>
           <span class="save-dirty-dot" id="mnavSaveDirty"></span>
         </span>
@@ -852,7 +852,7 @@
           <img src="logo.PNG" alt="AnimeWave">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <span class="st-ver">v1.15.x34</span>
+          <span class="st-ver">v1.26x3</span>
         </div>
       </div>
     </div>
@@ -2741,7 +2741,13 @@
           try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
           var total = Array.isArray(data) ? data.length : 0;
           var unreadCount = 0;
-          for(var i = 0; i < total; i++){ if(!readState[i]) unreadCount++; }
+          var now = new Date();
+          for(var i = 0; i < total; i++){
+            var n = data[i];
+            if(n.showAfter && new Date(n.showAfter) > now) continue;
+            if(n.showBefore && new Date(n.showBefore) < now) continue;
+            if(!readState[i]) unreadCount++;
+          }
           var label = unreadCount > 99 ? '99+' : String(unreadCount);
           var navDot = document.getElementById('notifDot');
           var sbDot = document.getElementById('sbNotifDot');
@@ -2753,4 +2759,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-        </html>
+  </html>
