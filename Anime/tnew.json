@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Today AnimeWave server is slow because of high traffic",
+    "sender": "AnimeWave Updates",
+    "email": "updates@animewave.web.app",
+    "logo": "AU",
+    "rejoin": "world",
+    "showAfter": "2026-06-27T08:30:00",
+    "showBefore": "2026-06-28T23:59:59",
+    "description": "We've some issues with our servers today due to high traffic. After some time it will be resolved and be notified.",
+    "slides": [
+      {
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhxS2PhS9FoU5HmrjJNbUu68tz7DbxQfgQI27tAUazrwJ0vVLgi26YEtE&s=10",
+        "mobile": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhxS2PhS9FoU5HmrjJNbUu68tz7DbxQfgQI27tAUazrwJ0vVLgi26YEtE&s=10"
+      }
+    ]
+  }
+]
