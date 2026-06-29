@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Saved Animes — AnimeWave</title>
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -740,9 +740,14 @@
 
       if (!list.length) {
         grid.innerHTML = '';
-        empty.classList.add('hidden');
-        noResults.classList.remove('hidden');
-        document.getElementById('noResultsMsg').textContent = `No saved anime matches "${savedSearch.value.trim()}"`;
+        if (!savedSearch.value.trim()) {
+          noResults.classList.add('hidden');
+          empty.classList.remove('hidden');
+        } else {
+          empty.classList.add('hidden');
+          noResults.classList.remove('hidden');
+          document.getElementById('noResultsMsg').textContent = `No saved anime matches "${savedSearch.value.trim()}"`;
+        }
         document.getElementById('saveCount').textContent = `0 of ${currentSavedList.length} anime${currentSavedList.length !== 1 ? 's' : ''} shown`;
         disconnectSaveSentinel();
         return;
