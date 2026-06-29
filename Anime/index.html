@@ -638,7 +638,7 @@
     </div>
     <div id="animeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4"></div>
 
-    <div id="infSentinel" class="hidden flex flex-col items-center py-10 gap-3">
+    <div id="infSentinel" class="hidden flex-col items-center py-10 gap-3" style="display:none">
       <div class="inf-spinner"></div>
       <span class="text-aw-muted text-xs">Loading more...</span>
     </div>
@@ -652,29 +652,6 @@
       <button onclick="clearFilters()" class="px-5 py-2 rounded-lg bg-aw-accent text-white text-sm font-medium hover:bg-aw-accentD transition-colors">Clear Filters</button>
     </div>
   </main>
-
-  <!-- Footer -->
-  <footer class="border-t border-aw-border relative z-[1] mt-8">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="sm:col-span-2 lg:col-span-1">
-          <div class="flex items-center gap-2 mb-3">
-            <img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-lg">
-            <span class="font-display text-lg text-aw-fg">AnimeWave</span>
-          </div>
-          <p class="text-aw-muted text-sm leading-relaxed max-w-xs">Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-        </div>
-        <div class="sm:col-span-2 lg:col-span-2">
-          <h4 class="font-semibold text-aw-fg mb-3 text-sm uppercase tracking-wider">About</h4>
-          <p class="text-aw-muted text-sm leading-relaxed">AnimeWave is a fan-made anime catalog and tracker. All anime images and data belong to their respective owners. *We cannot support piracy!</p>
-        </div>
-      </div>
-      <div class="border-t border-aw-border mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-aw-muted text-xs">
-        <p>AnimeWave &copy; 2025 — Built for anime lovers</p>
-        <p class="flex items-center gap-1.5">Made with <i class="fas fa-heart text-aw-accent text-[10px]"></i> for the community</p>
-      </div>
-    </div>
-  </footer>
 
   </div><!-- end #mainWrap -->
 
@@ -1485,6 +1462,7 @@
     searchInput.addEventListener('focus', () => { if (searchInput.value.trim().length > 0) showSuggestions(searchInput.value); });
     document.addEventListener('click', e => { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
 
+    let searchTimer;
     function doSearch() {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => { 
@@ -1494,7 +1472,6 @@
         }, 50);
       }, 100);
     }
-    let searchTimer;
 
     let currentSort = 'default';
     const sortOptions = [
@@ -1575,7 +1552,7 @@
       searchHint.classList.remove('hide');
       currentSort = 'default';
       document.getElementById('sortLabel').textContent = 'Shuffled';
-      document.getElementById('sortDropdown').querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.value === 'default'));
+      document.getElementById('sortDropdown').querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.sort === 'default'));
       renderGenreFilters();
       applySortAndFilter();
     }
@@ -1678,7 +1655,7 @@
       if (!total) {
         grid.innerHTML = '';
         empty.classList.remove('hidden');
-        sentinel.classList.add('hidden');
+        sentinel.style.display = 'none';
         document.getElementById('animeCount').textContent = '0 animes';
         disconnectSentinel();
         return;
@@ -1719,10 +1696,10 @@
     function updateSentinel() {
       const sentinel = document.getElementById('infSentinel');
       if (loadedCount < displayedAnime.length) {
-        sentinel.classList.remove('hidden');
+        sentinel.style.display = 'flex';
         observeSentinel();
       } else {
-        sentinel.classList.add('hidden');
+        sentinel.style.display = 'none';
         disconnectSentinel();
       }
     }
@@ -1730,7 +1707,7 @@
     function observeSentinel() {
       disconnectSentinel();
       const sentinel = document.getElementById('infSentinel');
-      if (!sentinel || sentinel.classList.contains('hidden')) return;
+      if (!sentinel || sentinel.style.display === 'none') return;
       sentinelObserver = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !isLoadingMore) {
           loadMoreBatch();
@@ -2759,4 +2736,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-  </html>
+          </html>
