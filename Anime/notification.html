@@ -26,11 +26,9 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
     .no-select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
     input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
-    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow:hidden;height:100vh}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow:hidden;height:100dvh}
     ::-webkit-scrollbar{width:8px}
 
-    /* Striking visual indication for unread notifications */
-    .mail-row.unread { background: rgba(0, 168, 132, 0.04) !important; }
     ::-webkit-scrollbar-track{background:#0a0a0a}
     ::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px}
     ::-webkit-scrollbar-thumb:hover{background:#3a3a3a}
@@ -1234,7 +1232,7 @@ html{--mnav-h:4.5rem}
     function applyFilter(){
       if(devMode){
         allItems = rawNotifs.map(mapNotif);
-        showToast('🛠️ Dev mode ON — showing ALL notifications');
+        showToast('🛠️ Dev mode ON — showing ALL notifications', 'info');
       } else {
         var now = new Date();
         allItems = rawNotifs.filter(function(n){
@@ -1242,7 +1240,7 @@ html{--mnav-h:4.5rem}
           if(n.showBefore && new Date(n.showBefore) < now) return false;
           return true;
         }).map(mapNotif);
-        showToast('✅ Dev mode OFF — showing live notifications only');
+        showToast('Dev mode OFF — showing live notifications only', 'info');
       }
       activeIndex = -1;
       document.getElementById('readContent').style.display = 'none';
