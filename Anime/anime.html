@@ -562,7 +562,7 @@
               <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-1">You Might Also Like</h2>
               <p class="text-aw-muted text-sm">${grid.cols} × ${grid.rows} &middot; ${grid.total} picks</p>
             </div>
-            <button onclick="reshuffleRecs('${currentId}')" id="recShuffleBtn" class="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted text-sm font-medium cursor-pointer rec-shuffle">
+            <button onclick="reshuffleRecs('${currentId.replace(/'/g,"\\'")}')" id="recShuffleBtn" class="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted text-sm font-medium cursor-pointer rec-shuffle">
               <i class="fas fa-shuffle"></i> <span class="hidden sm:inline">Shuffle</span>
             </button>
           </div>
@@ -572,7 +572,7 @@
               const hasEps = countEpisodes(a) > 0;
               let btnOverlay = '';
               if (hasEps) {
-                btnOverlay = `<div class="rec-btn-wrap" onclick="event.preventDefault();event.stopPropagation();window.location.href='watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1'"><span class="rec-watch-btn"><i class="fas fa-play text-[9px]"></i> Watch </span></div>`;
+                btnOverlay = `<div class="rec-btn-wrap" onclick="event.preventDefault();event.stopPropagation();window.location.href='watch.html?id=${encodeURIComponent(a.id).replace(/'/g,'%27')}&s=1&e=1'"><span class="rec-watch-btn"><i class="fas fa-play text-[9px]"></i> Watch </span></div>`;
               }
               return `
               <a href="anime.html?id=${encodeURIComponent(a.id)}" class="rec-card group block" style="animation-delay:${i * 30}ms">
