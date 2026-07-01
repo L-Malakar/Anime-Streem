@@ -3,7 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watching — AnimeWave</title>
+  <title id="pageTitle">Watching — AnimeWave</title>
+  <meta id="metaDescription" name="description" content="Watch anime episodes online free in HD on AnimeWave — new episodes, dub &amp; sub, and full seasons.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://animewave.example/watch.html" id="canonicalLink">
+  <meta id="ogTitle" property="og:title" content="Watching — AnimeWave">
+  <meta id="ogDescription" property="og:description" content="Watch anime episodes online free in HD on AnimeWave.">
+  <meta property="og:type" content="video.episode">
+  <meta id="ogImage" property="og:image" content="logo.PNG">
+  <meta id="ogUrl" property="og:url" content="https://animewave.example/watch.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta id="twTitle" name="twitter:title" content="Watching — AnimeWave">
+  <meta id="twDescription" name="twitter:description" content="Watch anime episodes online free in HD on AnimeWave.">
+  <meta id="twImage" name="twitter:image" content="logo.PNG">
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -157,12 +169,12 @@
       <div class="fade-in">
         <div class="video-wrap show-controls" id="videoWrap">
           <video id="mainVideo" playsinline style="display:none"></video>
-            <iframe id="mainIframe"
-              allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-              referrerpolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin"
-              style="display:none;width:100%;height:100%;border:none;position:absolute;inset:0;z-index:1">
-            </iframe>
+          <iframe id="mainIframe"
+            allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-same-origin"
+            style="display:none;width:100%;height:100%;border:none;position:absolute;inset:0;z-index:1">
+          </iframe>
           <div class="big-play" id="bigPlay">
             <div class="big-play-circle"><i class="fas fa-play text-white text-xl ml-1"></i></div>
           </div>
@@ -192,17 +204,20 @@
               </div>
             </div>
           </div>
-          <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none" style="display:none">
+          <div id="loadingSpinner" class="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none" style="display:none;z-index:5">
             <div class="flex flex-col items-center gap-3">
               <i class="fas fa-spinner fa-spin text-2xl text-aw-accent"></i>
               <span class="text-white/50 text-xs">Loading...</span>
             </div>
           </div>
-          <div id="errorOverlay" class="absolute inset-0 flex items-center justify-center bg-black/80 pointer-events-none" style="display:none">
+          <div id="errorOverlay" class="absolute inset-0 flex items-center justify-center bg-black/80" style="display:none;z-index:5">
             <div class="text-center px-4">
               <i class="fas fa-exclamation-triangle text-3xl text-aw-accent mb-3"></i>
-              <p class="text-white/80 text-sm mb-1">Failed to load video</p>
-              <p class="text-white/40 text-xs">Check the URL or try another episode</p>
+              <p id="errorOverlayMsg" class="text-white/80 text-sm mb-1">Failed to load video</p>
+              <p id="errorOverlayHint" class="text-white/40 text-xs mb-4">Check the URL or try another episode</p>
+              <button id="btnRetryLoad" class="action-btn inline-flex items-center gap-2 bg-aw-accent hover:bg-aw-accentD text-white text-xs font-medium px-4 py-2 rounded-lg">
+                <i class="fas fa-rotate-right"></i> Retry
+              </button>
             </div>
           </div>
         </div>
@@ -292,11 +307,32 @@
   <div id="toastContainer" class="fixed top-16 right-4 z-[10000] flex flex-col gap-2"></div>
 
   <script>
-    /* Security */
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('copy', e => { if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') e.preventDefault(); });
-    document.addEventListener('selectstart', e => { if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return; e.preventDefault(); });
-    document.addEventListener('dragstart', e => e.preventDefault());
+    /* Security — restricted to the video player only, rest of the page is normal to use */
+    function inPlayerZone(e) {
+      const wrap = document.getElementById('videoWrap');
+      return !!(wrap && e.target && wrap.contains(e.target));
+    }
+    document.addEventListener('contextmenu', e => { if (inPlayerZone(e)) e.preventDefault(); });
+    document.addEventListener('copy', e => {
+      if (inPlayerZone(e) && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') e.preventDefault();
+    });
+    document.addEventListener('selectstart', e => {
+      if (!inPlayerZone(e)) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      e.preventDefault();
+    });
+    document.addEventListener('dragstart', e => { if (inPlayerZone(e)) e.preventDefault(); });
+
+    /* Escape any string before inserting it as HTML — protects against a malformed/compromised details.json */
+    function escapeHtml(str) {
+      if (str === undefined || str === null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
     /* Toast */
     function showToast(msg, type = 'info') {
@@ -350,7 +386,6 @@
 
     /* Data */
     let allAnime = [];
-    const FALLBACK = [];
 
     let anime = null, videoUrl = '';
     /* playSeason/playEp = what is currently playing (loaded in the video player) */
@@ -457,7 +492,7 @@
           allAnime = await demo.json();
           if (!Array.isArray(allAnime)) allAnime = [allAnime];
           showToast('details.json not found — showing demo data', 'info');
-        } catch { allAnime = FALLBACK; showToast('Could not load anime data', 'error'); }
+        } catch { allAnime = []; showToast('Could not load anime data', 'error'); }
       }
       initPlayer();
     }
@@ -493,15 +528,26 @@
       const ek = 'e' + playEp;
       videoUrl = (anime.episodeLinks && anime.episodeLinks[sk] && anime.episodeLinks[sk][ek]) || '';
 
-      document.title = `${anime.name} S${playSeason}E${playEp} — AnimeWave`;
+      const pageTitleText = `${anime.name} S${playSeason}E${playEp} — AnimeWave`;
+      document.title = pageTitleText;
       document.getElementById('navTitle').textContent = `${anime.name} · Season ${playSeason} · Episode ${playEp}`;
       document.getElementById('epTitle').textContent = `Season ${playSeason} · Episode ${playEp}`;
 
+      /* SEO / social preview tags — updated per anime + episode (escaped, not injected as HTML) */
+      const seoDesc = `Watch ${anime.name} Season ${playSeason} Episode ${playEp} online free in HD on AnimeWave.`;
+      const setMeta = (id, attr, value) => { const el = document.getElementById(id); if (el) el.setAttribute(attr, value); };
+      setMeta('metaDescription', 'content', seoDesc);
+      setMeta('ogTitle', 'content', pageTitleText);
+      setMeta('ogDescription', 'content', seoDesc);
+      setMeta('twTitle', 'content', pageTitleText);
+      setMeta('twDescription', 'content', seoDesc);
+      if (anime.image) { setMeta('ogImage', 'content', anime.image); setMeta('twImage', 'content', anime.image); }
+
       const metaParts = [];
-      if (anime.rating) metaParts.push(`<span><i class="fas fa-star text-yellow-500 mr-1"></i>${anime.rating}</span>`);
-      if (anime.studio) metaParts.push(`<span>${anime.studio}</span>`);
-      if (anime.year) metaParts.push(`<span>${anime.year}</span>`);
-      if (anime.episodes) metaParts.push(`<span>${anime.episodes} Episodes</span>`);
+      if (anime.rating) metaParts.push(`<span><i class="fas fa-star text-yellow-500 mr-1"></i>${escapeHtml(anime.rating)}</span>`);
+      if (anime.studio) metaParts.push(`<span>${escapeHtml(anime.studio)}</span>`);
+      if (anime.year) metaParts.push(`<span>${escapeHtml(anime.year)}</span>`);
+      if (anime.episodes) metaParts.push(`<span>${escapeHtml(anime.episodes)} Episodes</span>`);
       document.getElementById('epMeta').innerHTML = metaParts.join('<span class="text-aw-border">&middot;</span>');
 
       document.getElementById('detailLink').href = `anime.html?id=${encodeURIComponent(anime.id)}`;
@@ -602,6 +648,17 @@
       const errorOv = document.getElementById('errorOverlay');
       const ctrlOverlay = document.getElementById('controlsOverlay');
 
+      const errorMsgEl  = document.getElementById('errorOverlayMsg');
+      const errorHintEl = document.getElementById('errorOverlayHint');
+      const retryBtn     = document.getElementById('btnRetryLoad');
+      function showError(msg, hint) {
+        spinner.style.display = 'none';
+        if (errorMsgEl) errorMsgEl.textContent = msg || 'Failed to load video';
+        if (errorHintEl) errorHintEl.textContent = hint || 'Check the URL or try another episode';
+        errorOv.style.display = 'flex';
+      }
+      if (retryBtn) retryBtn.onclick = () => loadVideo(url);
+
       errorOv.style.display = 'none';
       spinner.style.display = 'flex';
       wrap.classList.add('show-controls');
@@ -617,8 +674,7 @@
       ctrlOverlay.style.display = '';
 
       if (!url) {
-        spinner.style.display = 'none';
-        errorOv.style.display = 'flex';
+        showError('No video URL for this episode', 'Try another episode from the list.');
         showToast('No video URL for this episode', 'error');
         return;
       }
@@ -628,10 +684,17 @@
         bigPlay.classList.add('hidden');
         ctrlOverlay.style.display = 'none';
         iframe.style.display = 'block';
-        iframe.onload = () => { spinner.style.display = 'none'; };
-        iframe.onerror = () => { spinner.style.display = 'none'; errorOv.style.display = 'flex'; showToast('Failed to load video', 'error'); };
+        let iframeLoaded = false;
+        iframe.onload = () => { iframeLoaded = true; spinner.style.display = 'none'; };
+        iframe.onerror = () => { showError('Failed to load video', 'The source may be down — try retrying or pick another episode.'); showToast('Failed to load video', 'error'); };
         iframe.src = url;
-        setTimeout(() => { spinner.style.display = 'none'; }, 8000);
+        /* Cross-origin iframes rarely fire onerror even when the source is dead, so if
+           nothing has loaded after a while, offer a retry instead of failing silently. */
+        setTimeout(() => {
+          if (!iframeLoaded && iframe.style.display !== 'none') {
+            showError('This is taking longer than usual', 'The video source may be slow or unavailable.');
+          }
+        }, 12000);
         return;
       }
 
@@ -641,8 +704,7 @@
 
       function onReady() { spinner.style.display = 'none'; }
       function onError() {
-        spinner.style.display = 'none';
-        errorOv.style.display = 'flex';
+        showError('Failed to load video', 'Check the URL or try another episode.');
         showToast('Failed to load video', 'error');
       }
 
@@ -664,9 +726,8 @@
           v.addEventListener('error', onError, { once: true });
           v.src = url;
         } else {
+          showError('HLS not supported in this browser', 'Try a different browser or device.');
           showToast('HLS not supported in this browser', 'error');
-          spinner.style.display = 'none';
-          errorOv.style.display = 'flex';
         }
       } else {
         v.addEventListener('canplay', onReady, { once: true });
@@ -901,4 +962,4 @@
     loadData();
   </script>
 </body>
-</html>
+  </html>
