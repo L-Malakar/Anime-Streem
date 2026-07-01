@@ -1154,7 +1154,7 @@
       const saved = isSaved(a.id);
       const ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
       return `
-        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer" onclick="window.location.href='anime.html?id=${encodeURIComponent(a.id)}'">
+        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer" onclick="window.location.href='anime.html?id=${encodeURIComponent(a.id).replace(/'/g,'%27')}'">
           <div class="relative overflow-hidden">
             <img src="${a.image}" alt="${a.name}" class="hcard-img" loading="lazy" onerror="handleImgError(this)">
             <div class="hcard-overlay">
@@ -1256,10 +1256,10 @@
       var saved = isSaved(a.id);
       var epLabel = a._lastS && a._lastE ? 'S' + a._lastS + ' E' + a._lastE : '';
       var continueUrl = a._lastS && a._lastE
-        ? 'watch.html?id=' + encodeURIComponent(a.id) + '&s=' + a._lastS + '&e=' + a._lastE
-        : 'watch.html?id=' + encodeURIComponent(a.id) + '&s=1&e=1';
+        ? 'watch.html?id=' + encodeURIComponent(a.id).replace(/'/g,'%27') + '&s=' + a._lastS + '&e=' + a._lastE
+        : 'watch.html?id=' + encodeURIComponent(a.id).replace(/'/g,'%27') + '&s=1&e=1';
       var progress = a.episodes ? Math.min((a._lastE / a.episodes) * 100, 95) : 30;
-      var idEsc = encodeURIComponent(a.id);
+      var idEsc = encodeURIComponent(a.id).replace(/'/g,'%27');
       var curS = a._lastS || 1;
       var curE = a._lastE || 0;
       var nextEpKey = 'e' + (curE + 1);
@@ -2736,4 +2736,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-          </html>
+</html>
