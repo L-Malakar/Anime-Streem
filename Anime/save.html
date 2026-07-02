@@ -8,6 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="ui.css">
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -529,6 +530,8 @@
     </div>
   </div>
 
+  <script src="settings.js"></script>
+  <script src="ui.js"></script>
   <script>
     /* ====== Security ====== */
     document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
@@ -843,15 +846,7 @@
     });
 
     /* ====== Sidebar Functions ====== */
-    (function(){
-      var sb=document.getElementById('sidebar'),btn=document.getElementById('sbToggle'),KEY='aw_sb_expanded';
-      function apply(v){sb.classList.toggle('expanded',v);btn.classList.toggle('active',v);document.body.classList.toggle('sb-expanded',v)}
-      function get(){return localStorage.getItem(KEY)==='true'}
-      function set(v){localStorage.setItem(KEY,v?'true':'false');apply(v)}
-      apply(get());
-      btn.addEventListener('click',function(e){e.stopPropagation();set(!get())});
-      window.toggleSidebar=function(){set(!get())};
-    })();
+    // Sidebar expand/collapse toggle is wired by ui.js via AWSettings.sidebar
 
     function setSbActive(btn){
       document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active')});
@@ -966,194 +961,12 @@
       }).join('');
     }
 
-    /* ====== Theme Toggle ====== */
-    (function(){
-      var icon = document.getElementById('themeIcon');
-      var select = document.getElementById('themeSelect');
-      var themeMeta = document.querySelector('meta[name="theme-color"]');
-      var ICONS={'default':'fa-circle-half-stroke','light':'fa-sun','dark':'fa-moon'};
-      var META={'default':'#0a0a0a','light':'#ffffff','dark':'#141414'};
-
-      function applyTheme(t){
-        document.documentElement.classList.remove('light','dark');
-        if(t==='light'||t==='dark') document.documentElement.classList.add(t);
-        icon.innerHTML='<i class="fas '+ICONS[t]+'"></i>';
-        if(themeMeta) themeMeta.setAttribute('content',META[t]);
-        if(select) select.value=t;
-      }
-
-      function getTheme(){
-        var stored=localStorage.getItem('aw_theme');
-        return(stored==='light'||stored==='dark'||stored==='default')?stored:'default';
-      }
-
-      applyTheme(getTheme());
-
-      window.setTheme = function(t){
-        localStorage.setItem('aw_theme',t);
-        applyTheme(t);
-        var label=t==='light'?'Light mode enabled':t==='dark'?'Dark mode enabled':'Default mode enabled';
-        showToast(label,'info');
-      };
-    })();
-
-    /* ====== Nav Search Toggle ====== */
-    (function(){
-      var toggle = document.getElementById('navSearchToggle');
-      var sbBtn = document.querySelector('#sidebar .sb-btn[data-sb="search"]');
-      var mobileSearchBtn = document.getElementById('mobileSearchOpenBtn');
-
-      function isDesktop(){ return window.innerWidth >= 1024; }
-      function sKey(){ return isDesktop() ? 'aw_nav_search_d' : 'aw_nav_search_m'; }
-      function sDef(){ return isDesktop() ? false : true; }
-
-      function applyNavSearch(show){
-        if(show){
-          toggle.classList.add('active');
-          if(sbBtn) sbBtn.style.display = '';
-          if(mobileSearchBtn) mobileSearchBtn.style.display = '';
-        } else {
-          toggle.classList.remove('active');
-          if(sbBtn) sbBtn.style.display = 'none';
-          if(mobileSearchBtn) mobileSearchBtn.style.display = 'none';
-        }
-      }
-
-      function getNavSearch(){
-        var stored = localStorage.getItem(sKey());
-        if(stored === null) return sDef();
-        return stored === 'true';
-      }
-
-      applyNavSearch(getNavSearch());
-
-      window.toggleNavSearch = function(){
-        var current = getNavSearch();
-        var next = !current;
-        localStorage.setItem(sKey(), next ? 'true' : 'false');
-        applyNavSearch(next);
-        showToast(next ? 'Search button shown' : 'Search button hidden', 'info');
-      };
-    })();
-
-    /* ====== Notification Position Toggle ====== */
-    (function(){
-      var toggle = document.getElementById('notifToggle');
-      var navBtn = document.getElementById('notifBtn');
-      var sbBtn = document.getElementById('sbNotifBtn');
-      var item = document.getElementById('notifSettingsItem');
-
-      function isDesktop(){ return window.innerWidth >= 1024; }
-      function nKey(){ return 'aw_notif_top'; }
-      function nDef(){ return true; }
-
-      function applyNotifPos(onTop){
-        if(!isDesktop()){
-          if(navBtn) navBtn.style.display = '';
-          if(sbBtn) sbBtn.style.display = 'none';
-          if(toggle) toggle.classList.add('active');
-          if(item) item.style.display = 'none';
-          return;
-        }
-        if(item) item.style.display = '';
-        if(onTop){
-          if(navBtn) navBtn.style.display = '';
-          if(sbBtn) sbBtn.style.display = 'none';
-          if(toggle) toggle.classList.add('active');
-        } else {
-          if(navBtn) navBtn.style.display = 'none';
-          if(sbBtn) sbBtn.style.display = '';
-          if(toggle) toggle.classList.remove('active');
-        }
-      }
-
-      function getNotifPos(){
-        var stored = localStorage.getItem(nKey());
-        if(stored === null) return nDef();
-        return stored === 'true';
-      }
-
-      applyNotifPos(getNotifPos());
-
-      window.toggleNotifPos = function(){
-        var current = getNotifPos();
-        var next = !current;
-        localStorage.setItem(nKey(), next ? 'true' : 'false');
-        applyNotifPos(next);
-        showToast(next ? 'Notification moved to top bar' : 'Notification moved to sidebar', 'info');
-      };
-
-      window.addEventListener('resize', function(){
-        applyNotifPos(getNotifPos());
-      });
-    })();
+    // Theme, nav-search visibility, and notification position are owned by
+    // settings.js (state) and ui.js (DOM application) — no per-page code needed.
 
     /* ====== Random Button Long Press ====== */
-    var randomLPTimer = null, randomConfirming = false;
-
-    function isDesktop(){ return window.innerWidth >= 1024; }
-    function rKey(){ return 'aw_nav_random'; }
-    function rDef(){ return false; }
-    function isRandomAdded(){
-      var stored = localStorage.getItem(rKey());
-      if(stored === null) return rDef();
-      return stored === 'true';
-    }
-
-    function applyRandomBtn(show){
-      var mobileRandomBtn = document.getElementById('mobileRandomBtn');
-      var sbRandomBtn = document.getElementById('sbRandomBtn');
-      if(mobileRandomBtn){
-        mobileRandomBtn.style.display = show ? '' : 'none';
-      }
-      if(sbRandomBtn){
-        sbRandomBtn.style.display = show ? '' : 'none';
-      }
-    }
-
-    function initRandomBtn(){
-      applyRandomBtn(isRandomAdded());
-    }
-
-    function startRandomLongPress(e){
-      if(e.button !== 0) return;
-      randomConfirming = false;
-      var isAdded = isRandomAdded();
-      randomLPTimer = setTimeout(function(){
-        randomConfirming = true;
-        var item = document.getElementById('randomSettingsItem');
-        item.classList.add('confirming', 'random-active');
-        var confirmP = item.querySelector('.st-random-confirm p');
-        confirmP.textContent = isAdded ? 'Remove Shortcut?' : 'Add Shortcut?';
-        item.querySelector('.st-yes').onclick = function(ev){
-          ev.stopPropagation();
-          hideRandomConfirm();
-          if(isAdded){
-            localStorage.removeItem(rKey());
-            applyRandomBtn(false);
-            showToast('Random button removed', 'info');
-          } else {
-            localStorage.setItem(rKey(), 'true');
-            applyRandomBtn(true);
-            showToast('Random button added', 'success');
-          }
-        };
-      }, 500);
-    }
-
-    function cancelRandomLongPress(){
-      clearTimeout(randomLPTimer);
-    }
-
-    function hideRandomConfirm(){
-      randomConfirming = false;
-      var item = document.getElementById('randomSettingsItem');
-      if(item){
-        item.classList.remove('confirming', 'random-active');
-      }
-    }
-
-    /* ====== Popstate for Settings ====== */
+    // rKey/isRandomAdded/applyRandomBtn/initRandomBtn/startRandomLongPress/
+    // cancelRandomLongPress/hideRandomConfirm now come from settings.js + ui.js.
     window.addEventListener('popstate', function(e){
       if(isClosingOverlay) return;
       var st = document.getElementById('settingsOverlay');
@@ -1272,4 +1085,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-  </html>
+</html>
