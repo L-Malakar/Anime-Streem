@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0a">
   <title>Anime Details — AnimeWave</title>
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="ui.css">
   <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -207,6 +210,21 @@
 
     @media (max-width:640px){.poster-orb{width:300px;height:300px}}
     @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
+
+    /* ── Shared chrome (sidebar toggle / settings backdrop / mobile extra btns) ── */
+    #sbToggle{width:36px;height:36px;border-radius:8px;border:none;background:none;cursor:pointer;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;padding:9px;transition:background 0.2s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+    #sbToggle:hover{background:#1a1a1a}
+    #sbToggle span{display:block;width:18px;height:2px;background:#f0f0f0;border-radius:1px;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);transform-origin:center}
+    #sbToggle.active span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+    #sbToggle.active span:nth-child(2){opacity:0;transform:scaleX(0)}
+    #sbToggle.active span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+    @media(min-width:1024px){#sbToggle{display:flex}}
+    #settingsBackdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);opacity:0;pointer-events:none;transition:opacity 0.3s ease;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+    #settingsBackdrop.show{opacity:1;pointer-events:auto}
+    @media(max-width:1023px){#settingsBackdrop{display:none!important}}
+    @media(max-width:1023px){ #mobileExtraBtns{display:flex} }
+    @media(min-width:1024px){ #mobileExtraBtns{display:none!important} }
+    @media(max-width:1023px){footer{padding-bottom:5rem!important}}
   </style>
 </head>
 <body class="min-h-screen">
@@ -251,27 +269,199 @@
   </div>
 
   <nav id="mainNav" class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border" style="opacity:0;transition:opacity 0.4s ease">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <button onclick="history.back()" class="back-btn w-10 h-10 flex items-center justify-center rounded-full" aria-label="Go back" title="Go back (Alt+Left)">
-          <i class="fas fa-arrow-left text-aw-muted text-sm"></i>
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+      <button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+        <span class="font-display text-aw-fg text-lg">AnimeWave</span>
+      </a>
+      <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
+      <span id="pageTopbarTitle" class="text-aw-muted text-sm hidden sm:block font-medium truncate"></span>
+      <div id="mobileExtraBtns" class="shrink-0 items-center gap-1 lg:hidden">
+        <button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()">
+          <i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
         </button>
-        <a href="index.html" class="flex items-center gap-2 shrink-0 ml-1">
-          <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
-          <span class="font-display text-aw-fg text-lg hidden sm:block">AnimeWave</span>
-        </a>
+        <button id="mobileRandomBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group hidden" title="Random Anime" onclick="goRandom()">
+          <i class="fas fa-dice text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        </button>
       </div>
-      <div class="flex items-center gap-1">
-        <button id="shareBtnNav" onclick="shareAnime()" class="shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors" title="Share">
-          <i class="fas fa-share-nodes text-aw-muted text-lg"></i>
+      <div class="ml-auto flex items-center gap-2">
+        <button id="notifBtn" onclick="window.location.href='notification.html'" class="shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">
+          <i class="fas fa-bell text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+          <span id="notifDot" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-aw-accent rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none" style="font-variant-numeric:tabular-nums"></span>
         </button>
-        <a href="save.html" class="relative shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors" title="Saved">
-          <i class="fas fa-bookmark text-aw-muted text-lg"></i>
-          <span id="saveBadge" class="hidden absolute -top-0.5 -right-0.5 w-5 h-5 bg-aw-accent rounded-full text-[10px] font-bold flex items-center justify-center text-white">0</span>
-        </a>
       </div>
     </div>
   </nav>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="flex flex-col gap-1 w-full px-2">
+      <button class="sb-btn" data-sb="home" onclick="window.location.href='index.html'" title="Home (H)">
+        <i class="fas fa-house"></i><span class="sb-label">Home</span><span class="sb-tip">Home (H)</span>
+      </button>
+      <button class="sb-btn" data-sb="search" onclick="openMobileSearch()" title="Search">
+        <i class="fas fa-magnifying-glass"></i><span class="sb-label">Search</span><span class="sb-tip">Search</span>
+      </button>
+      <button class="sb-btn" data-sb="shorts" onclick="handleSbShorts(this)" title="Shorts">
+        <i class="fas fa-clapperboard"></i><span class="sb-label">Shorts</span><span class="sb-tip">Shorts</span>
+      </button>
+      <button class="sb-btn" id="sbRandomBtn" data-sb="random" onclick="goRandom()" title="Random (R)">
+        <i class="fas fa-dice"></i><span class="sb-label">Random</span><span class="sb-tip">Random (R)</span>
+      </button>
+      <button class="sb-btn" data-sb="saved" onclick="window.location.href='save.html'" title="Saved (S)">
+        <i class="fas fa-bookmark"></i><span class="sb-label">Saved</span><span class="sb-tip">Saved (S)</span>
+        <span class="save-dirty-dot" id="sbSaveDirty"></span>
+      </button>
+      <button class="sb-btn" data-sb="profile" onclick="openComingSoon('Profile')" title="Profile">
+        <i class="fas fa-user"></i><span class="sb-label">Profile</span><span class="sb-tip">Profile</span>
+      </button>
+      <div class="sb-sep"></div>
+    </div>
+    <div class="flex-1"></div>
+    <div class="flex flex-col gap-1 w-full px-2 pb-2">
+      <div class="sb-sep"></div>
+      <button class="sb-btn" data-sb="notif" onclick="window.location.href='notification.html'" title="Notifications (N)" id="sbNotifBtn" style="display:none">
+        <i class="fas fa-bell"></i><span class="sb-label">Notifications</span><span class="sb-tip">Notifications (N)</span>
+      </button>
+      <button class="sb-btn" data-sb="settings" onclick="openSettings()" title="Settings">
+        <i class="fas fa-gear"></i><span class="sb-label">Settings</span><span class="sb-tip">Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Settings Backdrop -->
+  <div id="settingsBackdrop"></div>
+
+  <!-- Settings Overlay -->
+  <div id="settingsOverlay">
+    <div class="st-head">
+      <button class="st-back" onclick="closeSettings()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <h2>Settings</h2>
+    </div>
+    <div class="st-body">
+      <div class="st-group">
+        <div class="st-group-title">Data</div>
+        <div class="st-item" onclick="showStConfirm(this,'Clear all watch history?',confirmClearHistory)">
+          <div class="st-item-normal">
+            <div class="st-item-icon red"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Clear Watch History</div>
+              <div class="st-item-desc">Remove all recently watched anime</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-item-confirm">
+            <p>Clear all watch history?</p>
+            <button class="st-no" onclick="event.stopPropagation();hideStConfirm(this)">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+        <div class="st-item danger" onclick="showStConfirm(this,'Clear all saved animes?',confirmClearSaved)">
+          <div class="st-item-normal">
+            <div class="st-item-icon red"><i class="fas fa-bookmark"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Clear Saved List</div>
+              <div class="st-item-desc">Remove all bookmarked animes</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-item-confirm">
+            <p>Clear all saved animes?</p>
+            <button class="st-no" onclick="event.stopPropagation();hideStConfirm(this)">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+      </div>
+      <div class="st-group">
+        <div class="st-group-title">Personalization</div>
+        <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray" id="themeIcon"><i class="fas fa-circle-half-stroke"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Theme</div>
+          </div>
+          <select id="themeSelect" onchange="setTheme(this.value)" style="background:#2a2a2a;color:#f0f0f0;border:1px solid #3a3a3a;border-radius:8px;padding:6px 10px;font-size:0.8rem;font-family:'Outfit',sans-serif;cursor:pointer;outline:none">
+            <option value="default">Default</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+        <div class="st-item" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray"><i class="fas fa-magnifying-glass"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Search Button</div>
+            <div class="st-item-desc">Show search shortcut in <span class="hidden lg:inline">sidebar</span><span class="lg:hidden">top bar</span></div>
+          </div>
+          <button class="st-toggle" id="navSearchToggle" onclick="toggleNavSearch()"></button>
+        </div>
+        <div class="st-item" id="notifSettingsItem" style="cursor:default" onclick="event.stopPropagation()">
+          <div class="st-item-icon gray"><i class="fas fa-bell"></i></div>
+          <div class="st-item-text">
+            <div class="st-item-title">Notification!</div>
+            <div class="st-item-desc">Show notification in top bar.</div>
+          </div>
+          <button class="st-toggle" id="notifToggle" onclick="toggleNotifPos()"></button>
+        </div>
+        <div class="st-item" id="randomSettingsItem" onpointerdown="startRandomLongPress(event)" onpointerup="cancelRandomLongPress()" onpointerleave="cancelRandomLongPress()" onclick="if(!randomConfirming)goRandom()">
+          <div class="st-item-normal">
+            <div class="st-item-icon blue"><i class="fas fa-dice"></i></div>
+            <div class="st-item-text">
+              <div class="st-item-title">Random Anime</div>
+              <div class="st-item-desc">Discover a random title</div>
+            </div>
+            <i class="fas fa-chevron-right st-item-arrow"></i>
+          </div>
+          <div class="st-random-confirm">
+            <p id="randomConfirmText">Add Random button to top bar?</p>
+            <button class="st-no" onclick="event.stopPropagation();cancelRandomLongPress();hideRandomConfirm()">No</button>
+            <button class="st-yes">Yes</button>
+          </div>
+        </div>
+      </div>
+      <div class="st-group">
+        <div class="st-group-title">About</div>
+        <div class="st-about">
+          <img src="logo.PNG" alt="AnimeWave">
+          <h3>AnimeWave</h3>
+          <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
+          <span class="st-ver">v1.26x3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <div id="mobileNavBar">
+    <div class="flex items-stretch max-w-[500px] mx-auto">
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html'" title="Home" aria-label="Home">
+        <i class="fas fa-house mnav-icon"></i>
+        <span class="mnav-label">Home</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openMobileSearch()" title="Search" aria-label="Search">
+        <i class="fas fa-magnifying-glass mnav-icon"></i>
+        <span class="mnav-label">Search</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html?shorts=1'" title="Shorts" aria-label="Shorts">
+        <i class="fas fa-clapperboard mnav-icon"></i>
+        <span class="mnav-label">Shorts</span>
+      </button>
+      <button class="mnav-btn no-select relative" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
+        <span class="relative inline-flex items-center justify-center" style="width:35px;height:40px;">
+          <i class="fas fa-bookmark mnav-icon"></i>
+          <span class="save-dirty-dot" id="mnavSaveDirty"></span>
+        </span>
+        <span class="mnav-label">Save</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="openSettings()" title="Settings" aria-label="Settings">
+        <i class="fas fa-gear mnav-icon"></i>
+        <span class="mnav-label">Settings</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="mainWrap" class="lg:ml-[60px]">
 
   <section id="posterSection" class="relative overflow-hidden bg-aw-bg" style="min-height:calc(100vh - 4rem);padding-top:4rem;display:none">
     <img id="posterBg" src="" alt="" class="bg-enter absolute inset-0 w-full h-full object-cover object-center" style="will-change:transform">
@@ -296,36 +486,9 @@
 
   <section id="recSection" class="border-t border-aw-border relative z-10" style="display:none"></section>
 
-  <footer id="mainFooter" class="border-t border-aw-border relative z-10" style="display:none">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="sm:col-span-2 lg:col-span-1">
-          <div class="flex items-center gap-2 mb-3">
-            <img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-lg">
-            <span class="font-display text-lg text-aw-fg">AnimeWave</span>
-          </div>
-          <p class="text-aw-muted text-sm leading-relaxed max-w-xs">Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-        </div>
-        <div>
-          <h4 class="font-semibold text-aw-fg mb-3 text-sm uppercase tracking-wider">Navigate</h4>
-          <ul class="space-y-2.5 text-sm text-aw-muted">
-            <li><a href="index.html" class="footer-link flex items-center gap-2"><i class="fas fa-home text-xs w-4"></i> Home</a></li>
-            <li><a href="save.html" class="footer-link flex items-center gap-2"><i class="fas fa-bookmark text-xs w-4"></i> Saved List</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold text-aw-fg mb-3 text-sm uppercase tracking-wider">Shortcuts</h4>
-          <ul class="space-y-2.5 text-sm text-aw-muted">
-            <li class="flex items-center gap-2"><kbd class="inline-block px-1.5 py-0.5 rounded bg-aw-bg2 border border-aw-border text-[10px] font-mono">Ctrl+S</kbd> Save</li>
-          </ul>
-        </div>
-      </div>
-      <div class="border-t border-aw-border mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-aw-muted text-xs">
-        <p>AnimeWave &copy; 2025 — Built for anime lovers</p>
-        <p class="flex items-center gap-1.5">Made with <i class="fas fa-heart text-aw-accent text-[10px]"></i> for the community</p>
-      </div>
-    </div>
-  </footer>
+  <footer id="mainFooter" class="border-t border-aw-border relative z-10" style="display:none"></footer>
+
+  </div><!-- end #mainWrap -->
 
   <button id="backToTop" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-full bg-aw-accent text-white flex items-center justify-center shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-110 active:scale-95" aria-label="Back to top">
     <i class="fas fa-arrow-up text-sm"></i>
@@ -366,10 +529,12 @@
       return s.includes(id);
     }
     function updateSaveBadge() {
-      const b = document.getElementById('saveBadge');
       const c = getSaved().length;
-      if (c > 0) { b.textContent = c > 99 ? '99+' : c; b.classList.remove('hidden'); b.classList.add('flex'); }
-      else { b.classList.add('hidden'); b.classList.remove('flex'); }
+      const label = c > 99 ? '99+' : String(c);
+      const sb = document.getElementById('sbSaveDirty');
+      if (sb) { sb.textContent = c > 0 ? label : ''; sb.classList.toggle('show', c > 0); }
+      const mb = document.getElementById('mnavSaveDirty');
+      if (mb) { mb.textContent = c > 0 ? label : ''; mb.classList.toggle('show', c > 0); }
     }
 
     function getProgress(animeId) { try { return parseInt(localStorage.getItem('aw_prog_' + animeId) || '0'); } catch { return 0; } }
@@ -684,6 +849,8 @@
       const a = getAnime();
       if (!a) { window.location.href = 'index.html'; return; }
       document.title = `${a.name} — AnimeWave`;
+      const ptt = document.getElementById('pageTopbarTitle');
+      if (ptt) ptt.textContent = a.name;
       const saved = isSaved(a.id);
       aboutExpanded = false;
       recShuffledPool = [];
@@ -964,9 +1131,68 @@
       if (tag === 'INPUT' || tag === 'TEXTAREA') { if (e.key === 'Escape') document.activeElement.blur(); return; }
       if (e.key === 'ArrowLeft' && e.altKey) { e.preventDefault(); history.back(); }
       if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSave(); }
+      if (window.innerWidth < 1024) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleSidebar(); }
+      else if (e.key === 'h' || e.key === 'H') { e.preventDefault(); window.location.href = 'index.html'; }
     });
 
     loadData();
+
+    /* ====== Shared chrome wiring (settings overlay data actions, random, shorts) ====== */
+    window.openMobileSearch = function () { window.location.href = 'index.html'; };
+
+    window.showStConfirm = function (el, msg, action) {
+      document.querySelectorAll('.st-item.confirming').forEach(function (i) { i.classList.remove('confirming'); });
+      el.classList.add('confirming');
+      el.querySelector('.st-item-confirm p').textContent = msg;
+      el.querySelector('.st-item-confirm .st-yes').onclick = function (e) {
+        e.stopPropagation();
+        el.classList.remove('confirming');
+        action();
+      };
+    };
+    window.hideStConfirm = function (btn) { btn.closest('.st-item').classList.remove('confirming'); };
+    window.confirmClearHistory = function () {
+      try { localStorage.setItem('aw_history', '[]'); } catch (e) {}
+      showToast('Watch history cleared', 'success');
+    };
+    window.confirmClearSaved = function () {
+      localStorage.setItem('aw_saved', '[]');
+      showToast('Saved list cleared', 'success');
+      updateSaveBadge();
+    };
+
+    function openComingSoon(title) { showToast((title || 'Feature') + ' coming soon', 'info'); }
+    function handleSbShorts(btn) {
+      if (window.innerWidth >= 1024) { openComingSoon('Shorts'); setSbActive(btn); }
+      else { window.location.href = 'index.html?shorts=1'; }
+    }
+    window.goRandom = function () {
+      if (!allAnime.length) { showToast('Anime data not loaded yet', 'error'); return; }
+      const pool = allAnime.filter(a => !isUpcoming(a));
+      if (!pool.length) { showToast('No anime data available', 'error'); return; }
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      showToast(`Random pick: ${a.name}`, 'info');
+      setTimeout(() => { window.location.href = 'anime.html?id=' + encodeURIComponent(a.id); }, 600);
+    };
+    if (typeof initRandomBtn === 'function') initRandomBtn();
+
+    updateSaveBadge();
+
+    (function () {
+      function syncMnavHeight() {
+        var nav = document.getElementById('mobileNavBar');
+        if (!nav) return;
+        var h = nav.offsetHeight;
+        if (h > 0) document.documentElement.style.setProperty('--mnav-h', h + 'px');
+      }
+      syncMnavHeight();
+      window.addEventListener('resize', syncMnavHeight);
+      window.addEventListener('orientationchange', function () { setTimeout(syncMnavHeight, 200); });
+    })();
   </script>
+
+  <script src="settings.js"></script>
+  <script src="ui.js"></script>
 </body>
 </html>
