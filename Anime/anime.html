@@ -45,6 +45,8 @@
     .reveal-delay-3{transition-delay:0.24s}
 
     .poster-enter{animation:posterEnter 0.9s cubic-bezier(0.22,1,0.36,1) forwards}
+    @keyframes posterEnterFixed{from{opacity:0}to{opacity:1}}
+    .poster-enter-fixed{animation:posterEnterFixed 0.6s ease forwards}
     @keyframes posterEnter{from{opacity:0;transform:scale(0.88) translateY(40px)}to{opacity:1;transform:scale(1) translateY(0)}}
     .bg-enter{animation:bgEnter 1.2s ease forwards}
     @keyframes bgEnter{from{opacity:0;transform:scale(1.08)}to{opacity:1;transform:scale(1)}}
@@ -192,6 +194,7 @@
     #backToTop{transition:opacity 0.3s ease,transform 0.3s ease}
     #backToTop.show{opacity:1!important;pointer-events:auto!important;transform:translateY(0)!important}
     #backToTop:not(.show){transform:translateY(20px)!important}
+    @media(max-width:1023px){#backToTop{bottom:5rem}}
 
     #aw-miniplayer #aw-mp-video-wrap{height:200px;position:relative;overflow:hidden;transition:height 0.3s ease,opacity 0.3s ease}
     #aw-miniplayer #aw-mp-video-wrap img,#aw-miniplayer #aw-mp-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -268,7 +271,7 @@
     </div>
   </div>
 
-  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border" style="opacity:0;transition:opacity 0.4s ease">
+  <nav id="mainNav" class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
       <button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar">
         <span></span><span></span><span></span>
@@ -279,6 +282,13 @@
       </a>
       <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
       <span id="pageTopbarTitle" class="text-aw-muted text-sm hidden sm:block font-medium truncate"></span>
+      <div class="hidden lg:flex lg:flex-1 lg:max-w-xl lg:mx-auto relative" id="searchWrap">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-aw-muted text-sm z-10"></i>
+        <input id="searchInput" type="text" placeholder="Search animes..." autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border border-aw-border rounded-full pl-10 pr-16 py-2 text-sm text-aw-fg placeholder-aw-muted focus:outline-none focus:border-aw-accent focus:ring-1 focus:ring-aw-accent/30 transition-all">
+        <span id="searchHint" class="search-hint">/</span>
+        <button id="searchClear" class="search-clear" aria-label="Clear search"><i class="fas fa-xmark"></i></button>
+        <div id="searchDropdown" class="search-dropdown"></div>
+      </div>
       <div id="mobileExtraBtns" class="shrink-0 items-center gap-1 lg:hidden">
         <button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()">
           <i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
@@ -426,9 +436,29 @@
           <img src="logo.PNG" alt="AnimeWave">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <span class="st-ver">v1.26x3</span>
+          <p>Last Updated: <span class="st-ver">V1.26x4.5</span></p>
+          <p>Last Updated on: <span class="st-ver">03:07:2026</span></p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Mobile Search Overlay -->
+  <div id="mobileSearchOverlay">
+    <div class="ms-head">
+      <button class="ms-back" onclick="closeMobileSearch()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <div class="ms-field">
+        <i class="fas fa-search ms-si"></i>
+        <input id="mobileSearchInput" type="text" placeholder="Search animes... (Enter to search)" autocomplete="off" spellcheck="false">
+        <button id="mobileSearchClear" class="ms-x" aria-label="Clear"><i class="fas fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="mobileSearchSugs" class="ms-sugs"></div>
+    <div id="mobileSearchBody" class="ms-body">
+      <div id="mobileSearchEmpty" class="text-center py-16 px-6">
+        <p class="text-aw-muted text-sm leading-relaxed">Search by title, genre, studio, or year</p>
+      </div>
+      <div id="mobileSearchGrid" class="flex flex-col gap-1"></div>
     </div>
   </div>
 
@@ -470,12 +500,13 @@
     <div class="vignette"></div>
     <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
       <div class="flex flex-col items-center">
-        <div class="poster-enter poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" onclick="scrollToContent()">
-          <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onerror="handleImgError(this)">
-        </div>
-        <div id="posterQuickBtn" class="mt-4"></div>
+        <div class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
         <div id="posterWatchWrap" class="mt-5"></div>
       </div>
+    </div>
+    <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
+      <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onerror="handleImgError(this)" onclick="scrollToContent()">
+      <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:2"></div>
     </div>
     <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-aw-bg to-transparent z-[4] pointer-events-none"></div>
   </section>
@@ -605,18 +636,116 @@
 
     function initParallax() {
       const bg = document.getElementById('posterBg'), section = document.getElementById('posterSection');
+      const fg = document.getElementById('posterFg');
+      const watchWrap = document.getElementById('posterWatchWrap');
+      const recSection = document.getElementById('recSection');
+      const sidebar = document.getElementById('sidebar');
       if (!bg || !section) return;
+
+      // ── Tunables: change these to restyle the whole morph effect ──
+      function computeCornerX() {
+        if (window.innerWidth < 1024) return 20;
+        return sidebar ? sidebar.getBoundingClientRect().right + 20 : 80;
+      }
+      const CFG = {
+        cornerX: computeCornerX(),   // final left position (px) from screen edge
+        cornerY: 70,                   // final top position (px), clears the fixed navbar
+        cornerScale: 0.5,              // final scale of the poster once docked
+        bgParallax: 0.15,   // background drift speed while scrolling
+        bgMaxScale: 1.08,   // cap on the background zoom-in
+        fadeStart: 0.55,    // progress at which the big watch button starts fading out
+        fadeEnd: 0.9         // progress at which the big watch button is fully gone
+      };
+
+      // ease-out for a snappier, less linear feel
+      const ease = t => 1 - Math.pow(1 - t, 3);
+
+      // cache poster dimensions; only recompute on resize (avoids layout thrash on scroll)
+      let fgW = 0, fgH = 0;
+      function measure() {
+        if (!fg) return;
+        fgW = fg.offsetWidth;
+        fgH = fg.offsetHeight;
+      }
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function clamp01(v) { return Math.min(Math.max(v, 0), 1); }
+
+      function updateFg(rect) {
+        if (!fg) return;
+        // Once the section has scrolled past (rect.bottom <= 0), keep the poster
+        // docked in the corner instead of hiding it — rawProgress just clamps to 1.
+        const rawProgress = rect.bottom <= 0 ? 1 : clamp01(-rect.top / rect.height);
+
+        fg.style.display = '';
+        // Once "You Might Also Like" reaches the docked poster's height, push the
+        // poster up by the same amount the section has intruded, so it looks like
+        // it scrolls away with the page instead of just vanishing.
+        let exitOffset = 0;
+        if (recSection) {
+          const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
+          const recTop = recSection.getBoundingClientRect().top;
+          if (recTop <= dockedBottom) exitOffset = dockedBottom - recTop;
+        }
+        const progress = ease(rawProgress);
+
+        const centerX = window.innerWidth / 2 - fgW / 2;
+        const centerY = window.innerHeight / 2 - fgH / 2;
+
+        const x = lerp(centerX, CFG.cornerX, progress);
+        const y = lerp(centerY, CFG.cornerY, progress) - exitOffset;
+        const scale = lerp(1, CFG.cornerScale, progress);
+
+        fg.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+
+        // Only the big centered CTA fades away; the pill button is inside the
+        // poster itself now, so it docks and scales together with the image.
+        const fade = clamp01((rawProgress - CFG.fadeStart) / (CFG.fadeEnd - CFG.fadeStart));
+        if (watchWrap) {
+          watchWrap.style.opacity = String(1 - fade);
+          watchWrap.style.transform = `translateY(${fade * -12}px) scale(${1 - fade * 0.06})`;
+          watchWrap.style.pointerEvents = fade > 0.5 ? 'none' : 'auto';
+        }
+      }
+
       let ticking = false;
-      window.addEventListener('scroll', () => {
+      function onScroll() {
         if (!ticking) {
           requestAnimationFrame(() => {
             const rect = section.getBoundingClientRect();
-            if (rect.bottom > 0) bg.style.transform = `scale(1.05) translateY(${-rect.top * 0.15}px)`;
+            if (rect.bottom > 0) {
+              const bgScale = Math.min(CFG.bgMaxScale, 1 + CFG.bgParallax * 0.1);
+              bg.style.transform = `scale(${bgScale}) translateY(${-rect.top * CFG.bgParallax}px)`;
+            }
+            updateFg(rect);
             ticking = false;
           });
           ticking = true;
         }
-      }, { passive: true });
+      }
+
+      measure();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', () => {
+        CFG.cornerX = computeCornerX();
+        measure(); onScroll();
+      });
+
+      // Sidebar width changes on toggle (with a CSS transition), so keep
+      // re-syncing cornerX for ~350ms after each click to follow the animation.
+      const sbToggle = document.getElementById('sbToggle');
+      if (sbToggle) {
+        sbToggle.addEventListener('click', () => {
+          const start = performance.now();
+          function follow(t) {
+            CFG.cornerX = computeCornerX();
+            onScroll();
+            if (t - start < 350) requestAnimationFrame(follow);
+          }
+          requestAnimationFrame(follow);
+        });
+      }
+      onScroll(); // set correct initial position/scale immediately, before any scroll happens
     }
 
     function initScrollReveal() {
@@ -835,7 +964,6 @@
       skel.style.opacity = '0';
       setTimeout(() => {
         skel.style.display = 'none';
-        document.getElementById('mainNav').style.opacity = '1';
         document.getElementById('posterSection').style.display = '';
         document.getElementById('glowLine').style.display = '';
         document.getElementById('mainContent').style.display = '';
@@ -1139,7 +1267,150 @@
     loadData();
 
     /* ====== Shared chrome wiring (settings overlay data actions, random, shorts) ====== */
-    window.openMobileSearch = function () { window.location.href = 'index.html'; };
+    (function () {
+      var msTimer = null, msHlIdx = -1, msSugs_arr = [];
+      var msInput = document.getElementById('mobileSearchInput');
+      var msClear = document.getElementById('mobileSearchClear');
+      var msSugsEl = document.getElementById('mobileSearchSugs');
+      var msEmpty = document.getElementById('mobileSearchEmpty');
+      var msGrid = document.getElementById('mobileSearchGrid');
+      var msOverlay = document.getElementById('mobileSearchOverlay');
+
+      function highlightMatch(text, query) {
+        if (!query) return text;
+        var idx = text.toLowerCase().indexOf(query.toLowerCase());
+        if (idx === -1) return text;
+        return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+      }
+
+      function suggestionRow(a, q) {
+        var dn = a.name.length > 50 ? a.name.slice(0, 50) + '...' : a.name;
+        var mp = [];
+        if (a.year) mp.push(a.year);
+        if (a.genre && a.genre.length) mp.push(a.genre[0]);
+        if (a.episodes) mp.push(a.episodes + ' Ep');
+        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" loading="lazy" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+      }
+
+      window.openMobileSearch = function () {
+        msOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () { msInput.focus(); }, 350);
+      };
+      window.closeMobileSearch = function () {
+        msOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(function () {
+          msInput.value = ''; msClear.classList.remove('show'); msSugsEl.innerHTML = '';
+          msEmpty.classList.remove('hidden'); msGrid.innerHTML = '';
+          msSugs_arr = []; msHlIdx = -1;
+        }, 350);
+      };
+
+      function msFilter() {
+        var q = msInput.value.trim().toLowerCase();
+        msGrid.innerHTML = '';
+        if (!q) { msEmpty.classList.remove('hidden'); return; }
+        msEmpty.classList.add('hidden');
+        var f = allAnime.filter(function (a) {
+          var h = [a.name, a.altName, a.studio, a.year].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+          return h.includes(q);
+        });
+        if (!f.length) { msGrid.innerHTML = '<div class="text-center py-16 px-6"><p class="text-aw-fg text-base font-semibold mb-2">No Results</p><p class="text-aw-muted text-sm">Try different keywords or check spelling</p></div>'; return; }
+        msGrid.innerHTML = f.map(function (a) { return suggestionRow(a, q); }).join('');
+        msGrid.querySelectorAll('.search-suggestion').forEach(function (el) {
+          el.addEventListener('click', function () { window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid); });
+        });
+      }
+
+      function msShowSugs(q) {
+        if (!q || q.length < 1) { msSugsEl.innerHTML = ''; msSugs_arr = []; msHlIdx = -1; return; }
+        var lq = q.toLowerCase().trim();
+        var m = allAnime.filter(function (a) {
+          var h = [a.name, a.altName, a.studio].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+          return h.includes(lq);
+        }).slice(0, 8);
+        msSugs_arr = m; msHlIdx = -1;
+        msSugsEl.innerHTML = m.map(function (a) { return suggestionRow(a, lq); }).join('');
+        msSugsEl.querySelectorAll('.search-suggestion').forEach(function (el) {
+          el.addEventListener('click', function () { window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid); });
+        });
+      }
+
+      msInput.addEventListener('input', function () {
+        var v = msInput.value;
+        msClear.classList.toggle('show', v.length > 0);
+        clearTimeout(msTimer);
+        msTimer = setTimeout(function () { msShowSugs(v); }, 150);
+      });
+      msClear.addEventListener('click', function () {
+        msInput.value = ''; msClear.classList.remove('show'); msSugsEl.innerHTML = '';
+        msEmpty.classList.remove('hidden'); msGrid.innerHTML = ''; msInput.focus();
+      });
+      msInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          msSugsEl.innerHTML = '';
+          msFilter();
+        } else if (e.key === 'Escape') { closeMobileSearch(); }
+      });
+
+      // Desktop search bar: suggestions in-page, Enter navigates to index.html results
+      var searchInput = document.getElementById('searchInput');
+      var searchDropdown = document.getElementById('searchDropdown');
+      var searchClear = document.getElementById('searchClear');
+      var searchHint = document.getElementById('searchHint');
+      if (searchInput) {
+        var highlightedIndex = -1, currentSuggestions = [];
+
+        function showSuggestions(query) {
+          if (!query || query.length < 1) { closeSuggestions(); return; }
+          var q = query.toLowerCase().trim();
+          var matches = allAnime.filter(function (a) {
+            var hay = [a.name, a.altName, a.studio].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+            return hay.includes(q);
+          }).slice(0, 8);
+          if (!matches.length) { closeSuggestions(); return; }
+          currentSuggestions = matches; highlightedIndex = -1;
+          searchDropdown.innerHTML = matches.map(function (a) { return suggestionRow(a, q); }).join('');
+          searchDropdown.classList.add('open');
+          searchDropdown.querySelectorAll('.search-suggestion').forEach(function (el) {
+            el.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            el.addEventListener('click', function () {
+              closeSuggestions();
+              window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid);
+            });
+          });
+        }
+        function closeSuggestions() { searchDropdown.classList.remove('open'); highlightedIndex = -1; currentSuggestions = []; }
+
+        searchInput.addEventListener('input', function () {
+          var val = searchInput.value;
+          searchClear.classList.toggle('show', val.length > 0);
+          searchHint.classList.toggle('hide', val.length > 0);
+          showSuggestions(val);
+        });
+        searchClear.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        searchClear.addEventListener('click', function () {
+          searchInput.value = ''; searchClear.classList.remove('show'); searchHint.classList.remove('hide');
+          closeSuggestions(); searchInput.focus();
+        });
+        searchInput.addEventListener('keydown', function (e) {
+          var isOpen = searchDropdown.classList.contains('open');
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (isOpen && highlightedIndex >= 0 && currentSuggestions[highlightedIndex]) {
+              closeSuggestions();
+              window.location.href = 'anime.html?id=' + encodeURIComponent(currentSuggestions[highlightedIndex].id);
+              return;
+            }
+            closeSuggestions();
+            window.location.href = 'index.html?q=' + encodeURIComponent(searchInput.value.trim());
+          } else if (e.key === 'Escape') { searchInput.blur(); closeSuggestions(); }
+        });
+        document.addEventListener('click', function (e) { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
+      }
+    })();
 
     window.showStConfirm = function (el, msg, action) {
       document.querySelectorAll('.st-item.confirming').forEach(function (i) { i.classList.remove('confirming'); });
