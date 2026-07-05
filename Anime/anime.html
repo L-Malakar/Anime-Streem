@@ -140,6 +140,9 @@
     #aboutText.expanded{display:block;-webkit-line-clamp:unset;line-clamp:unset;overflow:visible}
     #readMoreBtn{display:none;cursor:pointer}
     #readMoreBtn.visible{display:inline-flex}
+    #titleText.expanded{display:block;-webkit-line-clamp:unset;line-clamp:unset;overflow:visible}
+    #titleReadMoreBtn{display:none;cursor:pointer}
+    #titleReadMoreBtn.visible{display:inline-flex}
 
     .rec-card{transition:all 0.25s ease}
     .rec-card:hover{transform:translateY(-4px)}
@@ -281,7 +284,6 @@
         <span class="font-display text-aw-fg text-lg">AnimeWave</span>
       </a>
       <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
-      <span id="pageTopbarTitle" class="text-aw-muted text-sm hidden sm:block font-medium truncate"></span>
       <div class="hidden lg:flex lg:flex-1 lg:max-w-xl lg:mx-auto relative" id="searchWrap">
         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-aw-muted text-sm z-10"></i>
         <input id="searchInput" type="text" placeholder="Search animes..." autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border border-aw-border rounded-full pl-10 pr-16 py-2 text-sm text-aw-fg placeholder-aw-muted focus:outline-none focus:border-aw-accent focus:ring-1 focus:ring-aw-accent/30 transition-all">
@@ -436,8 +438,8 @@
           <img src="logo.PNG" alt="AnimeWave">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <p>Last Updated: <span class="st-ver">V1.26x4.5</span></p>
-          <p>Last Updated on: <span class="st-ver">03:07:2026</span></p>
+          <p>Last Updated: <span class="st-ver">V1.26x4.6</span></p>
+          <p>Last Updated on: <span class="st-ver">04:07:2026</span></p>
         </div>
       </div>
     </div>
@@ -536,7 +538,7 @@
     const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420' fill='%231a1a1a'%3E%3Crect width='300' height='420'/%3E%3Crect x='120' y='170' width='60' height='80' rx='4' fill='%232a2a2a'/%3E%3Ccircle cx='144' cy='190' r='8' fill='%23333'/%3E%3Cpolygon points='139,210 139,230 156,220' fill='%23333'/%3E%3Ctext x='150' y='280' text-anchor='middle' fill='%23333' font-family='sans-serif' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
     function handleImgError(img) { if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = IMG_FALLBACK; } }
 
-    function showToast(msg, type = 'info') {
+    function showToast(msg, type = 'info', action = null) {
       const c = document.getElementById('toastContainer');
       const existing = c.querySelectorAll('.toast:not(.toast-out)');
       if (existing.length >= 3) existing[0].remove();
@@ -544,9 +546,13 @@
       const icons = { info: 'fa-circle-info', success: 'fa-circle-check', error: 'fa-circle-xmark' };
       const colors = { info: 'border-aw-accent', success: 'border-green-500', error: 'border-red-500' };
       t.className = `toast border-l-4 ${colors[type] || colors.info} bg-aw-card rounded-lg px-4 py-3 text-sm text-aw-fg shadow-2xl max-w-xs flex items-center gap-3`;
-      t.innerHTML = `<i class="fas ${icons[type] || icons.info} ${type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-aw-accent'} text-base shrink-0"></i><span>${msg}</span>`;
+      t.innerHTML = `<i class="fas ${icons[type] || icons.info} ${type === 'success' ? 'text-green-500' : type === 'error' ? 'text-red-500' : 'text-aw-accent'} text-base shrink-0"></i><span class="flex-1">${msg}</span>${action ? `<button class="toast-undo-btn text-aw-accentL font-semibold text-xs shrink-0 hover:text-aw-accent transition-colors">${action.label}</button>` : ''}`;
       c.appendChild(t);
-      setTimeout(() => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 300); }, 2800);
+      const dismiss = () => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 300); };
+      const timer = setTimeout(dismiss, 2800);
+      if (action) {
+        t.querySelector('.toast-undo-btn').onclick = () => { clearTimeout(timer); action.onClick(); dismiss(); };
+      }
     }
 
     function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch { return []; } }
@@ -592,18 +598,31 @@
     function checkAboutOverflow() {
       const el = document.getElementById('aboutText'), btn = document.getElementById('readMoreBtn');
       if (!el || !btn) return;
-      const wasExpanded = el.classList.contains('expanded');
-      if (!wasExpanded) { el.style.display = 'block'; el.style.webkitLineClamp = 'unset'; el.style.lineClamp = 'unset'; el.style.overflow = 'visible'; }
-      const fullH = el.scrollHeight;
-      if (!wasExpanded) { el.style.display = ''; el.style.webkitLineClamp = ''; el.style.lineClamp = ''; el.style.overflow = ''; }
-      if (!wasExpanded && fullH > el.scrollHeight + 2) btn.classList.add('visible');
-      else if (!wasExpanded) btn.classList.remove('visible');
+      if (el.classList.contains('expanded')) return;
+      if (el.scrollHeight > el.clientHeight + 2) btn.classList.add('visible');
+      else btn.classList.remove('visible');
     }
     function toggleAbout() {
       const el = document.getElementById('aboutText'), btn = document.getElementById('readMoreBtn');
       if (!el || !btn) return;
       aboutExpanded = !aboutExpanded;
       if (aboutExpanded) { el.classList.add('expanded'); btn.innerHTML = '<i class="fas fa-chevron-up text-[10px] mr-1"></i> Show less'; }
+      else { el.classList.remove('expanded'); btn.innerHTML = 'Read more <i class="fas fa-chevron-down text-[10px] ml-1"></i>'; }
+    }
+
+    let titleExpanded = false;
+    function checkTitleOverflow() {
+      const el = document.getElementById('titleText'), btn = document.getElementById('titleReadMoreBtn');
+      if (!el || !btn) return;
+      if (el.classList.contains('expanded')) return;
+      if (el.scrollHeight > el.clientHeight + 2) btn.classList.add('visible');
+      else btn.classList.remove('visible');
+    }
+    function toggleTitle() {
+      const el = document.getElementById('titleText'), btn = document.getElementById('titleReadMoreBtn');
+      if (!el || !btn) return;
+      titleExpanded = !titleExpanded;
+      if (titleExpanded) { el.classList.add('expanded'); btn.innerHTML = '<i class="fas fa-chevron-up text-[10px] mr-1"></i> Show less'; }
       else { el.classList.remove('expanded'); btn.innerHTML = 'Read more <i class="fas fa-chevron-down text-[10px] ml-1"></i>'; }
     }
 
@@ -628,8 +647,8 @@
       return a;
     }
 
-    function epDuration(animeId, epNum) {
-      let hash = 0; const str = animeId + '-' + epNum;
+    function epDuration(animeId, epNum, seasonKey) {
+      let hash = 0; const str = animeId + '-' + (seasonKey || 's1') + '-' + epNum;
       for (let i = 0; i < str.length; i++) { hash = ((hash << 5) - hash) + str.charCodeAt(i); hash |= 0; }
       return 21 + Math.abs(hash % 6);
     }
@@ -946,15 +965,18 @@
     function getAllEpisodes(a) {
       const all = [];
       const links = a.episodeLinks || {};
-      for (const [sk, eps] of Object.entries(links)) {
-        if (!eps || typeof eps !== 'object') continue;
+      const seasonKeys = Object.keys(links);
+      seasonKeys.forEach((sk, si) => {
+        const eps = links[sk];
+        if (!eps || typeof eps !== 'object') return;
         for (const [ek, url] of Object.entries(eps)) {
           if (url && typeof url === 'string' && url.trim()) {
-            all.push({ sk, ek, num: parseInt(ek.replace('e', '')), url: url.trim() });
+            all.push({ sk, si, ek, num: parseInt(ek.replace('e', '')), url: url.trim() });
           }
         }
-      }
-      all.sort((a, b) => a.num - b.num);
+      });
+      all.sort((x, y) => x.si - y.si || x.num - y.num);
+      all.forEach((e, i) => { e.gi = i + 1; });
       return all;
     }
 
@@ -973,6 +995,8 @@
       }, 400);
     }
 
+    let currentAnime = null;
+    let currentSeasonKey = null;
     function renderPage() {
       const a = getAnime();
       if (!a) { window.location.href = 'index.html'; return; }
@@ -981,6 +1005,7 @@
       if (ptt) ptt.textContent = a.name;
       const saved = isSaved(a.id);
       aboutExpanded = false;
+      titleExpanded = false;
       recShuffledPool = [];
       currentRecId = null;
 
@@ -991,6 +1016,8 @@
       document.getElementById('posterImg').onerror = handleImgError;
 
       const seasonKeys = Object.keys(a.episodeLinks || {});
+      const sameAnime = currentAnime && currentAnime.id === a.id;
+      const activeSk = (sameAnime && currentSeasonKey && seasonKeys.includes(currentSeasonKey)) ? currentSeasonKey : (seasonKeys[0] || 's1');
       const totalEps = countEpisodes(a);
       const hasEps = totalEps > 0;
       const progress = getProgress(a.id);
@@ -1097,7 +1124,10 @@
               ${allFinished ? '<span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-bold rounded-lg border border-green-500/30"><i class="fas fa-trophy text-xs mr-1"></i>COMPLETED</span>' : ''}
             </div>
 
-            <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl text-aw-fg mb-2 leading-tight line-clamp-2 reveal reveal-delay-1">${a.name}</h1>
+            <h1 id="titleText" class="font-display text-3xl sm:text-4xl lg:text-5xl text-aw-fg mb-2 leading-tight line-clamp-2 reveal reveal-delay-1">${a.name}</h1>
+            <button id="titleReadMoreBtn" onclick="toggleTitle()" class="mb-2 -mt-1 inline-flex items-center gap-1 text-aw-accent hover:text-aw-accentL text-sm font-medium transition-colors">
+              Read more <i class="fas fa-chevron-down text-[10px]"></i>
+            </button>
             ${a.altName ? `<p class="text-aw-muted text-base mb-6 reveal reveal-delay-1">${a.altName}</p>` : ''}
 
             ${infoCardsHTML}
@@ -1149,26 +1179,28 @@
                 </div>
               </div>
               ${hasEps ? `<div class="progress-track"><div class="progress-fill" style="width:${progressPct}%"></div></div>` : ''}
-              ${hasEps && progress > 0 ? `
+              ${hasEps && (!allFinished || progress > 0) ? `
               <div class="flex border-b border-aw-border">
+                ${!allFinished ? `
                 <button onclick="markAllWatched()" class="flex-1 py-2 text-[11px] font-medium text-aw-muted hover:text-green-400 transition-colors flex items-center justify-center gap-1">
                   <i class="fas fa-check-double text-[9px]"></i> Mark all watched
-                </button>
-                <div class="w-px bg-aw-border"></div>
+                </button>` : ''}
+                ${!allFinished && progress > 0 ? `<div class="w-px bg-aw-border"></div>` : ''}
+                ${progress > 0 ? `
                 <button onclick="resetProgress()" class="flex-1 py-2 text-[11px] font-medium text-aw-muted hover:text-aw-accent transition-colors flex items-center justify-center gap-1">
                   <i class="fas fa-rotate-left text-[9px]"></i> Reset
-                </button>
+                </button>` : ''}
               </div>` : ''}
               ${hasEps && seasonKeys.length > 1 ? `
               <div class="flex border-b border-aw-border" id="seasonTabs">
-                ${seasonKeys.map((sk, i) => `<button class="flex-1 py-2.5 text-sm font-medium transition-colors ${i === 0 ? 'text-aw-accent border-b-2 border-aw-accent' : 'text-aw-muted hover:text-aw-fg'}" data-season="${sk}" onclick="switchSeason('${sk}')">Season ${i + 1}</button>`).join('')}
+                ${seasonKeys.map((sk, i) => `<button class="flex-1 py-2.5 text-sm font-medium transition-colors ${sk === activeSk ? 'text-aw-accent border-b-2 border-aw-accent' : 'text-aw-muted hover:text-aw-fg'}" data-season="${sk}" onclick="switchSeason('${sk}')">Season ${i + 1}</button>`).join('')}
               </div>` : ''}
               <div id="episodeList" class="max-h-[60vh] overflow-y-auto p-2"></div>
             </div>
           </div>
         </div>`;
 
-      if (hasEps) { renderEpisodes(a, seasonKeys[0] || 's1'); }
+      if (hasEps) { renderEpisodes(a, activeSk); }
       else {
         const list = document.getElementById('episodeList');
         if (list) list.innerHTML = `
@@ -1182,14 +1214,18 @@
       }
 
       updateSaveBadge();
-      requestAnimationFrame(() => { checkAboutOverflow(); initScrollReveal(); });
+      requestAnimationFrame(() => { checkAboutOverflow(); checkTitleOverflow(); initScrollReveal(); });
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => { checkTitleOverflow(); checkAboutOverflow(); });
+      }
       window.addEventListener('resize', checkAboutOverflow);
+      window.addEventListener('resize', checkTitleOverflow);
       renderRecommendations(a.id);
     }
 
-    let currentAnime = null;
     function renderEpisodes(a, sk) {
       currentAnime = a;
+      currentSeasonKey = sk;
       const eps = a.episodeLinks[sk] || {};
       const list = document.getElementById('episodeList');
       if (!list) return;
@@ -1198,15 +1234,17 @@
 
       list.innerHTML = Object.entries(eps).map(([ek, url]) => {
         const en = parseInt(ek.replace('e', ''));
-        const isWatched = en <= progress;
-        const isCurrent = en === progress + 1 && progress > 0 && progress < allEps.length;
+        const entry = allEps.find(e => e.sk === sk && e.ek === ek);
+        const gi = entry ? entry.gi : en;
+        const isWatched = gi <= progress;
+        const isCurrent = gi === progress + 1 && progress > 0 && progress < allEps.length;
         let stateClass = '';
         if (isWatched) stateClass = 'watched';
         else if (isCurrent) stateClass = 'current';
-        const dur = epDuration(a.id, en);
+        const dur = epDuration(a.id, en, sk);
         return `
         <a href="watch.html?id=${encodeURIComponent(a.id)}&s=${sk.replace('s', '')}&e=${en}"
-           onclick="setProgress('${a.id.replace(/'/g, "\\'")}', ${en})"
+           onclick="setProgress('${a.id.replace(/'/g, "\\'")}', ${gi})"
            class="ep-card ${stateClass} flex items-center gap-3 p-3 rounded-xl border border-transparent cursor-pointer group">
           <div class="w-9 h-9 rounded-lg bg-aw-bg2 flex items-center justify-center text-sm font-bold text-aw-muted group-hover:bg-aw-accent/20 group-hover:text-aw-accentL transition-colors shrink-0">
             ${isWatched ? '<i class="fas fa-check text-green-400 text-xs"></i>' : isCurrent ? '<i class="fas fa-play text-aw-accent text-[10px]"></i>' : en}
@@ -1246,12 +1284,99 @@
     function markAllWatched() {
       const a = getAnime(); if (!a) return;
       const total = getAllEpisodes(a).length;
-      if (total > 0) { localStorage.setItem('aw_prog_' + a.id, String(total)); showToast(`Marked all ${total} episodes as watched`, 'success'); renderPage(); }
+      if (total === 0) return;
+
+      const seasonKeys = Object.keys(a.episodeLinks || {});
+      if (seasonKeys.length <= 1) {
+        const prevProgress = getProgress(a.id);
+        localStorage.setItem('aw_prog_' + a.id, String(total));
+        renderPage();
+        showToast(`Marked all ${total} episodes as watched`, 'success', {
+          label: 'Undo',
+          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+        });
+        return;
+      }
+
+      showMarkWatchedChoice(a, currentSeasonKey || seasonKeys[0]);
+    }
+
+    function showMarkWatchedChoice(a, sk) {
+      const seasonKeys = Object.keys(a.episodeLinks || {});
+      const allEps = getAllEpisodes(a);
+      const seasonEps = allEps.filter(e => e.sk === sk);
+      const seasonLastGi = seasonEps.length ? seasonEps[seasonEps.length - 1].gi : 0;
+      const total = allEps.length;
+      const seasonLabel = 'Season ' + (seasonKeys.indexOf(sk) + 1);
+
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4';
+      overlay.innerHTML = `
+        <div class="bg-aw-card border border-aw-border rounded-2xl p-6 max-w-sm w-full">
+          <h3 class="text-aw-fg font-semibold text-lg mb-2">Mark as watched</h3>
+          <p class="text-aw-muted text-sm mb-5">Mark every season as watched, or only ${seasonLabel}?</p>
+          <div class="flex flex-col gap-2">
+            <button id="markSeasonOnlyBtn" class="w-full py-2.5 rounded-lg bg-aw-bg2 border border-aw-border text-aw-fg text-sm font-medium hover:border-aw-accent/40 transition-colors">Only ${seasonLabel}</button>
+            <button id="markAllSeasonsBtn" class="w-full py-2.5 rounded-lg bg-aw-accent text-white text-sm font-medium hover:bg-aw-accentD transition-colors">All seasons</button>
+            <button id="markCancelBtn" class="w-full py-2 text-aw-muted text-xs font-medium hover:text-aw-fg transition-colors">Cancel</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      const close = () => overlay.remove();
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      overlay.querySelector('#markCancelBtn').onclick = close;
+      overlay.querySelector('#markSeasonOnlyBtn').onclick = () => {
+        const prevProgress = getProgress(a.id);
+        localStorage.setItem('aw_prog_' + a.id, String(seasonLastGi));
+        close(); renderPage();
+        showToast(`Marked ${seasonLabel} as watched`, 'success', {
+          label: 'Undo',
+          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+        });
+      };
+      overlay.querySelector('#markAllSeasonsBtn').onclick = () => {
+        const prevProgress = getProgress(a.id);
+        localStorage.setItem('aw_prog_' + a.id, String(total));
+        close(); renderPage();
+        showToast(`Marked all ${total} episodes as watched`, 'success', {
+          label: 'Undo',
+          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+        });
+      };
     }
 
     function resetProgress() {
       const a = getAnime(); if (!a) return;
-      clearProgress(a.id); showToast('Progress reset', 'info'); renderPage();
+      showConfirmDialog('Reset progress?', 'This will clear your watch progress for this anime.', () => {
+        const prevProgress = getProgress(a.id);
+        clearProgress(a.id);
+        renderPage();
+        showToast('Progress reset', 'info', {
+          label: 'Undo',
+          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+        });
+      });
+    }
+
+    function showConfirmDialog(title, message, onConfirm) {
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4';
+      overlay.innerHTML = `
+        <div class="bg-aw-card border border-aw-border rounded-2xl p-6 max-w-sm w-full">
+          <h3 class="text-aw-fg font-semibold text-lg mb-2">${title}</h3>
+          <p class="text-aw-muted text-sm mb-5">${message}</p>
+          <div class="flex gap-2">
+            <button id="confirmNoBtn" class="flex-1 py-2.5 rounded-lg bg-aw-bg2 border border-aw-border text-aw-fg text-sm font-medium hover:border-aw-accent/40 transition-colors">Cancel</button>
+            <button id="confirmYesBtn" class="flex-1 py-2.5 rounded-lg bg-aw-accent text-white text-sm font-medium hover:bg-aw-accentD transition-colors">Yes, I'm sure</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      const close = () => overlay.remove();
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      overlay.querySelector('#confirmNoBtn').onclick = close;
+      overlay.querySelector('#confirmYesBtn').onclick = () => { close(); onConfirm(); };
     }
 
     document.addEventListener('keydown', e => {
