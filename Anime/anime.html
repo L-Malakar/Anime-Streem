@@ -27,7 +27,7 @@
     *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
     input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
     html{scrollbar-width:none}
-    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden;scrollbar-width:none}
+    body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden;overflow-y:visible;scrollbar-width:none}
     html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0;height:0;display:none}
     *{scrollbar-width:none}
 
@@ -143,6 +143,12 @@
     #titleText.expanded{display:block;-webkit-line-clamp:unset;line-clamp:unset;overflow:visible}
     #titleReadMoreBtn{display:none;cursor:pointer}
     #titleReadMoreBtn.visible{display:inline-flex}
+#stickyInfoWrap{position:sticky;top:var(--dock-info-top,70px);z-index:40;padding-left:var(--dock-offset-w,0px);transition:padding-left 0.2s ease}
+@media (max-width:1023px){
+  #posterPlaceholder{display:none}
+  #posterFg{position:relative !important;top:auto !important;left:auto !important;transform:none !important;margin:0 auto 12px !important;z-index:5 !important}
+  #stickyInfoWrap{position:static !important;padding-left:0 !important;top:auto !important}
+}
 
     .rec-card{transition:all 0.25s ease}
     .rec-card:hover{transform:translateY(-4px)}
@@ -198,6 +204,11 @@
     #backToTop.show{opacity:1!important;pointer-events:auto!important;transform:translateY(0)!important}
     #backToTop:not(.show){transform:translateY(20px)!important}
     @media(max-width:1023px){#backToTop{bottom:5rem}}
+    #tryFirstBtn{transition:opacity 0.3s ease,transform 0.3s ease}
+    #tryFirstBtn.show{opacity:1!important;pointer-events:auto!important;transform:translate(-50%,0)!important}
+    #tryFirstBtn:not(.show){transform:translate(-50%,20px)!important}
+    @media(min-width:1024px){#tryFirstBtn{display:none!important}}
+    @media(max-width:1023px){#tryFirstBtn{bottom:5rem}}
 
     #aw-miniplayer #aw-mp-video-wrap{height:200px;position:relative;overflow:hidden;transition:height 0.3s ease,opacity 0.3s ease}
     #aw-miniplayer #aw-mp-video-wrap img,#aw-miniplayer #aw-mp-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -502,7 +513,7 @@
     <div class="vignette"></div>
     <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
       <div class="flex flex-col items-center">
-        <div class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
+        <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
         <div id="posterWatchWrap" class="mt-5"></div>
       </div>
     </div>
@@ -526,6 +537,11 @@
   <button id="backToTop" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-full bg-aw-accent text-white flex items-center justify-center shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-110 active:scale-95" aria-label="Back to top">
     <i class="fas fa-arrow-up text-sm"></i>
   </button>
+
+  <a id="tryFirstBtn" href="#" class="fixed bottom-6 left-1/2 z-[999] inline-flex items-center gap-2 px-5 py-3 rounded-full bg-aw-accent text-white font-bold text-sm shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-105 active:scale-95" aria-label="Try first episode">
+    <i class="fas fa-play text-xs"></i>
+    <span>Try First</span>
+  </a>
 
   <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2"></div>
 
@@ -658,6 +674,7 @@
       const fg = document.getElementById('posterFg');
       const watchWrap = document.getElementById('posterWatchWrap');
       const recSection = document.getElementById('recSection');
+      const detailsCol = document.getElementById('detailsCol');
       const sidebar = document.getElementById('sidebar');
       if (!bg || !section) return;
 
@@ -681,10 +698,27 @@
 
       // cache poster dimensions; only recompute on resize (avoids layout thrash on scroll)
       let fgW = 0, fgH = 0;
+      function updateDockOffset() {
+        // Width the docked poster occupies once scaled down, plus a gap,
+        // so the sticky title/info block never overlaps it.
+        const gap = window.innerWidth < 640 ? 12 : 24;
+        const dockedW = fgW * CFG.cornerScale;
+        document.documentElement.style.setProperty('--dock-offset-w', (dockedW + gap) + 'px');
+
+        // Align the bottom of the sticky text with the bottom of the docked poster,
+        // but never push it above the poster's own top (that's what was covering the screen).
+        const infoWrap = document.getElementById('stickyInfoWrap');
+        if (infoWrap) {
+          const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
+          const infoTop = Math.max(CFG.cornerY, dockedBottom - infoWrap.offsetHeight);
+          document.documentElement.style.setProperty('--dock-info-top', infoTop + 'px');
+        }
+      }
       function measure() {
         if (!fg) return;
         fgW = fg.offsetWidth;
         fgH = fg.offsetHeight;
+        updateDockOffset();
       }
 
       function lerp(a, b, t) { return a + (b - a) * t; }
@@ -701,14 +735,19 @@
         // poster up by the same amount the section has intruded, so it looks like
         // it scrolls away with the page instead of just vanishing.
         let exitOffset = 0;
+        const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
         if (recSection) {
-          const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
           const recTop = recSection.getBoundingClientRect().top;
-          if (recTop <= dockedBottom) exitOffset = dockedBottom - recTop;
+          if (recTop <= dockedBottom) exitOffset = Math.max(exitOffset, dockedBottom - recTop);
+        }
+        if (detailsCol) {
+          const detailsBottom = detailsCol.getBoundingClientRect().bottom;
+          if (detailsBottom <= dockedBottom) exitOffset = Math.max(exitOffset, dockedBottom - detailsBottom);
         }
         const progress = ease(rawProgress);
 
-        const centerX = window.innerWidth / 2 - fgW / 2;
+        const sbOffset = (window.innerWidth >= 1024 && sidebar) ? sidebar.getBoundingClientRect().right : 0;
+        const centerX = sbOffset + (window.innerWidth - sbOffset) / 2 - fgW / 2;
         const centerY = window.innerHeight / 2 - fgH / 2;
 
         const x = lerp(centerX, CFG.cornerX, progress);
@@ -747,7 +786,7 @@
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', () => {
         CFG.cornerX = computeCornerX();
-        measure(); onScroll();
+        measure(); onScroll(); updateDockOffset();
       });
 
       // Sidebar width changes on toggle (with a CSS transition), so keep
@@ -758,7 +797,7 @@
           const start = performance.now();
           function follow(t) {
             CFG.cornerX = computeCornerX();
-            onScroll();
+            onScroll(); updateDockOffset();
             if (t - start < 350) requestAnimationFrame(follow);
           }
           requestAnimationFrame(follow);
@@ -782,6 +821,14 @@
     const backToTop = document.getElementById('backToTop');
     window.addEventListener('scroll', () => { backToTop.classList.toggle('show', window.scrollY > 600); }, { passive: true });
     backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+    const tryFirstBtn = document.getElementById('tryFirstBtn');
+    window.addEventListener('scroll', () => {
+      const atTop = window.scrollY <= 4;
+      const isMobile = window.innerWidth < 1024;
+      const hasUrl = tryFirstBtn.style.display !== 'none';
+      tryFirstBtn.classList.toggle('show', atTop && isMobile && hasUrl);
+    }, { passive: true });
 
     function ratingColor(r) {
       if (r >= 8) return 'from-green-500 to-emerald-400';
@@ -992,6 +1039,33 @@
         document.getElementById('mainFooter').style.display = '';
         renderPage();
         initParallax();
+        if (window.innerWidth < 1024) {
+          requestAnimationFrame(() => {
+            const fg = document.getElementById('posterFg');
+            if (fg) {
+              const navH = 64;
+              const targetY = Math.max(fg.getBoundingClientRect().top + window.scrollY - navH, 0);
+              window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+              const unlockThreshold = targetY + 60;
+              let scrollLocked = true;
+              function scrollLockHandler() {
+                if (!scrollLocked) return;
+                if (window.scrollY >= unlockThreshold) {
+                  scrollLocked = false;
+                  window.removeEventListener('scroll', scrollLockHandler);
+                  return;
+                }
+                if (window.scrollY < targetY) window.scrollTo(0, targetY);
+              }
+              window.addEventListener('scroll', scrollLockHandler, { passive: true });
+              setTimeout(() => {
+                scrollLocked = false;
+                window.removeEventListener('scroll', scrollLockHandler);
+              }, 8000);
+            }
+          });
+        }
       }, 400);
     }
 
@@ -1026,6 +1100,26 @@
       const allFinished = progress >= totalEps && totalEps > 0;
       const progressPct = totalEps > 0 ? Math.round(progress / totalEps * 100) : 0;
       const watchable = isWatchable(a);
+
+      const tryFirstBtn = document.getElementById('tryFirstBtn');
+      if (hasEps && watchable) {
+        const links = a.episodeLinks || {};
+        let tf = null;
+        if (links.s1 && typeof links.s1.e1 === 'string' && links.s1.e1.trim()) {
+          tf = { s: 1, e: 1 };
+        } else {
+          const all = getAllEpisodes(a);
+          if (all.length) tf = { s: all[0].si + 1, e: all[0].num };
+        }
+        if (tf) {
+          tryFirstBtn.href = `watch.html?id=${encodeURIComponent(a.id)}&s=${tf.s}&e=${tf.e}`;
+          tryFirstBtn.style.display = '';
+        } else {
+          tryFirstBtn.style.display = 'none';
+        }
+      } else {
+        tryFirstBtn.style.display = 'none';
+      }
 
       const quickBtn = document.getElementById('posterQuickBtn');
       if (hasEps && watchable && !allFinished) {
@@ -1117,10 +1211,11 @@
 
       document.getElementById('mainContent').innerHTML = `
         <div class="grid lg:grid-cols-[1fr_380px] gap-8">
-          <div>
+          <div id="detailsCol">
+            <div id="stickyInfoWrap">
             <div class="flex flex-wrap items-center gap-3 mb-4 reveal">
-              ${a.tear ? `<span class="px-3 py-1 bg-aw-accent/20 text-aw-accentL text-sm font-bold rounded-lg border border-aw-accent/30">TIER ${a.tear}</span>` : ''}
-              ${(() => { const t = getStateTag(a); return t ? `<span class="px-3 py-1 ${t.cls} text-sm font-bold rounded-lg border"><i class="fas ${t.icon} text-xs mr-1"></i>${t.text}</span>` : ''; })()}
+              ${a.tear ? `<span class="hidden lg:inline-flex px-3 py-1 bg-aw-accent/20 text-aw-accentL text-sm font-bold rounded-lg border border-aw-accent/30">TIER ${a.tear}</span>` : ''}
+              ${(() => { const t = getStateTag(a); return t ? `<span class="hidden lg:inline-flex px-3 py-1 ${t.cls} text-sm font-bold rounded-lg border"><i class="fas ${t.icon} text-xs mr-1"></i>${t.text}</span>` : ''; })()}
               ${allFinished ? '<span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-bold rounded-lg border border-green-500/30"><i class="fas fa-trophy text-xs mr-1"></i>COMPLETED</span>' : ''}
             </div>
 
@@ -1129,6 +1224,7 @@
               Read more <i class="fas fa-chevron-down text-[10px]"></i>
             </button>
             ${a.altName ? `<p class="text-aw-muted text-base mb-6 reveal reveal-delay-1">${a.altName}</p>` : ''}
+            </div>
 
             ${infoCardsHTML}
             ${ratingHTML}
