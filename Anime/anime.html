@@ -144,6 +144,10 @@
     #titleReadMoreBtn{display:none;cursor:pointer}
     #titleReadMoreBtn.visible{display:inline-flex}
 #stickyInfoWrap{position:sticky;top:var(--dock-info-top,70px);z-index:40;padding-left:var(--dock-offset-w,0px);transition:padding-left 0.2s ease}
+.save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1;font-variant-numeric:tabular-nums}
+.save-dirty-dot.show{display:flex}
+#sidebar.expanded .sb-btn #sbNotifDot{right:auto!important;left:24px;top:4px}
+@media(max-width:1023px){ #sbNotifDot{display:none!important} }
 @media (max-width:1023px){
   #posterPlaceholder{display:none}
   #posterFg{position:relative !important;top:auto !important;left:auto !important;transform:none !important;margin:0 auto 12px !important;z-index:5 !important}
@@ -348,6 +352,7 @@
       <div class="sb-sep"></div>
       <button class="sb-btn" data-sb="notif" onclick="window.location.href='notification.html'" title="Notifications (N)" id="sbNotifBtn" style="display:none">
         <i class="fas fa-bell"></i><span class="sb-label">Notifications</span><span class="sb-tip">Notifications (N)</span>
+        <span id="sbNotifDot" class="save-dirty-dot" style="display:none"></span>
       </button>
       <button class="sb-btn" data-sb="settings" onclick="openSettings()" title="Settings">
         <i class="fas fa-gear"></i><span class="sb-label">Settings</span><span class="sb-tip">Settings</span>
@@ -1670,6 +1675,29 @@
     if (typeof initRandomBtn === 'function') initRandomBtn();
 
     updateSaveBadge();
+
+    function updateNotifUnreadDot(){
+      fetch('tnew.json')
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(data){
+          var readState = {};
+          try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
+          var now = new Date();
+          var visible = (Array.isArray(data) ? data : []).filter(function(n){
+            if(n.showAfter && new Date(n.showAfter) > now) return false;
+            if(n.showBefore && new Date(n.showBefore) < now) return false;
+            return true;
+          });
+          var unreadCount = visible.filter(function(_, i){ return !readState[i]; }).length;
+          var label = unreadCount > 99 ? '99+' : String(unreadCount);
+          var navDot = document.getElementById('notifDot');
+          var sbDot = document.getElementById('sbNotifDot');
+          if(navDot){ if(unreadCount > 0){ navDot.textContent = label; navDot.classList.remove('hidden'); } else { navDot.classList.add('hidden'); } }
+          if(sbDot){ if(unreadCount > 0){ sbDot.textContent = label; sbDot.classList.add('show'); sbDot.style.display=''; } else { sbDot.classList.remove('show'); sbDot.style.display='none'; } }
+        })
+        .catch(function(){});
+    }
+    updateNotifUnreadDot();
 
     (function () {
       function syncMnavHeight() {
