@@ -2530,15 +2530,13 @@
         .then(function(data){
           var readState = {};
           try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
-          var total = Array.isArray(data) ? data.length : 0;
-          var unreadCount = 0;
           var now = new Date();
-          for(var i = 0; i < total; i++){
-            var n = data[i];
-            if(n.showAfter && new Date(n.showAfter) > now) continue;
-            if(n.showBefore && new Date(n.showBefore) < now) continue;
-            if(!readState[i]) unreadCount++;
-          }
+          var visible = (Array.isArray(data) ? data : []).filter(function(n){
+            if(n.showAfter && new Date(n.showAfter) > now) return false;
+            if(n.showBefore && new Date(n.showBefore) < now) return false;
+            return true;
+          });
+          var unreadCount = visible.filter(function(_, i){ return !readState[i]; }).length;
           var label = unreadCount > 99 ? '99+' : String(unreadCount);
           var navDot = document.getElementById('notifDot');
           var sbDot = document.getElementById('sbNotifDot');
