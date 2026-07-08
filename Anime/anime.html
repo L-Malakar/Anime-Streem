@@ -143,7 +143,7 @@
     #titleText.expanded{display:block;-webkit-line-clamp:unset;line-clamp:unset;overflow:visible}
     #titleReadMoreBtn{display:none;cursor:pointer}
     #titleReadMoreBtn.visible{display:inline-flex}
-#stickyInfoWrap{position:sticky;top:var(--dock-info-top,70px);z-index:40;padding-left:var(--dock-offset-w,0px);transition:padding-left 0.2s ease}
+#stickyInfoWrap{position:static;padding-left:var(--dock-offset-w,0px);transition:padding-left 0.2s ease}
 .save-dirty-dot{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;background:#e63946;border-radius:99px;display:none;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;pointer-events:none;z-index:2;line-height:1;font-variant-numeric:tabular-nums}
 .save-dirty-dot.show{display:flex}
 #sidebar.expanded .sb-btn #sbNotifDot{right:auto!important;left:24px;top:4px}
@@ -678,7 +678,8 @@
       const bg = document.getElementById('posterBg'), section = document.getElementById('posterSection');
       const fg = document.getElementById('posterFg');
       const watchWrap = document.getElementById('posterWatchWrap');
-      const recSection = document.getElementById('recSection');
+      const aboutSection = document.getElementById('aboutSection');
+      const infoCardsRow = document.getElementById('infoCardsRow');
       const detailsCol = document.getElementById('detailsCol');
       const sidebar = document.getElementById('sidebar');
       if (!bg || !section) return;
@@ -703,21 +704,13 @@
 
       // cache poster dimensions; only recompute on resize (avoids layout thrash on scroll)
       let fgW = 0, fgH = 0;
+      let dockScrollY = null;
       function updateDockOffset() {
         // Width the docked poster occupies once scaled down, plus a gap,
         // so the sticky title/info block never overlaps it.
         const gap = window.innerWidth < 640 ? 12 : 24;
         const dockedW = fgW * CFG.cornerScale;
         document.documentElement.style.setProperty('--dock-offset-w', (dockedW + gap) + 'px');
-
-        // Align the bottom of the sticky text with the bottom of the docked poster,
-        // but never push it above the poster's own top (that's what was covering the screen).
-        const infoWrap = document.getElementById('stickyInfoWrap');
-        if (infoWrap) {
-          const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
-          const infoTop = Math.max(CFG.cornerY, dockedBottom - infoWrap.offsetHeight);
-          document.documentElement.style.setProperty('--dock-info-top', infoTop + 'px');
-        }
       }
       function measure() {
         if (!fg) return;
@@ -736,18 +729,14 @@
         const rawProgress = rect.bottom <= 0 ? 1 : clamp01(-rect.top / rect.height);
 
         fg.style.display = '';
-        // Once "You Might Also Like" reaches the docked poster's height, push the
-        // poster up by the same amount the section has intruded, so it looks like
-        // it scrolls away with the page instead of just vanishing.
+        // Once the poster's docked bottom edge reaches the Year/Studio/Episodes/
+        // Language row, it "attaches" there and scrolls up with the page.
         let exitOffset = 0;
         const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
-        if (recSection) {
-          const recTop = recSection.getBoundingClientRect().top;
-          if (recTop <= dockedBottom) exitOffset = Math.max(exitOffset, dockedBottom - recTop);
-        }
-        if (detailsCol) {
-          const detailsBottom = detailsCol.getBoundingClientRect().bottom;
-          if (detailsBottom <= dockedBottom) exitOffset = Math.max(exitOffset, dockedBottom - detailsBottom);
+        const attachGap = 50;
+        if (infoCardsRow) {
+          const rowTop = infoCardsRow.getBoundingClientRect().top;
+          if (rowTop - attachGap <= dockedBottom) exitOffset = Math.max(exitOffset, dockedBottom - rowTop + attachGap);
         }
         const progress = ease(rawProgress);
 
@@ -1199,7 +1188,7 @@
       if (a.language) infoCards.push({ icon: 'fa-language', label: 'Language', value: a.language.split(' ').slice(0, 3).join(', ') });
 
       const infoCardsHTML = infoCards.length ? `
-        <div class="grid grid-cols-2 sm:grid-cols-${Math.min(infoCards.length, 5)} gap-3 mb-6 reveal reveal-delay-1">
+        <div id="infoCardsRow" class="grid grid-cols-2 sm:grid-cols-${Math.min(infoCards.length, 5)} gap-3 mb-6 reveal reveal-delay-1">
           ${infoCards.map(c => `
             <div class="info-card bg-aw-card border border-aw-border rounded-xl p-4 text-center">
               <i class="fas ${c.icon} text-aw-accent/60 text-base mb-2"></i>
@@ -1238,7 +1227,7 @@
               ${(a.genre || []).map(g => `<span class="genre-pill px-3 py-1 rounded-full bg-aw-bg2 border border-aw-border text-xs text-aw-muted cursor-default">${g}</span>`).join('')}
             </div>
 
-            <div class="mb-8 reveal reveal-delay-3">
+            <div id="aboutSection" class="mb-8 reveal reveal-delay-3">
               <h2 class="font-semibold text-aw-fg text-lg mb-3">About</h2>
               <p id="aboutText" class="text-aw-muted leading-relaxed line-clamp-4">${a.review || 'No synopsis available.'}</p>
               <button id="readMoreBtn" onclick="toggleAbout()" class="mt-2 inline-flex items-center gap-1 text-aw-accent hover:text-aw-accentL text-sm font-medium transition-colors">
