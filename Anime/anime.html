@@ -119,6 +119,40 @@
     .poster-quick-btn:hover i{transform:scale(1.15)}
     @keyframes quickBtnIn{from{opacity:0;transform:translateY(12px) scale(0.85)}to{opacity:1;transform:translateY(0) scale(1)}}
 
+    #mobileTrailerWrap{transition:top 0.3s ease,left 0.3s ease,right 0.3s ease,width 0.3s ease,max-width 0.3s ease,border-radius 0.3s ease,box-shadow 0.3s ease}
+    @media (min-width:1024px){
+      #mobileTrailerWrap:not(.docked){
+        left:var(--trailer-left, auto) !important;
+        right:var(--trailer-right, 40px) !important;
+        top:50% !important;
+        transform:translateY(-50%) !important;
+        margin:0 !important;
+      }
+    }
+    #mobileTrailerWrap.docked{
+      position:fixed !important;
+      top:70px;left:4px;right:4px;
+      width:auto;max-width:min(420px, 92vw);
+      max-height:min(60vh, calc(92vw * 9 / 16));
+      margin:0 auto;
+      z-index:1001;
+      border-radius:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    }
+    @media (orientation: landscape){
+      #mobileTrailerWrap.docked{
+        top:8px;left:8px;right:8px;
+        max-width:min(420px, 70vw);
+        max-height:min(50vh, calc(70vw * 9 / 16));
+      }
+    }
+    #mobileTrailerCloseBtn{display:none}
+    #mobileTrailerWrap.docked #mobileTrailerCloseBtn{display:flex}
+    @media (max-width:1023px){
+      #posterSection{min-height:0 !important}
+      #posterSection > .relative.z-\[3\]{min-height:0 !important;padding:1rem 1rem 2rem !important;justify-content:flex-start !important}
+    }
+
     .ep-card{transition:all 0.2s ease}
     .ep-card:hover{background:#252525;border-color:rgba(230,57,70,0.4)}
     .ep-card.watched{border-left:3px solid #22c55e}
@@ -329,7 +363,7 @@
       <button class="sb-btn" data-sb="home" onclick="window.location.href='index.html'" title="Home (H)">
         <i class="fas fa-house"></i><span class="sb-label">Home</span><span class="sb-tip">Home (H)</span>
       </button>
-      <button class="sb-btn" data-sb="search" onclick="openMobileSearch()" title="Search">
+      <button class="sb-btn" data-sb="search" onclick="document.getElementById('searchInput').focus()" title="Search">
         <i class="fas fa-magnifying-glass"></i><span class="sb-label">Search</span><span class="sb-tip">Search</span>
       </button>
       <button class="sb-btn" data-sb="shorts" onclick="handleSbShorts(this)" title="Shorts">
@@ -454,8 +488,8 @@
           <img src="logo.PNG" alt="AnimeWave">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <p>Last Updated: <span class="st-ver">V1.26x4.6</span></p>
-          <p>Last Updated on: <span class="st-ver">04:07:2026</span></p>
+          <p>Last Updated: <span class="st-ver">V1.26x4.7</span></p>
+          <p>Last Updated on: <span class="st-ver">08:07:2026</span></p>
         </div>
       </div>
     </div>
@@ -517,15 +551,30 @@
     <div class="poster-orb" style="top:40%;left:50%"></div>
     <div class="vignette"></div>
     <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
-      <div class="flex flex-col items-center">
-        <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
-        <div id="posterWatchWrap" class="mt-5"></div>
+      <div class="flex items-center gap-6">
+        <div class="flex flex-col items-center">
+          <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
+          <div id="posterWatchWrap" class="mt-5"></div>
+        </div>
+        <div id="mobileTrailerVideoBox" class="rounded-2xl overflow-hidden relative" style="display:none;width:420px;max-width:40vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000">
+          <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation" class="absolute inset-0 w-full h-full" style="border:none"></iframe>
+          <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
+            <i class="fas fa-play text-[8px]"></i><span id="mobileTrailerLabel">TRAILER · EP 1</span>
+          </div>
+          <button id="mobileTrailerCloseBtn" onclick="event.stopPropagation(); closeMobileTrailer()" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center z-20" style="display:none" aria-label="Close trailer"><i class="fas fa-xmark text-[11px]"></i></button>
+        </div>
       </div>
     </div>
     <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
       <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onerror="handleImgError(this)" onclick="scrollToContent()">
+      <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex items-center justify-center z-10 cursor-pointer" onclick="playMobileTrailer()">
+        <div class="w-14 h-14 rounded-full bg-aw-accent/90 flex items-center justify-center" style="box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 8px 24px rgba(230,57,70,0.5)">
+          <i class="fas fa-play text-white text-lg ml-0.5"></i>
+        </div>
+      </div>
       <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:2"></div>
     </div>
+    <div id="mobileTrailerWrap" class="rounded-2xl overflow-hidden" style="display:none;background:#000;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55)"></div>
     <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-aw-bg to-transparent z-[4] pointer-events-none"></div>
   </section>
 
@@ -542,11 +591,6 @@
   <button id="backToTop" class="fixed bottom-6 right-6 z-[999] w-11 h-11 rounded-full bg-aw-accent text-white flex items-center justify-center shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-110 active:scale-95" aria-label="Back to top">
     <i class="fas fa-arrow-up text-sm"></i>
   </button>
-
-  <a id="tryFirstBtn" href="#" class="fixed bottom-6 left-1/2 z-[999] inline-flex items-center gap-2 px-5 py-3 rounded-full bg-aw-accent text-white font-bold text-sm shadow-lg shadow-aw-accent/30 opacity-0 pointer-events-none hover:scale-105 active:scale-95" aria-label="Try first episode">
-    <i class="fas fa-play text-xs"></i>
-    <span>Try First</span>
-  </a>
 
   <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2"></div>
 
@@ -601,10 +645,7 @@
 
     function shareAnime() {
       const a = getAnime(); if (!a) return;
-      const url = window.location.href;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => showToast('Link copied to clipboard!', 'success')).catch(() => fallbackCopy(url));
-      } else { fallbackCopy(url); }
+      shareAnimeModern(a);
     }
     function fallbackCopy(text) {
       const ta = document.createElement('textarea');
@@ -679,7 +720,6 @@
       const fg = document.getElementById('posterFg');
       const watchWrap = document.getElementById('posterWatchWrap');
       const aboutSection = document.getElementById('aboutSection');
-      const infoCardsRow = document.getElementById('infoCardsRow');
       const detailsCol = document.getElementById('detailsCol');
       const sidebar = document.getElementById('sidebar');
       if (!bg || !section) return;
@@ -711,6 +751,12 @@
         const gap = window.innerWidth < 640 ? 12 : 24;
         const dockedW = fgW * CFG.cornerScale;
         document.documentElement.style.setProperty('--dock-offset-w', (dockedW + gap) + 'px');
+        if (window.innerWidth >= 1024 && sidebar) {
+          const sbRight = sidebar.getBoundingClientRect().right;
+          document.documentElement.style.setProperty('--trailer-right', Math.max(40, window.innerWidth - sbRight - 480) + 'px');
+        } else {
+          document.documentElement.style.setProperty('--trailer-right', '40px');
+        }
       }
       function measure() {
         if (!fg) return;
@@ -734,6 +780,7 @@
         let exitOffset = 0;
         const dockedBottom = CFG.cornerY + fgH * CFG.cornerScale;
         const attachGap = 50;
+        const infoCardsRow = document.getElementById('infoCardsRow');
         if (infoCardsRow) {
           const rowTop = infoCardsRow.getBoundingClientRect().top;
           if (rowTop - attachGap <= dockedBottom) exitOffset = Math.max(exitOffset, dockedBottom - rowTop + attachGap);
@@ -815,14 +862,6 @@
     const backToTop = document.getElementById('backToTop');
     window.addEventListener('scroll', () => { backToTop.classList.toggle('show', window.scrollY > 600); }, { passive: true });
     backToTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-
-    const tryFirstBtn = document.getElementById('tryFirstBtn');
-    window.addEventListener('scroll', () => {
-      const atTop = window.scrollY <= 4;
-      const isMobile = window.innerWidth < 1024;
-      const hasUrl = tryFirstBtn.style.display !== 'none';
-      tryFirstBtn.classList.toggle('show', atTop && isMobile && hasUrl);
-    }, { passive: true });
 
     function ratingColor(r) {
       if (r >= 8) return 'from-green-500 to-emerald-400';
@@ -1021,6 +1060,61 @@
       return all;
     }
 
+    window.playMobileTrailer = function () {
+      const iframe = document.getElementById('mobileTrailerIframe');
+      const playBtn = document.getElementById('mobileTrailerPlayBtn');
+      const closeBtn = document.getElementById('mobileTrailerCloseBtn');
+      const wrap = document.getElementById('mobileTrailerWrap');
+      const videoBox = document.getElementById('mobileTrailerVideoBox');
+      if (!iframe || !iframe.dataset.src) return;
+      iframe.src = iframe.dataset.src;
+      if (playBtn) playBtn.style.display = 'none';
+
+      if (window.innerWidth < 1024 && wrap) {
+        wrap.appendChild(iframe);
+        if (closeBtn) wrap.appendChild(closeBtn);
+        iframe.className = 'w-full h-full';
+        iframe.removeAttribute('style');
+        iframe.style.display = 'block';
+        iframe.style.border = 'none';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        wrap.style.display = 'block';
+        wrap.classList.add('docked');
+        if (closeBtn) closeBtn.style.display = 'flex';
+        requestAnimationFrame(function () {
+          wrap.style.height = (wrap.offsetWidth * 9 / 16) + 'px';
+        });
+      } else if (videoBox) {
+        videoBox.style.display = 'block';
+        if (closeBtn) closeBtn.style.display = 'flex';
+      }
+    };
+
+    window.closeMobileTrailer = function () {
+      const iframe = document.getElementById('mobileTrailerIframe');
+      const playBtn = document.getElementById('mobileTrailerPlayBtn');
+      const closeBtn = document.getElementById('mobileTrailerCloseBtn');
+      const wrap = document.getElementById('mobileTrailerWrap');
+      const fg = document.getElementById('posterFg');
+      if (iframe) { iframe.removeAttribute('src'); iframe.style.display = 'none'; }
+      if (playBtn) playBtn.style.display = '';
+      if (closeBtn) closeBtn.style.display = 'none';
+
+      const videoBox = document.getElementById('mobileTrailerVideoBox');
+      if (videoBox) videoBox.style.display = 'none';
+      if (wrap && videoBox && iframe) {
+        videoBox.insertBefore(iframe, videoBox.firstChild);
+        if (closeBtn) videoBox.appendChild(closeBtn);
+        iframe.className = 'absolute inset-0 w-full h-full';
+        iframe.removeAttribute('style');
+        iframe.style.border = 'none';
+        wrap.classList.remove('docked');
+        wrap.style.display = 'none';
+        wrap.style.height = '';
+      }
+    };
+
     function showPage() {
       const skel = document.getElementById('skeleton');
       skel.style.transition = 'opacity 0.4s ease';
@@ -1040,23 +1134,6 @@
               const navH = 64;
               const targetY = Math.max(fg.getBoundingClientRect().top + window.scrollY - navH, 0);
               window.scrollTo({ top: targetY, behavior: 'smooth' });
-
-              const unlockThreshold = targetY + 60;
-              let scrollLocked = true;
-              function scrollLockHandler() {
-                if (!scrollLocked) return;
-                if (window.scrollY >= unlockThreshold) {
-                  scrollLocked = false;
-                  window.removeEventListener('scroll', scrollLockHandler);
-                  return;
-                }
-                if (window.scrollY < targetY) window.scrollTo(0, targetY);
-              }
-              window.addEventListener('scroll', scrollLockHandler, { passive: true });
-              setTimeout(() => {
-                scrollLocked = false;
-                window.removeEventListener('scroll', scrollLockHandler);
-              }, 8000);
             }
           });
         }
@@ -1095,24 +1172,32 @@
       const progressPct = totalEps > 0 ? Math.round(progress / totalEps * 100) : 0;
       const watchable = isWatchable(a);
 
-      const tryFirstBtn = document.getElementById('tryFirstBtn');
       if (hasEps && watchable) {
         const links = a.episodeLinks || {};
-        let tf = null;
+        let tf = null, tfUrl = '';
         if (links.s1 && typeof links.s1.e1 === 'string' && links.s1.e1.trim()) {
           tf = { s: 1, e: 1 };
+          tfUrl = links.s1.e1.trim();
         } else {
           const all = getAllEpisodes(a);
-          if (all.length) tf = { s: all[0].si + 1, e: all[0].num };
+          if (all.length) { tf = { s: all[0].si + 1, e: all[0].num }; tfUrl = all[0].url; }
         }
-        if (tf) {
-          tryFirstBtn.href = `watch.html?id=${encodeURIComponent(a.id)}&s=${tf.s}&e=${tf.e}`;
-          tryFirstBtn.style.display = '';
+        const iframe = document.getElementById('mobileTrailerIframe');
+        const playBtn = document.getElementById('mobileTrailerPlayBtn');
+        if (tf && tfUrl && iframe) {
+          iframe.removeAttribute('src');
+          iframe.style.display = 'none';
+          iframe.dataset.src = tfUrl;
+          if (playBtn) playBtn.style.display = 'flex';
         } else {
-          tryFirstBtn.style.display = 'none';
+          if (iframe) { iframe.removeAttribute('src'); iframe.style.display = 'none'; delete iframe.dataset.src; }
+          if (playBtn) playBtn.style.display = 'none';
         }
       } else {
-        tryFirstBtn.style.display = 'none';
+        const iframe = document.getElementById('mobileTrailerIframe');
+        const playBtn = document.getElementById('mobileTrailerPlayBtn');
+        if (iframe) { iframe.removeAttribute('src'); iframe.style.display = 'none'; delete iframe.dataset.src; }
+        if (playBtn) playBtn.style.display = 'none';
       }
 
       const quickBtn = document.getElementById('posterQuickBtn');
@@ -1208,8 +1293,8 @@
           <div id="detailsCol">
             <div id="stickyInfoWrap">
             <div class="flex flex-wrap items-center gap-3 mb-4 reveal">
-              ${a.tear ? `<span class="hidden lg:inline-flex px-3 py-1 bg-aw-accent/20 text-aw-accentL text-sm font-bold rounded-lg border border-aw-accent/30">TIER ${a.tear}</span>` : ''}
-              ${(() => { const t = getStateTag(a); return t ? `<span class="hidden lg:inline-flex px-3 py-1 ${t.cls} text-sm font-bold rounded-lg border"><i class="fas ${t.icon} text-xs mr-1"></i>${t.text}</span>` : ''; })()}
+              ${a.tear ? `<span class="inline-flex px-3 py-1 bg-aw-accent/20 text-aw-accentL text-sm font-bold rounded-lg border border-aw-accent/30">TIER ${a.tear}</span>` : ''}
+              ${(() => { const t = getStateTag(a); return t ? `<span class="inline-flex px-3 py-1 ${t.cls} text-sm font-bold rounded-lg border"><i class="fas ${t.icon} text-xs mr-1"></i>${t.text}</span>` : ''; })()}
               ${allFinished ? '<span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm font-bold rounded-lg border border-green-500/30"><i class="fas fa-trophy text-xs mr-1"></i>COMPLETED</span>' : ''}
             </div>
 
@@ -1698,10 +1783,23 @@
       syncMnavHeight();
       window.addEventListener('resize', syncMnavHeight);
       window.addEventListener('orientationchange', function () { setTimeout(syncMnavHeight, 200); });
+      window.addEventListener('orientationchange', function () {
+        const wrap = document.getElementById('mobileTrailerWrap');
+        if (wrap && wrap.classList.contains('docked')) {
+          setTimeout(function () { window.closeMobileTrailer(); }, 200);
+        }
+      });
+      window.addEventListener('resize', function () {
+        const wrap = document.getElementById('mobileTrailerWrap');
+        if (wrap && wrap.classList.contains('docked')) {
+          wrap.style.height = (wrap.offsetWidth * 9 / 16) + 'px';
+        }
+      });
     })();
   </script>
 
   <script src="settings.js"></script>
   <script src="ui.js"></script>
+<script src="share.js"></script>
 </body>
-</html>
+          </html>
