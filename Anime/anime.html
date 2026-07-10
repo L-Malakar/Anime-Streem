@@ -129,6 +129,9 @@
         margin:0 !important;
       }
     }
+    @media (min-width:1024px){
+      .poster-darken-overlay{ display:none; }
+    }
     #mobileTrailerWrap.docked{
       position:fixed !important;
       top:70px;left:4px;right:4px;
@@ -547,7 +550,7 @@
 
   <section id="posterSection" class="relative overflow-hidden bg-aw-bg" style="min-height:calc(100vh - 4rem);padding-top:4rem;display:none">
     <img id="posterBg" src="" alt="" class="bg-enter absolute inset-0 w-full h-full object-cover object-center" style="will-change:transform">
-    <div class="absolute inset-0 z-[1]" style="background:linear-gradient(to bottom,rgba(10,10,10,0.55) 0%,rgba(10,10,10,0.65) 50%,rgba(10,10,10,0.92) 85%,rgba(10,10,10,1) 100%)"></div>
+    <div class="absolute inset-0 z-[1] poster-darken-overlay" style="background:linear-gradient(to bottom,rgba(10,10,10,0.55) 0%,rgba(10,10,10,0.65) 50%,rgba(10,10,10,0.92) 85%,rgba(10,10,10,1) 100%)"></div>
     <div class="poster-orb" style="top:40%;left:50%"></div>
     <div class="vignette"></div>
     <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
@@ -556,8 +559,8 @@
           <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
           <div id="posterWatchWrap" class="mt-5"></div>
         </div>
-        <div id="mobileTrailerVideoBox" class="rounded-2xl overflow-hidden relative" style="display:none;width:420px;max-width:40vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000">
-          <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation" class="absolute inset-0 w-full h-full" style="border:none"></iframe>
+        <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;width:420px;max-width:40vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible">
+          <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
           <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
             <i class="fas fa-play text-[8px]"></i><span id="mobileTrailerLabel">TRAILER · EP 1</span>
           </div>
@@ -1067,8 +1070,18 @@
       const wrap = document.getElementById('mobileTrailerWrap');
       const videoBox = document.getElementById('mobileTrailerVideoBox');
       if (!iframe || !iframe.dataset.src) return;
-      iframe.src = iframe.dataset.src;
       if (playBtn) playBtn.style.display = 'none';
+
+      function kickRepaint() {
+        // Forces the browser to recomposite the iframe's video layer,
+        // fixing the black-frame-with-audio bug on desktop GPUs.
+        let n = 0;
+        const nudge = setInterval(function () {
+          n++;
+          iframe.style.transform = n % 2 === 0 ? 'translateZ(0)' : 'translateZ(0.01px)';
+          if (n >= 6) clearInterval(nudge);
+        }, 250);
+      }
 
       if (window.innerWidth < 1024 && wrap) {
         wrap.appendChild(iframe);
@@ -1084,10 +1097,15 @@
         if (closeBtn) closeBtn.style.display = 'flex';
         requestAnimationFrame(function () {
           wrap.style.height = (wrap.offsetWidth * 9 / 16) + 'px';
+          iframe.src = iframe.dataset.src;
+          iframe.addEventListener('load', kickRepaint, { once: true });
         });
       } else if (videoBox) {
         videoBox.style.display = 'block';
         if (closeBtn) closeBtn.style.display = 'flex';
+        void videoBox.offsetHeight;
+        iframe.src = iframe.dataset.src;
+        iframe.addEventListener('load', kickRepaint, { once: true });
       }
     };
 
@@ -1802,4 +1820,4 @@
   <script src="ui.js"></script>
 <script src="share.js"></script>
 </body>
-          </html>
+</html>
