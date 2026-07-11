@@ -25,6 +25,14 @@
   // ---------------------------------------------------------------------
   const DEFAULT_CONFIG = {
     brand: 'AnimeWave',
+    // Visible text shown in the shared message itself (e.g. "on 🌐 animewave.web.app").
+    // Because this is a real URL written as plain text, WhatsApp/SMS/Telegram/etc.
+    // auto-detect and auto-link it on the recipient's end — this is the only
+    // way to get a genuinely tappable link into those plain-text channels.
+    siteLabel: '🌐 animewave.web.app',
+    // Destination when the brand text is clicked inside the in-app share
+    // PREVIEW popup (real HTML, rendered locally before sending/copying).
+    brandUrl: 'https://animewave.web.app',
     synopsisMaxLength: 180,
     // Order controls the order the icons render in the grid.
     targets: ['copy', 'whatsapp', 'telegram', 'twitter', 'reddit', 'facebook', 'linkedin', 'sms', 'email'],
@@ -116,8 +124,9 @@
    *
    *   👉 Watch now: https://example.com/anime/123
    */
-  function buildShareText(a, url) {
+  function buildShareText(a, url, context) {
     a = a || {};
+    context = context || {};
     const title = (a.name && String(a.name).trim()) || 'Untitled Anime';
     const rating = safeRating(a.rating);
     const stars = starBar(a.rating);
@@ -129,8 +138,29 @@
       ? `${stars}  ${rating}  ·  ${stateEmoji(current)} ${current}`
       : `${stateEmoji(current)} ${current}`;
 
+    // "watch" variant — shared from the watch/player page. Leads with an
+    // invite ("I am watching…") and surfaces the viewer's current
+    // season/episode instead of a synopsis.
+    if (context.variant === 'watch') {
+      const season = context.season;
+      const episode = context.episode;
+      const progressLine = (season != null && episode != null)
+        ? `Currently I am in Season ${season} · Episode ${episode} — want to catch up with me?`
+        : `Want to catch up with me?`;
+
+      return [
+        `I am watching "🎬 ${title}" on ${CONFIG.siteLabel}`,
+        ratingLine,
+        '',
+        progressLine,
+        '',
+        `👉 Start now: ${safeUrl}`,
+      ].join('\n');
+    }
+
+    // Default "detail" variant — shared from the anime info page.
     return [
-      `🎬 ${title} — ${CONFIG.brand}`,
+      `🎬 ${title} — ${CONFIG.siteLabel}`,
       ratingLine,
       '',
       about,
@@ -203,7 +233,12 @@
     const encodedText = encodeURIComponent(text);
     const encodedUrl = encodeURIComponent(url);
     const encodedTitle = encodeURIComponent(title);
-    const textWithoutLink = encodeURIComponent(text.replace(`👉 Watch now: ${url}`, '').trim());
+    // Strip whichever closing "👉 ...: <url>" line is present (varies by
+    // page/variant) rather than a hardcoded label, so Telegram still gets a
+    // clean caption + separate url field either way.
+    const textWithoutLink = encodeURIComponent(
+      text.split('\n').filter((line) => !line.includes(url)).join('\n').trim()
+    );
 
     return {
       whatsapp: `https://wa.me/?text=${encodedText}`,
@@ -301,6 +336,24 @@
   // Share menu (accessible modal)
   // ---------------------------------------------------------------------
 
+  /**
+   * Renders the preview text as HTML with the brand name turned into a real
+   * clickable link (this popup is genuine HTML, unlike the plain-text
+   * message that actually gets sent). Only the first occurrence is linked;
+   * everything else is safely escaped as plain text.
+   */
+  function linkifyBrandInPreview(text) {
+    const escapedText = escapeHTML(text);
+    if (!CONFIG.brandUrl || !CONFIG.siteLabel) return escapedText;
+    const escapedSite = escapeHTML(CONFIG.siteLabel);
+    const idx = escapedText.indexOf(escapedSite);
+    if (idx === -1) return escapedText;
+    const before = escapedText.slice(0, idx);
+    const after = escapedText.slice(idx + escapedSite.length);
+    const href = escapeHTML(CONFIG.brandUrl);
+    return `${before}<a href="${href}" target="_blank" rel="noopener noreferrer" style="color:#6ea8fe;text-decoration:underline">${escapedSite}</a>${after}`;
+  }
+
   function showShareMenu(a, text, url, triggerEl) {
     injectShareMenuStyles();
     const title = buildShareTitle(a);
@@ -344,7 +397,7 @@
             <div class="aw-share-card-sub">${escapeHTML(stateLabel(a.state))} · ${escapeHTML(safeRating(a.rating))}</div>
           </div>
         </div>` : ''}
-        <div class="aw-share-preview">${escapeHTML(text)}</div>
+        <div class="aw-share-preview">${linkifyBrandInPreview(text)}</div>
         <div class="aw-share-grid">${items}</div>
         <button type="button" class="aw-share-close" data-action="close">Cancel</button>
       </div>
@@ -551,15 +604,18 @@
    *
    * @param {object} a - Anime object: { name, rating, state, review }
    * @param {string} [urlOverride] - Optional URL to share instead of current page.
+   * @param {Element} [triggerEl] - Element that triggered the share (for popover anchoring).
+   * @param {object} [context] - Optional variant info, e.g. { variant: 'watch', season, episode }.
+   *   Omit (or pass { variant: 'detail' }) for the standard anime-detail-page message.
    */
-  async function shareAnimeModern(a, urlOverride, triggerEl) {
+  async function shareAnimeModern(a, urlOverride, triggerEl, context) {
     if (!a || typeof a !== 'object') {
       console.warn('[share.js] shareAnimeModern called without a valid anime object.');
       return;
     }
 
     const url = urlOverride || window.location.href;
-    const text = buildShareText(a, url);
+    const text = buildShareText(a, url, context);
     const title = buildShareTitle(a);
 
     if (!CONFIG.forceCustomMenu && navigator.share) {
