@@ -111,6 +111,9 @@
     .season-option:hover{background:rgba(230,57,70,0.08)}
     .season-option.active{background:rgba(230,57,70,0.12);color:#e63946}
     .season-option.playing-indicator{position:relative}
+    #seasonDrawerPanelMobile .season-option{padding:0.5rem 0.75rem;font-size:12px}
+    #seasonDrawerPanelMobile .season-option span:last-child{font-size:10px}
+    #seasonDrawerPanelMobile .playing-season-badge{font-size:8px;padding:1px 5px;margin-left:4px}
 
     .ep-nav-btn{transition:all 0.2s ease;position:relative;overflow:hidden}
     .ep-nav-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(230,57,70,0.15),rgba(255,107,107,0.08));opacity:0;transition:opacity 0.2s}
@@ -124,6 +127,11 @@
 
     @media(max-width:1023px){
       .video-wrap{border-radius:0;aspect-ratio:auto;height:56.25vw}
+    }
+
+    /* ── Video stays stuck at top on scroll (mobile) — same sticky pattern as the episode panel ── */
+    @media(max-width:1023px){
+      .video-wrap{position:sticky;top:64px;z-index:50}
     }
     @media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
 
@@ -172,7 +180,13 @@
         <span class="font-display text-aw-fg text-lg">AnimeWave</span>
       </a>
       <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
-      <span id="pageTopbarTitle" class="text-aw-muted text-sm hidden sm:block font-medium truncate"></span>
+      <div class="hidden lg:flex lg:flex-1 lg:max-w-xl lg:mx-auto relative" id="searchWrap">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-aw-muted text-sm z-10"></i>
+        <input id="searchInput" type="text" placeholder="Search animes..." autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border border-aw-border rounded-full pl-10 pr-16 py-2 text-sm text-aw-fg placeholder-aw-muted focus:outline-none focus:border-aw-accent focus:ring-1 focus:ring-aw-accent/30 transition-all">
+        <span id="searchHint" class="search-hint">/</span>
+        <button id="searchClear" class="search-clear" aria-label="Clear search"><i class="fas fa-xmark"></i></button>
+        <div id="searchDropdown" class="search-dropdown"></div>
+      </div>
       <div id="mobileExtraBtns" class="shrink-0 items-center gap-1 lg:hidden">
         <button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()">
           <i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
@@ -196,7 +210,7 @@
       <button class="sb-btn" data-sb="home" onclick="window.location.href='index.html'" title="Home (H)">
         <i class="fas fa-house"></i><span class="sb-label">Home</span><span class="sb-tip">Home (H)</span>
       </button>
-      <button class="sb-btn" data-sb="search" onclick="openMobileSearch()" title="Search">
+      <button class="sb-btn" data-sb="search" onclick="document.getElementById('searchInput').focus()" title="Search">
         <i class="fas fa-magnifying-glass"></i><span class="sb-label">Search</span><span class="sb-tip">Search</span>
       </button>
       <button class="sb-btn" data-sb="shorts" onclick="handleSbShorts(this)" title="Shorts">
@@ -328,6 +342,25 @@
   </div>
 
   <!-- Mobile Bottom Nav -->
+   <div id="mobileSearchOverlay">
+    <div class="ms-head">
+      <button class="ms-back" onclick="closeMobileSearch()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <div class="ms-field">
+        <i class="fas fa-search ms-si"></i>
+        <input id="mobileSearchInput" type="text" placeholder="Search animes... (Enter to search)" autocomplete="off" spellcheck="false">
+        <button id="mobileSearchClear" class="ms-x" aria-label="Clear"><i class="fas fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="mobileSearchSugs" class="ms-sugs"></div>
+    <div id="mobileSearchBody" class="ms-body">
+      <div id="mobileSearchEmpty" class="text-center py-16 px-6">
+        <p class="text-aw-muted text-sm leading-relaxed">Search by title, genre, studio, or year</p>
+      </div>
+      <div id="mobileSearchGrid" class="flex flex-col gap-1"></div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
   <div id="mobileNavBar">
     <div class="flex items-stretch max-w-[500px] mx-auto">
       <button class="mnav-btn no-select" onclick="window.location.href='index.html'" title="Home" aria-label="Home">
@@ -360,7 +393,7 @@
   <main id="mainWrap" class="pt-16 lg:ml-[60px] max-w-[1600px] mx-auto relative z-[1]">
     <div class="grid lg:grid-cols-[1fr_360px]">
       <!-- Player Area -->
-      <div class="fade-in">
+      <div class="fade-in min-w-0" id="playerAreaWrap">
         <div class="video-wrap show-controls" id="videoWrap">
           <video id="mainVideo" playsinline style="display:none"></video>
           <iframe id="mainIframe"
@@ -419,15 +452,52 @@
         <!-- Info below player -->
         <div class="p-4 sm:p-5">
           <div class="glow-line mb-5"></div>
-          <div class="flex items-start justify-between gap-4 mb-3">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-3">
             <div class="min-w-0">
               <h2 id="epTitle" class="font-display text-lg sm:text-xl text-aw-fg mb-1 truncate"></h2>
               <div id="epMeta" class="flex flex-wrap items-center gap-2 text-xs text-aw-muted"></div>
             </div>
-            <a id="detailLink" href="#" class="action-btn shrink-0 inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-4 py-2 rounded-lg text-xs">
-              <i class="fas fa-info-circle"></i> <span class="hidden sm:inline">Details</span>
-            </a>
+            <div class="flex items-center gap-2 w-full lg:w-auto lg:shrink-0">
+              <button id="epNavPrevMobile" onclick="goEpSidebar(-1)" aria-label="Previous episode" class="ep-nav-btn lg:hidden order-1 shrink-0 inline-flex items-center justify-center w-8 h-8 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg rounded-lg">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <a id="detailLink" href="#" class="action-btn order-2 shrink-0 inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-3 sm:px-4 py-2 rounded-lg text-xs">
+                <i class="fas fa-info-circle"></i> <span class="hidden sm:inline">Details</span>
+              </a>
+              <button id="epNavNextMobile" onclick="goEpSidebar(1)" aria-label="Next episode" class="ep-nav-btn lg:hidden order-3 shrink-0 inline-flex items-center justify-center w-8 h-8 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg rounded-lg">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <button id="shareBtn" type="button" onclick="handleShare(event)" class="action-btn order-4 shrink-0 ml-auto inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-3 sm:px-4 py-2 rounded-lg text-xs">
+                <i class="fas fa-share-alt"></i> <span class="hidden sm:inline">Share</span>
+              </button>
+              <button id="watchSaveBtn" type="button" onclick="handleSave()" class="action-btn order-5 shrink-0 inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-3 sm:px-4 py-2 rounded-lg text-xs">
+                <i class="far fa-bookmark"></i> <span class="hidden sm:inline">Save</span>
+              </button>
+            </div>
           </div>
+        </div>
+
+        <!-- Mobile Episode Section -->
+        <div class="lg:hidden border-t border-aw-border bg-aw-bg2">
+          <div class="sticky z-10 bg-aw-bg2 border-b border-aw-border" style="top:calc(64px + 56.25vw)">
+            <div class="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
+              <h3 class="font-display text-sm text-aw-fg">Episodes</h3>
+              <span id="epCountMobile" class="text-[10px] text-aw-muted bg-aw-bg px-2 py-0.5 rounded-full"></span>
+            </div>
+            <div id="seasonDrawerMobile" class="px-3 pb-1.5" style="display:none">
+              <button class="season-drawer-trigger w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('mobile')">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <i class="fas fa-layer-group text-aw-accent text-[10px] shrink-0"></i>
+                  <span id="seasonDrawerLabelMobile" class="text-xs font-medium text-aw-fg truncate"></span>
+                </div>
+                <i id="seasonDrawerChevronMobile" class="fas fa-chevron-down text-aw-muted text-[10px] transition-transform duration-300 shrink-0 ml-2"></i>
+              </button>
+              <div id="seasonDrawerPanelMobile" class="season-drawer-panel mt-1 rounded-md border border-aw-border bg-aw-bg overflow-hidden">
+                <div id="seasonDrawerOptionsMobile" class="py-1"></div>
+              </div>
+            </div>
+          </div>
+          <div id="epListMobile" class="p-3 pb-24 grid grid-cols-1 gap-2"></div>
         </div>
       </div>
 
@@ -463,37 +533,6 @@
           <div class="p-2 flex-1 overflow-y-auto" id="epList"></div>
         </div>
       </aside>
-    </div>
-
-    <!-- Mobile Episode Section -->
-    <div class="lg:hidden border-t border-aw-border bg-aw-bg2">
-      <div class="sticky top-16 z-10 bg-aw-bg2 border-b border-aw-border">
-        <div class="p-4 pb-2 flex items-center justify-between">
-          <h3 class="font-display text-base text-aw-fg">Episodes</h3>
-          <span id="epCountMobile" class="text-xs text-aw-muted bg-aw-bg px-2.5 py-0.5 rounded-full"></span>
-        </div>
-        <div id="seasonDrawerMobile" class="px-4 pb-2" style="display:none">
-          <button class="season-drawer-trigger w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('mobile')">
-            <div class="flex items-center gap-2">
-              <i class="fas fa-layer-group text-aw-accent text-xs"></i>
-              <span id="seasonDrawerLabelMobile" class="text-sm font-medium text-aw-fg"></span>
-            </div>
-            <i id="seasonDrawerChevronMobile" class="fas fa-chevron-down text-aw-muted text-xs transition-transform duration-300"></i>
-          </button>
-          <div id="seasonDrawerPanelMobile" class="season-drawer-panel mt-1.5 rounded-lg border border-aw-border bg-aw-bg overflow-hidden">
-            <div id="seasonDrawerOptionsMobile" class="py-1"></div>
-          </div>
-        </div>
-        <div class="px-4 pb-3 flex gap-2">
-          <button id="epNavPrevMobile" onclick="goEpSidebar(-1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
-            <i class="fas fa-chevron-left text-[10px]"></i> Previous
-          </button>
-          <button id="epNavNextMobile" onclick="goEpSidebar(1)" class="ep-nav-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-aw-border bg-aw-bg text-aw-fg text-xs font-medium">
-            Next <i class="fas fa-chevron-right text-[10px]"></i>
-          </button>
-        </div>
-      </div>
-      <div id="epListMobile" class="p-3 pb-24 grid grid-cols-1 gap-2"></div>
     </div>
   </main>
 
@@ -724,8 +763,7 @@
 
       const pageTitleText = `${anime.name} S${playSeason}E${playEp} — AnimeWave`;
       document.title = pageTitleText;
-      document.getElementById('pageTopbarTitle').textContent = `${anime.name} · Season ${playSeason} · Episode ${playEp}`;
-      document.getElementById('epTitle').textContent = `Season ${playSeason} · Episode ${playEp}`;
+      document.getElementById('epTitle').innerHTML = `${anime.name}<span class="block text-sm font-normal text-aw-muted mt-0.5">Season ${playSeason} · Episode ${playEp}</span>`;
 
       /* SEO / social preview tags — updated per anime + episode (escaped, not injected as HTML) */
       const seoDesc = `Watch ${anime.name} Season ${playSeason} Episode ${playEp} online free in HD on AnimeWave.`;
@@ -764,6 +802,22 @@
       if (sb) { sb.textContent = c > 0 ? label : ''; sb.classList.toggle('show', c > 0); }
       const mb = document.getElementById('mnavSaveDirty');
       if (mb) { mb.textContent = c > 0 ? label : ''; mb.classList.toggle('show', c > 0); }
+      const wsb = document.getElementById('watchSaveBtn');
+      if (wsb && anime) {
+        const saved = isSaved(anime.id);
+        wsb.classList.toggle('text-aw-accent', saved);
+        wsb.classList.toggle('border-aw-accent/40', saved);
+        wsb.querySelector('i').className = saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+        const label = wsb.querySelector('span');
+        if (label) label.textContent = saved ? 'Saved' : 'Save';
+      }
+    }
+
+    function handleShare(e) {
+      if (!anime) return;
+      const url = `${location.origin}${location.pathname}?id=${encodeURIComponent(anime.id)}&s=${playSeason}&e=${playEp}`;
+      const trigger = (e && e.currentTarget) || document.getElementById('shareBtn');
+      shareAnimeModern(anime, url, trigger, { variant: 'watch', season: playSeason, episode: playEp });
     }
 
     function handleSave() {
@@ -1160,7 +1214,149 @@
     loadData();
 
     /* ====== Shared chrome wiring (settings overlay data actions, random, shorts) ====== */
-    window.openMobileSearch = function () { window.location.href = 'index.html'; };
+    (function () {
+      var msTimer = null, msHlIdx = -1, msSugs_arr = [];
+      var msInput = document.getElementById('mobileSearchInput');
+      var msClear = document.getElementById('mobileSearchClear');
+      var msSugsEl = document.getElementById('mobileSearchSugs');
+      var msEmpty = document.getElementById('mobileSearchEmpty');
+      var msGrid = document.getElementById('mobileSearchGrid');
+      var msOverlay = document.getElementById('mobileSearchOverlay');
+
+      function highlightMatch(text, query) {
+        if (!query) return text;
+        var idx = text.toLowerCase().indexOf(query.toLowerCase());
+        if (idx === -1) return text;
+        return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+      }
+
+      function suggestionRow(a, q) {
+        var dn = a.name.length > 50 ? a.name.slice(0, 50) + '...' : a.name;
+        var mp = [];
+        if (a.year) mp.push(a.year);
+        if (a.genre && a.genre.length) mp.push(a.genre[0]);
+        if (a.episodes) mp.push(a.episodes + ' Ep');
+        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" loading="lazy" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+      }
+
+      window.openMobileSearch = function () {
+        msOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () { msInput.focus(); }, 350);
+      };
+      window.closeMobileSearch = function () {
+        msOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(function () {
+          msInput.value = ''; msClear.classList.remove('show'); msSugsEl.innerHTML = '';
+          msEmpty.classList.remove('hidden'); msGrid.innerHTML = '';
+          msSugs_arr = []; msHlIdx = -1;
+        }, 350);
+      };
+
+      function msFilter() {
+        var q = msInput.value.trim().toLowerCase();
+        msGrid.innerHTML = '';
+        if (!q) { msEmpty.classList.remove('hidden'); return; }
+        msEmpty.classList.add('hidden');
+        var f = allAnime.filter(function (a) {
+          var h = [a.name, a.altName, a.studio, a.year].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+          return h.includes(q);
+        });
+        if (!f.length) { msGrid.innerHTML = '<div class="text-center py-16 px-6"><p class="text-aw-fg text-base font-semibold mb-2">No Results</p><p class="text-aw-muted text-sm">Try different keywords or check spelling</p></div>'; return; }
+        msGrid.innerHTML = f.map(function (a) { return suggestionRow(a, q); }).join('');
+        msGrid.querySelectorAll('.search-suggestion').forEach(function (el) {
+          el.addEventListener('click', function () { window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid); });
+        });
+      }
+
+      function msShowSugs(q) {
+        if (!q || q.length < 1) { msSugsEl.innerHTML = ''; msSugs_arr = []; msHlIdx = -1; return; }
+        var lq = q.toLowerCase().trim();
+        var m = allAnime.filter(function (a) {
+          var h = [a.name, a.altName, a.studio].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+          return h.includes(lq);
+        }).slice(0, 8);
+        msSugs_arr = m; msHlIdx = -1;
+        msSugsEl.innerHTML = m.map(function (a) { return suggestionRow(a, lq); }).join('');
+        msSugsEl.querySelectorAll('.search-suggestion').forEach(function (el) {
+          el.addEventListener('click', function () { window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid); });
+        });
+      }
+
+      msInput.addEventListener('input', function () {
+        var v = msInput.value;
+        msClear.classList.toggle('show', v.length > 0);
+        clearTimeout(msTimer);
+        msTimer = setTimeout(function () { msShowSugs(v); }, 150);
+      });
+      msClear.addEventListener('click', function () {
+        msInput.value = ''; msClear.classList.remove('show'); msSugsEl.innerHTML = '';
+        msEmpty.classList.remove('hidden'); msGrid.innerHTML = ''; msInput.focus();
+      });
+      msInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          msSugsEl.innerHTML = '';
+          msFilter();
+        } else if (e.key === 'Escape') { closeMobileSearch(); }
+      });
+
+      var searchInput = document.getElementById('searchInput');
+      var searchDropdown = document.getElementById('searchDropdown');
+      var searchClear = document.getElementById('searchClear');
+      var searchHint = document.getElementById('searchHint');
+      if (searchInput) {
+        var highlightedIndex = -1, currentSuggestions = [];
+
+        function showSuggestions(query) {
+          if (!query || query.length < 1) { closeSuggestions(); return; }
+          var q = query.toLowerCase().trim();
+          var matches = allAnime.filter(function (a) {
+            var hay = [a.name, a.altName, a.studio].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+            return hay.includes(q);
+          }).slice(0, 8);
+          if (!matches.length) { closeSuggestions(); return; }
+          currentSuggestions = matches; highlightedIndex = -1;
+          searchDropdown.innerHTML = matches.map(function (a) { return suggestionRow(a, q); }).join('');
+          searchDropdown.classList.add('open');
+          searchDropdown.querySelectorAll('.search-suggestion').forEach(function (el) {
+            el.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            el.addEventListener('click', function () {
+              closeSuggestions();
+              window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid);
+            });
+          });
+        }
+        function closeSuggestions() { searchDropdown.classList.remove('open'); highlightedIndex = -1; currentSuggestions = []; }
+
+        searchInput.addEventListener('input', function () {
+          var val = searchInput.value;
+          searchClear.classList.toggle('show', val.length > 0);
+          searchHint.classList.toggle('hide', val.length > 0);
+          showSuggestions(val);
+        });
+        searchClear.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        searchClear.addEventListener('click', function () {
+          searchInput.value = ''; searchClear.classList.remove('show'); searchHint.classList.remove('hide');
+          closeSuggestions(); searchInput.focus();
+        });
+        searchInput.addEventListener('keydown', function (e) {
+          var isOpen = searchDropdown.classList.contains('open');
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (isOpen && highlightedIndex >= 0 && currentSuggestions[highlightedIndex]) {
+              closeSuggestions();
+              window.location.href = 'anime.html?id=' + encodeURIComponent(currentSuggestions[highlightedIndex].id);
+              return;
+            }
+            closeSuggestions();
+            window.location.href = 'index.html?q=' + encodeURIComponent(searchInput.value.trim());
+          } else if (e.key === 'Escape') { searchInput.blur(); closeSuggestions(); }
+        });
+        document.addEventListener('click', function (e) { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
+      }
+    })();
 
     window.showStConfirm = function (el, msg, action) {
       document.querySelectorAll('.st-item.confirming').forEach(function (i) { i.classList.remove('confirming'); });
@@ -1223,5 +1419,6 @@
 
   <script src="settings.js"></script>
   <script src="ui.js"></script>
+  <script src="share.js"></script>
 </body>
 </html>
