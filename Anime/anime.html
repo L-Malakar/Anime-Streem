@@ -661,9 +661,10 @@
     function setProgress(animeId, epNum) { const prev = getProgress(animeId); if (epNum > prev) localStorage.setItem('aw_prog_' + animeId, String(epNum)); }
     function clearProgress(animeId) { localStorage.removeItem('aw_prog_' + animeId); }
 
-    function shareAnime() {
+    function shareAnime(e) {
       const a = getAnime(); if (!a) return;
-      shareAnimeModern(a);
+      const trigger = e && e.currentTarget;
+      shareAnimeModern(a, null, trigger, { variant: 'detail' });
     }
     function fallbackCopy(text) {
       const ta = document.createElement('textarea');
@@ -1400,7 +1401,7 @@
               <button id="saveBtn" onclick="handleSave()" class="action-btn inline-flex items-center gap-2 ${saved ? 'bg-aw-accent/20 text-aw-accentL border-aw-accent/40' : 'bg-aw-bg2 text-aw-muted border-aw-border hover:text-aw-fg'} border font-medium px-6 py-3 rounded-lg">
                 <i class="fas fa-bookmark"></i> ${saved ? 'Saved' : 'Save'}
               </button>
-              <button onclick="shareAnime()" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-5 py-3 rounded-lg" title="Copy link">
+              <button onclick="shareAnime(event)" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-5 py-3 rounded-lg" title="Copy link">
                 <i class="fas fa-share-nodes"></i> <span class="hidden sm:inline">Share</span>
               </button>
               ${a.details ? `<a href="${a.details}" target="_blank" rel="noopener" class="action-btn inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-5 py-3 rounded-lg">
@@ -1867,4 +1868,4 @@
   <script src="ui.js"></script>
 <script src="share.js"></script>
 </body>
-  </html>
+</html>
