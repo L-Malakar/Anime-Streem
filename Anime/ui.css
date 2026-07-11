@@ -88,12 +88,14 @@
       #csOverlay .st-head{padding-top:16px;border-radius:20px 0 0 0}
       #csOverlay .st-body{padding:20px 24px}
     @media(max-width:1023px){#csOverlay{display:none!important}}
+    @media(min-width:1024px){
       #settingsOverlay{left:auto;right:0;top:0;bottom:0;width:420px;transform:translateX(100%);border-left:1px solid #2a2a2a;border-radius:20px 0 0 20px;box-shadow:-20px 0 60px rgba(0,0,0,0.5)}
       #settingsOverlay.open{transform:translateX(0)}
       #settingsOverlay .st-head{padding-top:16px;border-radius:20px 0 0 0}
       #settingsOverlay .st-body{padding:20px 24px}
       #settingsOverlay .st-group{margin-bottom:24px}
       #settingsOverlay .st-about{padding:24px}
+    }
     .st-random-confirm{display:none;align-items:center;gap:10px;flex:1;animation:slideIn 0.15s ease}
     .st-item.confirming.random-active .st-item-normal{display:none}
     .st-item.confirming.random-active .st-random-confirm{display:flex}
