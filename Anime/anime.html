@@ -577,7 +577,7 @@
       </div>
     </div>
     <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
-      <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onerror="handleImgError(this)" onclick="scrollToContent()">
+      <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onclick="scrollToContent()">
       <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex flex-col items-center justify-center z-10 cursor-pointer gap-2" onclick="playMobileTrailer()">
         <div class="w-14 h-14 rounded-full bg-aw-accent/90 flex items-center justify-center" style="box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 8px 24px rgba(230,57,70,0.5)">
           <i class="fas fa-play text-white text-lg ml-0.5"></i>
@@ -586,7 +586,7 @@
       <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:20"></div>
     </div>
     <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;position:fixed;top:0;left:0;width:720px;max-width:56vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible;z-index:998">
-      <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
+      <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
       <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
         <i class="fas fa-play text-[8px]"></i><span id="mobileTrailerLabel">TRAILER · EP 1</span>
       </div>
@@ -1867,4 +1867,4 @@
   <script src="ui.js"></script>
 <script src="share.js"></script>
 </body>
-</html>
+  </html>
