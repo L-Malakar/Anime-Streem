@@ -149,8 +149,25 @@
         max-height:min(50vh, calc(70vw * 9 / 16));
       }
     }
+    @media (min-width:1024px){
+      #mobileTrailerWrap.docked{
+        top:auto !important;
+        left:auto !important;
+        bottom:24px;right:24px;
+        width:420px;max-width:420px;
+        max-height:none;
+        margin:0;
+        animation:pipIn 0.4s cubic-bezier(0.22,1,0.36,1);
+      }
+    }
+    @keyframes pipIn{from{opacity:0;transform:translateY(20px) scale(0.92)}to{opacity:1;transform:translateY(0) scale(1)}}
     #mobileTrailerCloseBtn{display:none}
     #mobileTrailerWrap.docked #mobileTrailerCloseBtn{display:flex}
+
+    /* Smooth the poster/video-box re-centering on desktop, and the video box's own entrance/exit */
+    #posterFg.posterfg-smooth{transition:transform 0.45s cubic-bezier(0.22,1,0.36,1)}
+    #mobileTrailerVideoBox{transition:opacity 0.35s ease,transform 0.4s cubic-bezier(0.22,1,0.36,1)}
+    #mobileTrailerVideoBox.vb-hidden{opacity:0;transform:scale(0.92) translateX(14px);pointer-events:none}
     @media (max-width:1023px){
       #posterSection{min-height:0 !important}
       #posterSection > .relative.z-\[3\]{min-height:0 !important;padding:1rem 1rem 2rem !important;justify-content:flex-start !important}
@@ -554,28 +571,26 @@
     <div class="poster-orb" style="top:40%;left:50%"></div>
     <div class="vignette"></div>
     <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
-      <div class="flex items-center gap-6">
-        <div class="flex flex-col items-center">
-          <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
-          <div id="posterWatchWrap" class="mt-5"></div>
-        </div>
-        <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;width:420px;max-width:40vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible">
-          <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
-          <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
-            <i class="fas fa-play text-[8px]"></i><span id="mobileTrailerLabel">TRAILER · EP 1</span>
-          </div>
-          <button id="mobileTrailerCloseBtn" onclick="event.stopPropagation(); closeMobileTrailer()" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center z-20" style="display:none" aria-label="Close trailer"><i class="fas fa-xmark text-[11px]"></i></button>
-        </div>
+      <div class="flex flex-col items-center">
+        <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
+        <div id="posterWatchWrap" class="mt-5"></div>
       </div>
     </div>
     <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
       <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onerror="handleImgError(this)" onclick="scrollToContent()">
-      <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex items-center justify-center z-10 cursor-pointer" onclick="playMobileTrailer()">
+      <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex flex-col items-center justify-center z-10 cursor-pointer gap-2" onclick="playMobileTrailer()">
         <div class="w-14 h-14 rounded-full bg-aw-accent/90 flex items-center justify-center" style="box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 8px 24px rgba(230,57,70,0.5)">
           <i class="fas fa-play text-white text-lg ml-0.5"></i>
         </div>
       </div>
-      <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:2"></div>
+      <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:20"></div>
+    </div>
+    <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;position:fixed;top:0;left:0;width:720px;max-width:56vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible;z-index:998">
+      <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-presentation" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
+      <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
+        <i class="fas fa-play text-[8px]"></i><span id="mobileTrailerLabel">TRAILER · EP 1</span>
+      </div>
+      <button id="mobileTrailerCloseBtn" onclick="event.stopPropagation(); closeMobileTrailer()" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center z-20" style="display:none" aria-label="Close trailer"><i class="fas fa-xmark text-[11px]"></i></button>
     </div>
     <div id="mobileTrailerWrap" class="rounded-2xl overflow-hidden" style="display:none;background:#000;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55)"></div>
     <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-aw-bg to-transparent z-[4] pointer-events-none"></div>
@@ -848,6 +863,20 @@
         });
       }
       onScroll(); // set correct initial position/scale immediately, before any scroll happens
+      window.__repositionPosterGroup = onScroll;
+      // Smoothly animates the poster's shift when the video box opens/closes,
+      // without leaving a transition active during normal scroll-driven updates
+      // (which would make scrolling feel laggy). Reading offsetWidth forces the
+      // browser to commit the poster's CURRENT position before we change it, so
+      // the transition has a real starting point to animate from — otherwise the
+      // old and new position can land in the same style-recalc and it just snaps.
+      window.__repositionPosterGroupSmooth = function () {
+        if (!fg) return;
+        fg.classList.add('posterfg-smooth');
+        void fg.offsetWidth;
+        updateFg(section.getBoundingClientRect());
+        setTimeout(function () { fg.classList.remove('posterfg-smooth'); }, 480);
+      };
     }
 
     function initScrollReveal() {
@@ -1072,6 +1101,9 @@
       if (!iframe || !iframe.dataset.src) return;
       if (playBtn) playBtn.style.display = 'none';
 
+      trailerTried = true;
+      renderQuickBtn();
+
       function kickRepaint() {
         // Forces the browser to recomposite the iframe's video layer,
         // fixing the black-frame-with-audio bug on desktop GPUs.
@@ -1083,7 +1115,7 @@
         }, 250);
       }
 
-      if (window.innerWidth < 1024 && wrap) {
+      if (wrap) {
         wrap.appendChild(iframe);
         if (closeBtn) wrap.appendChild(closeBtn);
         iframe.className = 'w-full h-full';
@@ -1100,12 +1132,6 @@
           iframe.src = iframe.dataset.src;
           iframe.addEventListener('load', kickRepaint, { once: true });
         });
-      } else if (videoBox) {
-        videoBox.style.display = 'block';
-        if (closeBtn) closeBtn.style.display = 'flex';
-        void videoBox.offsetHeight;
-        iframe.src = iframe.dataset.src;
-        iframe.addEventListener('load', kickRepaint, { once: true });
       }
     };
 
@@ -1114,14 +1140,13 @@
       const playBtn = document.getElementById('mobileTrailerPlayBtn');
       const closeBtn = document.getElementById('mobileTrailerCloseBtn');
       const wrap = document.getElementById('mobileTrailerWrap');
-      const fg = document.getElementById('posterFg');
+      const videoBox = document.getElementById('mobileTrailerVideoBox');
       if (iframe) { iframe.removeAttribute('src'); iframe.style.display = 'none'; }
       if (playBtn) playBtn.style.display = '';
       if (closeBtn) closeBtn.style.display = 'none';
 
-      const videoBox = document.getElementById('mobileTrailerVideoBox');
-      if (videoBox) videoBox.style.display = 'none';
       if (wrap && videoBox && iframe) {
+        // Return the iframe to its resting container (unused visually, just a home)
         videoBox.insertBefore(iframe, videoBox.firstChild);
         if (closeBtn) videoBox.appendChild(closeBtn);
         iframe.className = 'absolute inset-0 w-full h-full';
@@ -1160,6 +1185,41 @@
 
     let currentAnime = null;
     let currentSeasonKey = null;
+    let trailerTried = false;
+    let quickBtnState = null;
+
+    function renderQuickBtn() {
+      const quickBtn = document.getElementById('posterQuickBtn');
+      if (!quickBtn || !quickBtnState) return;
+      const { a, hasEps, watchable, allFinished, hasProgress, nextEp, hasTrailer } = quickBtnState;
+
+      if (hasEps && watchable && !allFinished) {
+        if (!hasProgress && hasTrailer && !trailerTried) {
+          // First-time visitor, trailer available, hasn't tried it yet — offer the trailer first.
+          quickBtn.innerHTML = `
+            <a href="javascript:void(0)" onclick="playMobileTrailer()"
+               class="poster-quick-btn" title="Watch the trailer first">
+              <i class="fas fa-play text-sm"></i>
+              <span>Try Now</span>
+            </a>`;
+        } else {
+          quickBtn.innerHTML = `
+            <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=${hasProgress ? nextEp : 1}"
+               class="poster-quick-btn" title="${hasProgress ? 'Continue from Episode ' + nextEp : 'Play Episode 1'}">
+              <i class="fas ${hasProgress ? 'fa-forward' : 'fa-play'} text-sm"></i>
+              <span>${hasProgress ? 'Continue' : 'Watch Now'}</span>
+              ${hasProgress ? `<span class="text-white/60 text-xs font-normal">Ep ${nextEp}</span>` : ''}
+            </a>`;
+        }
+      } else if (hasEps && watchable && allFinished) {
+        quickBtn.innerHTML = `
+          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1"
+             class="poster-quick-btn" title="Re-watch from Episode 1" style="background:rgba(26,26,26,0.9);box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 30px rgba(0,0,0,0.4)">
+            <i class="fas fa-rotate-right text-sm text-green-400"></i>
+            <span class="text-green-400">Re-watch</span>
+          </a>`;
+      } else { quickBtn.innerHTML = ''; }
+    }
     function renderPage() {
       const a = getAnime();
       if (!a) { window.location.href = 'index.html'; return; }
@@ -1218,23 +1278,10 @@
         if (playBtn) playBtn.style.display = 'none';
       }
 
-      const quickBtn = document.getElementById('posterQuickBtn');
-      if (hasEps && watchable && !allFinished) {
-        quickBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=${hasProgress ? nextEp : 1}"
-             class="poster-quick-btn" title="${hasProgress ? 'Continue from Episode ' + nextEp : 'Play Episode 1'}">
-            <i class="fas ${hasProgress ? 'fa-forward' : 'fa-play'} text-sm"></i>
-            <span>${hasProgress ? 'Continue' : 'Watch Now'}</span>
-            ${hasProgress ? `<span class="text-white/60 text-xs font-normal">Ep ${nextEp}</span>` : ''}
-          </a>`;
-      } else if (hasEps && watchable && allFinished) {
-        quickBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1"
-             class="poster-quick-btn" title="Re-watch from Episode 1" style="background:rgba(26,26,26,0.9);box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 30px rgba(0,0,0,0.4)">
-            <i class="fas fa-rotate-right text-sm text-green-400"></i>
-            <span class="text-green-400">Re-watch</span>
-          </a>`;
-      } else { quickBtn.innerHTML = ''; }
+      const hasTrailer = !!(document.getElementById('mobileTrailerIframe') && document.getElementById('mobileTrailerIframe').dataset.src);
+      if (!sameAnime) trailerTried = false;
+      quickBtnState = { a, hasEps, watchable, allFinished, hasProgress, nextEp, hasTrailer };
+      renderQuickBtn();
 
       const posterBtn = document.getElementById('posterWatchWrap');
       if (hasEps && !allFinished) {
