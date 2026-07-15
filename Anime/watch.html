@@ -334,7 +334,7 @@
           <img src="logo.PNG" alt="AnimeWave">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <p>Last Updated: <span class="st-ver">V1.26x4.7</span></p>
+          <p>Last Updated: <span class="st-ver">V1.26x4.8</span></p>
           <p>Last Updated on: <span class="st-ver">08:07:2026</span></p>
         </div>
       </div>
@@ -841,8 +841,10 @@
       /* Determine the "current" episode in the viewed season for nav purposes */
       const currentInView = (viewSeason === playSeason) ? playEp : (nums.length > 0 ? nums[0] : 0);
       const idx = nums.indexOf(currentInView);
-      const hasPrev = idx > 0;
-      const hasNext = idx < nums.length - 1;
+      const seasonNums = getSeasonKeys().map(sk => parseInt(sk.replace('s', ''))).sort((a, b) => a - b);
+      const sIdx = seasonNums.indexOf(viewSeason);
+      const hasPrev = idx > 0 || sIdx > 0;
+      const hasNext = idx < nums.length - 1 || sIdx < seasonNums.length - 1;
 
       const pd = document.getElementById('epNavPrevDesktop');
       const nd = document.getElementById('epNavNextDesktop');
@@ -863,9 +865,23 @@
       const target = nums[idx + delta];
       if (target !== undefined) {
         window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${viewSeason}&e=${target}`;
-      } else {
-        showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
+        return;
       }
+
+      /* Ran out of episodes in this viewed season — cross into the next/previous season */
+      const seasonNums = getSeasonKeys().map(sk => parseInt(sk.replace('s', ''))).sort((a, b) => a - b);
+      const sIdx = seasonNums.indexOf(viewSeason);
+      const targetSeason = seasonNums[sIdx + delta];
+      if (targetSeason !== undefined) {
+        const epsInTarget = getSortedEpNums(targetSeason);
+        const targetEp = delta > 0 ? epsInTarget[0] : epsInTarget[epsInTarget.length - 1];
+        if (targetEp !== undefined) {
+          window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${targetSeason}&e=${targetEp}`;
+          return;
+        }
+      }
+
+      showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
     }
 
     /* Player controls prev/next: navigates within the PLAYING season */
@@ -875,9 +891,23 @@
       const target = nums[idx + delta];
       if (target !== undefined) {
         window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${playSeason}&e=${target}`;
-      } else {
-        showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
+        return;
       }
+
+      /* Ran out of episodes in this season — cross into the next/previous season */
+      const seasonNums = getSeasonKeys().map(sk => parseInt(sk.replace('s', ''))).sort((a, b) => a - b);
+      const sIdx = seasonNums.indexOf(playSeason);
+      const targetSeason = seasonNums[sIdx + delta];
+      if (targetSeason !== undefined) {
+        const epsInTarget = getSortedEpNums(targetSeason);
+        const targetEp = delta > 0 ? epsInTarget[0] : epsInTarget[epsInTarget.length - 1];
+        if (targetEp !== undefined) {
+          window.location.href = `watch.html?id=${encodeURIComponent(anime.id)}&s=${targetSeason}&e=${targetEp}`;
+          return;
+        }
+      }
+
+      showToast(delta > 0 ? 'No next episode' : 'No previous episode', 'info');
     }
 
     /* ── Video Loading ── */
@@ -940,13 +970,6 @@
         iframe.onload = () => { iframeLoaded = true; spinner.style.display = 'none'; };
         iframe.onerror = () => { showError('Failed to load video', 'The source may be down — try retrying or pick another episode.'); showToast('Failed to load video', 'error'); };
         iframe.src = url;
-        /* Cross-origin iframes rarely fire onerror even when the source is dead, so if
-           nothing has loaded after a while, offer a retry instead of failing silently. */
-        setTimeout(() => {
-          if (!iframeLoaded && iframe.style.display !== 'none') {
-            showError('This is taking longer than usual', 'The video source may be slow or unavailable.');
-          }
-        }, 12000);
         return;
       }
 
@@ -1420,5 +1443,6 @@
   <script src="settings.js"></script>
   <script src="ui.js"></script>
   <script src="share.js"></script>
+  <script src="net.js"></script>
 </body>
 </html>
