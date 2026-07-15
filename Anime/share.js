@@ -284,6 +284,11 @@
       .aw-share-x{display:none;background:transparent;border:none;color:#8a8a8a;cursor:pointer;font-size:1.05rem;line-height:1;padding:.2rem .35rem;border-radius:6px}
       .aw-share-x:hover,.aw-share-x:focus-visible{color:#fff;background:rgba(255,255,255,.08)}
       .aw-share-preview{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.75rem;font-size:.78rem;line-height:1.5;color:#b8b8b8;white-space:pre-wrap;margin-bottom:1rem;max-height:140px;overflow-y:auto;font-family:ui-monospace,monospace}
+      .aw-share-linkrow{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:.4rem .4rem .4rem 1rem;margin-bottom:1rem}
+      .aw-share-linktext{flex:1;min-width:0;color:#b8b8b8;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .aw-share-copybtn{flex-shrink:0;background:#fff;color:#141414;border:none;border-radius:20px;padding:.5rem 1rem;font-weight:600;font-size:.78rem;cursor:pointer}
+      .aw-share-copybtn:hover,.aw-share-copybtn:focus-visible{background:#e5e5e5}
+      .aw-share-copybtn.aw-copied{background:#6ea8fe;color:#0a0a0a}
       .aw-share-card{display:flex;align-items:center;gap:.7rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.5rem;margin-bottom:.6rem}
       .aw-share-card-img{width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;background:rgba(255,255,255,.08)}
       .aw-share-card-meta{min-width:0}
@@ -294,6 +299,16 @@
       .aw-share-item:hover,.aw-share-item:focus-visible{background:rgba(255,255,255,.09);transform:translateY(-2px)}
       .aw-share-item:focus-visible{outline:2px solid #6ea8fe;outline-offset:2px}
       .aw-share-item i{font-size:1.05rem}
+      .aw-share-item i.fa-whatsapp{color:#25D366}
+      .aw-share-item i.fa-telegram{color:#26A5E4}
+      .aw-share-item i.fa-x-twitter{color:#ffffff}
+      .aw-share-item i.fa-reddit{color:#FF4500}
+      .aw-share-item i.fa-facebook{color:#1877F2}
+      .aw-share-item i.fa-linkedin{color:#0A66C2}
+      .aw-share-item i.fa-comment-sms{color:#34C759}
+      .aw-share-item i.fa-envelope{color:#EA4335}
+      .aw-share-item i.fa-copy{color:#8a8a8a}
+      .aw-share-item i.fa-ellipsis{color:#8a8a8a}
       .aw-share-item .aw-share-key{position:absolute;top:3px;right:5px;font-size:.58rem;color:#6a6a6a;display:none}
       .aw-share-close{width:100%;text-align:center;padding:.7rem;border-radius:10px;background:rgba(255,255,255,.06);color:#b8b8b8;font-weight:600;font-size:.85rem;cursor:pointer;border:none}
       .aw-share-close:hover,.aw-share-close:focus-visible{background:rgba(255,255,255,.1)}
@@ -398,6 +413,10 @@
           </div>
         </div>` : ''}
         <div class="aw-share-preview">${linkifyBrandInPreview(text)}</div>
+        <div class="aw-share-linkrow">
+          <span class="aw-share-linktext">${escapeHTML(url)}</span>
+          <button type="button" class="aw-share-copybtn" data-action="copylink">Copy</button>
+        </div>
         <div class="aw-share-grid">${items}</div>
         <button type="button" class="aw-share-close" data-action="close">Cancel</button>
       </div>
@@ -427,6 +446,19 @@
           const ok = await copyToClipboard(text);
           if (window.showToast) window.showToast(ok ? 'Share text copied!' : 'Could not copy', ok ? 'success' : 'error');
           close();
+          break;
+        }
+        case 'copylink': {
+          const ok = await copyToClipboard(url);
+          const btn = sheet.querySelector('[data-action="copylink"]');
+          if (btn) {
+            btn.textContent = ok ? 'Copied!' : 'Failed';
+            btn.classList.toggle('aw-copied', ok);
+            setTimeout(() => {
+              btn.textContent = 'Copy';
+              btn.classList.remove('aw-copied');
+            }, 1500);
+          }
           break;
         }
         case 'close':
