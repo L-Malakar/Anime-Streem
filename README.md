@@ -1,4 +1,4 @@
-# Anime-Streem
+# <img src="https://avatars.githubusercontent.com/u/261390550?v=4&size=64" width="24" align="cinter" /> Anime-Streem
 ---
 **About**:-
 
