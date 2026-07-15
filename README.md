@@ -8,17 +8,17 @@ A streaming platform(Website) demo program. You can youse or learn from this pro
 [![Website 2 (All devise designed)](https://img.shields.io/badge/Website_2_(All_designed)-VLC_Orange)](https://l-malakar.github.io/Anime-Streem/Anime/index)
 
 ---
-**Last Update**:- `1.26.4.7` (10/07/2026)
+**Last Update**:- `1.26.4.8` (15/07/2026)
 
 ```
-1. New share option add to anime.htm along with share.js
+1. Update in share option add to anime.htm along with watch.html
 ```
 ```
-2.We improve the logic for anime.html
+2.We improve the logic for watch.html
 ```
 ```
-3.Fix some bug at anime.html
+3.Fix some bug at anime.html and index.html
 ```
 ```
-4. Add trail of ep1 at the top od the page for users to try the anime befoure they start.
+4. Add trail of ep1 at the top od the page for users to try the anime befoure they start. In main page and anime page.
 ```
