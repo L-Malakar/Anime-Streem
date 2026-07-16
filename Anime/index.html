@@ -1259,16 +1259,19 @@
       let epBadge = '';
       let seasonLabel = '';
       if (opts.showEpcount && a.epcount) {
-        epBadge = a.epcount.replace(/S\d+/gi, '');
-        if (a.season) {
-          seasonLabel = a.season;
-        } else {
-          const m = a.epcount.match(/S(\d+)/i);
-          seasonLabel = m ? ('Season ' + m[1]) : '';
+        epBadge = a.epcount;
+        seasonLabel = a.secount || '';
+      }
+      let targetUrl = 'anime.html?id=' + encodeURIComponent(a.id).replace(/'/g,'%27');
+      if (opts.showEpcount && a.epcount && a.secount) {
+        const eMatch = a.epcount.match(/E\s*(\d+)/i);
+        const sMatch = a.secount.match(/Season\s*(\d+)/i);
+        if (eMatch && sMatch) {
+          targetUrl = 'watch.html?id=' + encodeURIComponent(a.id).replace(/'/g,'%27') + '&s=' + sMatch[1] + '&e=' + eMatch[1];
         }
       }
       return `
-        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer" onclick="window.location.href='anime.html?id=${encodeURIComponent(a.id).replace(/'/g,'%27')}'">
+        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer" onclick="window.location.href='${targetUrl}'">
           <div class="relative overflow-hidden">
             <img src="${a.image}" alt="${a.name}" class="hcard-img" loading="lazy" onerror="handleImgError(this)">
             <div class="hcard-overlay">
@@ -2797,4 +2800,4 @@
     updateNotifUnreadDot();
   </script>
 </body>
-  </html>
+</html>
