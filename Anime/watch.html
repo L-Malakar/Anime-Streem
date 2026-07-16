@@ -176,7 +176,7 @@
         <span></span><span></span><span></span>
       </button>
       <a href="index.html" class="flex items-center gap-2 shrink-0">
-        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover" width="36" height="36">
         <span class="font-display text-aw-fg text-lg">AnimeWave</span>
       </a>
       <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
@@ -331,11 +331,11 @@
       <div class="st-group">
         <div class="st-group-title">About</div>
         <div class="st-about">
-          <img src="logo.PNG" alt="AnimeWave">
+          <img src="logo.PNG" alt="AnimeWave" width="120" height="120">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
           <p>Last Updated: <span class="st-ver">V1.26x4.8</span></p>
-          <p>Last Updated on: <span class="st-ver">08:07:2026</span></p>
+          <p>Last Updated on: <span class="st-ver">15/07/2026</span></p>
         </div>
       </div>
     </div>
@@ -1259,7 +1259,7 @@
         if (a.year) mp.push(a.year);
         if (a.genre && a.genre.length) mp.push(a.genre[0]);
         if (a.episodes) mp.push(a.episodes + ' Ep');
-        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" loading="lazy" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
       }
 
       window.openMobileSearch = function () {
