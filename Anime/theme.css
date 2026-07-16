@@ -52,8 +52,8 @@ html.light .text-aw-fg\/75{color:rgba(17,17,17,0.75)!important}
 /* ---- Top nav / mobile nav bar ---- */
 html.light nav{background:rgba(245,245,245,0.85)!important}
 html.light #mobileNavBar{background:rgba(245,245,245,0.92)!important;border-color:#e0e0e0}
-html.light .mnav-btn .mnav-icon{color:#999}
-html.light .mnav-btn .mnav-label{color:#999}
+html.light .mnav-btn .mnav-icon{color:#707070}
+html.light .mnav-btn .mnav-label{color:#707070}
 html.light .mnav-btn.active .mnav-icon{color:#e63946}
 html.light .mnav-btn.active .mnav-label{color:#e63946}
 html.light #mobileExtraBtns button{color:#666}
@@ -80,7 +80,7 @@ html.light .search-suggestion.touched{background:#e8e8e8}
 html.light #searchInput,html.light #savedSearch{background:#eee;border-color:#e0e0e0;color:#111}
 html.light #searchInput::placeholder,html.light #savedSearch::placeholder{color:#888}
 html.light .search-wrap i{color:#888}
-html.light .search-hint{color:#bbb}
+html.light .search-hint{color:#8a8a8a}
 html.light .search-clear{background:#e0e0e0;color:#666}
 
 /* ---- Sort dropdown ---- */
@@ -244,7 +244,7 @@ html.dark .search-suggestion.touched{background:#2e2e2e;transform:scale(0.98)}
 html.dark #searchInput,html.dark #savedSearch{background:#1c1c1c;border-color:#2e2e2e;color:#e8e8e8}
 html.dark #searchInput::placeholder,html.dark #savedSearch::placeholder{color:#7a7a7a}
 html.dark .search-wrap i{color:#7a7a7a}
-html.dark .search-hint{color:#3e3e3e}
+html.dark .search-hint{color:#7a7a7a}
 html.dark .search-clear{background:#2e2e2e;color:#7a7a7a}
 
 /* ---- Sort dropdown ---- */
@@ -329,7 +329,7 @@ html.dark .st-item-confirm .st-no{background:#2e2e2e;color:#e8e8e8}
 html.dark .st-random-confirm .st-no{background:#2e2e2e;color:#e8e8e8}
 html.dark .st-about{background:#1c1c1c;border-color:#2e2e2e}
 html.dark .st-about h3{color:#e8e8e8}
-html.dark .st-ver{color:#5a5a5a;border-color:#2e2e2e}
+html.dark .st-ver{color:#8a8a8a;border-color:#2e2e2e}
 
 /* ---- Footer ---- */
 html.dark footer{border-color:#2e2e2e}
