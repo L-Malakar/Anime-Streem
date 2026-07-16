@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0a0a">
   <title>Anime Details — AnimeWave</title>
+  <meta name="description" content="View details, ratings, genres, and episode lists for this anime on AnimeWave.">
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -349,7 +350,7 @@
         <span></span><span></span><span></span>
       </button>
       <a href="index.html" class="flex items-center gap-2 shrink-0">
-        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover" width="36" height="36">
         <span class="font-display text-aw-fg text-lg">AnimeWave</span>
       </a>
       <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
@@ -505,11 +506,11 @@
       <div class="st-group">
         <div class="st-group-title">About</div>
         <div class="st-about">
-          <img src="logo.PNG" alt="AnimeWave">
+          <img src="logo.PNG" alt="AnimeWave" width="120" height="120">
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
           <p>Last Updated: <span class="st-ver">V1.26x4.8</span></p>
-          <p>Last Updated on: <span class="st-ver">08:07:2026</span></p>
+          <p>Last Updated on: <span class="st-ver">15/07/2026</span></p>
         </div>
       </div>
     </div>
@@ -566,7 +567,7 @@
   <div id="mainWrap" class="lg:ml-[60px]">
 
   <section id="posterSection" class="relative overflow-hidden bg-aw-bg" style="min-height:calc(100vh - 4rem);padding-top:4rem;display:none">
-    <img id="posterBg" src="" alt="" class="bg-enter absolute inset-0 w-full h-full object-cover object-center" style="will-change:transform">
+    <img id="posterBg" src="" alt="" class="bg-enter absolute inset-0 w-full h-full object-cover object-center" style="will-change:transform" width="1280" height="720" fetchpriority="high" decoding="async">
     <div class="absolute inset-0 z-[1] poster-darken-overlay" style="background:linear-gradient(to bottom,rgba(10,10,10,0.55) 0%,rgba(10,10,10,0.65) 50%,rgba(10,10,10,0.92) 85%,rgba(10,10,10,1) 100%)"></div>
     <div class="poster-orb" style="top:40%;left:50%"></div>
     <div class="vignette"></div>
@@ -577,7 +578,7 @@
       </div>
     </div>
     <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
-      <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" onclick="scrollToContent()">
+      <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" width="400" height="600" fetchpriority="high" decoding="async" onclick="scrollToContent()">
       <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex flex-col items-center justify-center z-10 cursor-pointer gap-2" onclick="playMobileTrailer()">
         <div class="w-14 h-14 rounded-full bg-aw-accent/90 flex items-center justify-center" style="box-shadow:0 0 0 1px rgba(255,255,255,0.15),0 8px 24px rgba(230,57,70,0.5)">
           <i class="fas fa-play text-white text-lg ml-0.5"></i>
@@ -1003,7 +1004,7 @@
               return `
               <a href="anime.html?id=${encodeURIComponent(a.id)}" class="rec-card group block" style="animation-delay:${i * 30}ms">
                 <div class="aspect-[5/7] rounded-xl overflow-hidden bg-aw-card border border-aw-border mb-2 relative">
-                  <img class="rec-img w-full h-full object-cover object-center" src="${a.image}" alt="${a.name}" loading="lazy" onerror="handleImgError(this)">
+                  <img class="rec-img w-full h-full object-cover object-center" src="${a.image}" alt="${a.name}" width="350" height="490" loading="lazy" decoding="async" onerror="handleImgError(this)">
                   ${btnOverlay}
                   ${tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
                   ${a.rating ? `<div class="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
@@ -1042,7 +1043,7 @@
 
     async function loadData() {
       try {
-        const res = await fetch('details.json');
+        const res = await fetch('details.json', { priority: 'high' });
         if (!res.ok) throw new Error();
         allAnime = await res.json();
         if (!Array.isArray(allAnime)) allAnime = [allAnime];
@@ -1461,7 +1462,8 @@
       }
       window.addEventListener('resize', checkAboutOverflow);
       window.addEventListener('resize', checkTitleOverflow);
-      renderRecommendations(a.id);
+      if ('requestIdleCallback' in window) requestIdleCallback(() => renderRecommendations(a.id), { timeout: 800 });
+      else setTimeout(() => renderRecommendations(a.id), 0);
     }
 
     function renderEpisodes(a, sk) {
@@ -1655,7 +1657,7 @@
         if (a.year) mp.push(a.year);
         if (a.genre && a.genre.length) mp.push(a.genre[0]);
         if (a.episodes) mp.push(a.episodes + ' Ep');
-        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" loading="lazy" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
       }
 
       window.openMobileSearch = function () {
