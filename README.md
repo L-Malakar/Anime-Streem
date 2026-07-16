@@ -1,41 +1,34 @@
-# <img src="https://avatars.githubusercontent.com/u/261390550?v=4&size=64" width="24" align="cinter" /> Anime-Streem
----
-**About**:-
-A streaming platform(Website) demo program. You can use or learn from this program how did srtiming programs work? We provide 2 defrent types of user interface here-
+# [<img src="https://avatars.githubusercontent.com/u/261390550?v=4&size=64" width="24" valign="middle" />](https://www.youtube.com/@gdmalakar) Anime-Streem
 
-Live Website:-
--
+---
+
+### **About**
+A demo anime streaming platform. Learn how streaming web applications function under the hood or use this codebase as a baseline for your own projects! We provide two different user interface types:
+
+### **Live Websites**
 
 <table>
   <tr>
-    <td align="center" valign="middle" style="border: none; padding: 0 15px;">
-      <a href="https://l-malakar.github.io/Anime-Streem/All/index" style="text-decoration: none;">
-        <img src="https://l-malakar.github.io/Anime-Streem/All/logo.PNG" width="30" height="30" align="center" style="border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 5px;" />
-        <sub style="font-size: 16px; font-weight: bold; color: #38bdf8; vertical-align: middle; text-decoration: none;">AniValted</sub>
+    <td align="center" valign="middle">
+      <a href="https://l-malakar.github.io/Anime-Streem/All/index">
+        <img src="https://l-malakar.github.io/Anime-Streem/All/logo.PNG" width="30" height="30" valign="middle" /> 
+        <sub><b>AniValted</b></sub>
       </a>
     </td>
-    <td style="border: none; width: 10px;"></td>
-    <td align="center" valign="middle" style="border: none; padding: 0 15px;">
-      <a href="https://l-malakar.github.io/Anime-Streem/Anime/index" style="text-decoration: none;">
-        <img src="https://l-malakar.github.io/Anime-Streem/Anime/logo.PNG" width="30" height="30" align="center" style="border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 5px;" />
-        <sub style="font-size: 16px; font-weight: bold; color: #ff4757; vertical-align: middle; text-decoration: none;">AnimeWave</sub>
+    <td align="center" valign="middle">
+      <a href="https://l-malakar.github.io/Anime-Streem/Anime/index">
+        <img src="https://l-malakar.github.io/Anime-Streem/Anime/logo.PNG" width="30" height="30" valign="middle" /> 
+        <sub><b>AnimeWave</b></sub>
       </a>
     </td>
   </tr>
 </table>
 
 ---
-**Last Update**:- `1.26.4.8` (15/07/2026)
 
-```
-1. Update in share option add to anime.htm along with watch.html
-```
-```
-2.We improve the logic for watch.html
-```
-```
-3.Fix some bug at anime.html and index.html
-```
-```
-4. Add trail of ep1 at the top od the page for users to try the anime befoure they start. In main page and anime page.
-```
+### **Last Update:** `1.26.4.8` (15/07/2026)
+
+1. Updated the share option; added it to `anime.html` along with `watch.html`.
+2. Improved the video playback logic for `watch.html`.
+3. Fixed minor bugs in `anime.html` and `index.html`.
+4. Added an Episode 1 preview/trailer player at the top of the main page and anime page so users can try it out first.
