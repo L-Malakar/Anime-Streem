@@ -314,6 +314,132 @@
     }
   });
 
+  /* ============================================================
+     Shared card hover preview (desktop only)
+     Works on index.html (.poster-card) and anime.html (.rec-card)
+  ============================================================ */
+  var AW_IS_DESKTOP = global.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  var AW_PREVIEW_SELECTOR = '.poster-card, .rec-card';
+  var awPreviewTimer = null, awPreviewEl = null, awPreviewActive = null, awInfoTimer = null, awActiveCard = null;
+
+  function awFindAnime(id) {
+    if (typeof allAnime === 'undefined' || !allAnime) return null;
+    return allAnime.find(function (x) { return String(x.id) === String(id); }) || null;
+  }
+
+  function awBuildPreview(a) {
+    var ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
+    var desc = a.description || a.synopsis || a.overview || '';
+    var saved = (typeof isSaved === 'function') ? isSaved(a.id) : false;
+    return '' +
+      '<div class="aw-preview-inner">' +
+        '<img src="' + a.image + '" class="aw-preview-img" alt="' + a.name + '">' +
+        '<div class="aw-preview-info">' +
+          ((!isUpcoming(a) && a.episodeLinks && a.episodeLinks.s1 && a.episodeLinks.s1.e1) ?
+            '<div class="aw-preview-videobox"><iframe src="' + a.episodeLinks.s1.e1 + '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" loading="lazy"></iframe></div>' :
+            '<div class="aw-preview-videobox aw-preview-videobox-empty"><i class="fas fa-clock"></i><span>Coming Soon</span></div>') +
+          '<h2 class="aw-preview-title">' + a.name + '</h2>' +
+          '<div class="aw-preview-meta">' +
+            '<span>' + (a.year || '') + '</span>' +
+            (a.episodes ? '<span>&middot;</span><span>' + a.episodes + ' Episodes</span>' : '') +
+            (a.studio ? '<span>&middot;</span><span>' + a.studio + '</span>' : '') +
+            (a.rating ? '<span>&middot;</span><span class="' + ratingColor + '"><i class="fas fa-star text-[10px]"></i> ' + a.rating + '</span>' : '') +
+          '</div>' +
+          ((a.genre || []).length ? '<div class="aw-preview-genres">' + a.genre.slice(0, 4).map(function (g) { return '<span class="aw-preview-chip">' + g + '</span>'; }).join('') + '</div>' : '') +
+          (desc ? '<p class="aw-preview-desc">' + desc + '</p>' : '') +
+          '<div class="aw-preview-actions">' +
+            (isUpcoming(a) ?
+              '<a href="anime.html?id=' + encodeURIComponent(a.id) + '" class="aw-preview-watch aw-preview-coming"><i class="fas fa-clock"></i> Coming..</a>' :
+              '<a href="watch.html?id=' + encodeURIComponent(a.id) + '&s=1&e=1" class="aw-preview-watch"><i class="fas fa-play"></i> Watch Now</a>') +
+            '<a href="anime.html?id=' + encodeURIComponent(a.id) + '" class="aw-preview-details" title="Details"><i class="fas fa-circle-info"></i></a>' +
+            (global.AW_SAVE_PAGE ?
+              '<button class="aw-preview-save bg-black/60 text-white/70 hover:bg-aw-accent hover:text-white" style="pointer-events:auto" title="Remove" onclick="event.preventDefault();event.stopPropagation();removeSave(\'' + a.id + '\',\'' + String(a.name).replace(/'/g, "\\'") + '\',this);awHidePreview()"><i class="fas fa-times"></i></button>' :
+              '<button class="bm-btn aw-preview-save ' + (saved ? 'bg-aw-accent text-white' : 'bg-black/60 text-white/70 hover:text-white') + '" style="pointer-events:auto" title="' + (saved ? 'Unsave' : 'Save') + '" data-saved="' + (saved ? '1' : '0') + '" data-id="' + a.id + '"><i class="' + (saved ? 'fas' : 'far') + ' fa-bookmark"></i></button>') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function awPositionExpand(rect) {
+    var margin = 16, topBar = 74, sidebarW = 70, previewW = 560;
+    var left = rect.left + rect.width / 2 - previewW / 2;
+    left = Math.max(sidebarW + margin, Math.min(left, global.innerWidth - previewW - margin));
+    awPreviewEl.style.left = left + 'px';
+    awPreviewEl.style.width = previewW + 'px';
+    awPreviewEl.style.height = 'auto';
+    var availH = global.innerHeight - topBar - margin;
+    var realH = Math.min(awPreviewEl.scrollHeight, availH);
+    var top = rect.top - 20;
+    top = Math.max(topBar, Math.min(top, global.innerHeight - realH - margin));
+    awPreviewEl.style.top = top + 'px';
+    awPreviewEl.style.maxHeight = availH + 'px';
+    awPreviewEl.style.overflowY = 'auto';
+  }
+
+  function awShowPreview(card, a) {
+    var rect = card.getBoundingClientRect();
+    if (!awPreviewEl) {
+      awPreviewEl = document.createElement('div');
+      awPreviewEl.id = 'awCardPreview';
+      document.body.appendChild(awPreviewEl);
+      awPreviewEl.addEventListener('mouseleave', awHidePreview);
+    }
+    awPreviewEl.classList.remove('expand', 'show-info');
+    awPreviewEl.style.left = rect.left + 'px';
+    awPreviewEl.style.top = rect.top + 'px';
+    awPreviewEl.style.width = rect.width + 'px';
+    awPreviewEl.style.height = rect.height + 'px';
+    awPreviewEl.innerHTML = awBuildPreview(a);
+    awPreviewEl.classList.add('active');
+    awPreviewActive = a.id;
+    awActiveCard = card;
+    requestAnimationFrame(function () {
+      awPositionExpand(rect);
+      awPreviewEl.classList.add('expand');
+    });
+    clearTimeout(awInfoTimer);
+    awInfoTimer = setTimeout(function () {
+      if (awPreviewActive === a.id) awPreviewEl.classList.add('show-info');
+    }, 280);
+  }
+
+  function awHidePreview() {
+    if (!awPreviewEl) return;
+    clearTimeout(awInfoTimer);
+    awPreviewEl.classList.remove('active', 'expand', 'show-info');
+    var vidFrame = awPreviewEl.querySelector('.aw-preview-videobox iframe');
+    if (vidFrame) vidFrame.src = 'about:blank';
+    awPreviewActive = null;
+    awActiveCard = null;
+  }
+
+  global.addEventListener('scroll', function () {
+    if (!AW_IS_DESKTOP || !awPreviewActive) return;
+    awHidePreview();
+  }, { passive: true });
+
+  document.addEventListener('mouseover', function (e) {
+    if (!AW_IS_DESKTOP) return;
+    var card = e.target.closest(AW_PREVIEW_SELECTOR);
+    if (!card) return;
+    if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+    var id = card.getAttribute('data-id');
+    var a = awFindAnime(id);
+    if (!a) return;
+    clearTimeout(awPreviewTimer);
+    awPreviewTimer = setTimeout(function () { awShowPreview(card, a); }, 600);
+  });
+
+  document.addEventListener('mouseout', function (e) {
+    var card = e.target.closest(AW_PREVIEW_SELECTOR);
+    if (!card) return;
+    if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+    clearTimeout(awPreviewTimer);
+    if (e.relatedTarget && awPreviewEl && awPreviewEl.contains(e.relatedTarget)) return;
+    awHidePreview();
+  });
+
+  global.awHidePreview = awHidePreview;
   global.AWUI = AWUI;
 
 })(window, document);
