@@ -649,6 +649,17 @@
       updateSaveBadge();
       return s.includes(id);
     }
+    function handleRecSave(btn, id, name) {
+      var nowSaved = toggleSave(id, name);
+      document.querySelectorAll('.bm-btn[data-id="' + id.replace(/"/g,'\\"') + '"]').forEach(function(el) {
+        el.dataset.saved = nowSaved ? '1' : '0';
+        el.title = nowSaved ? 'Unsave' : 'Save';
+        var icon = el.querySelector('i');
+        if (nowSaved) { icon.classList.replace('far', 'fas'); el.classList.add('bg-aw-accent', 'text-white'); el.classList.remove('bg-black/60', 'text-white/70'); }
+        else { icon.classList.replace('fas', 'far'); el.classList.remove('bg-aw-accent', 'text-white'); el.classList.add('bg-black/60', 'text-white/70'); }
+      });
+    }
+
     function updateSaveBadge() {
       const c = getSaved().length;
       const label = c > 99 ? '99+' : String(c);
@@ -996,18 +1007,15 @@
           <div id="recGrid" class="grid rec-grid-transition" style="grid-template-columns:repeat(${grid.cols},minmax(0,1fr));gap:${gap}">
             ${picks.map((a, i) => {
               const tag = getStateTag(a);
-              const hasEps = countEpisodes(a) > 0;
-              let btnOverlay = '';
-              if (hasEps) {
-                btnOverlay = `<div class="rec-btn-wrap" onclick="event.preventDefault();event.stopPropagation();window.location.href='watch.html?id=${encodeURIComponent(a.id).replace(/'/g,'%27')}&s=1&e=1'"><span class="rec-watch-btn"><i class="fas fa-play text-[9px]"></i> Watch </span></div>`;
-              }
+              const saved = isSaved(a.id);
+              const nameEsc = a.name.replace(/'/g, "\\'");
               return `
-              <a href="anime.html?id=${encodeURIComponent(a.id)}" class="rec-card group block" style="animation-delay:${i * 30}ms">
+              <a href="anime.html?id=${encodeURIComponent(a.id)}" class="rec-card group block" data-id="${a.id}" style="animation-delay:${i * 30}ms">
                 <div class="aspect-[5/7] rounded-xl overflow-hidden bg-aw-card border border-aw-border mb-2 relative">
                   <img class="rec-img w-full h-full object-cover object-center" src="${a.image}" alt="${a.name}" width="350" height="490" loading="lazy" decoding="async" onerror="handleImgError(this)">
-                  ${btnOverlay}
                   ${tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
-                  ${a.rating ? `<div class="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-sm text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
+                  ${a.rating ? `<div class="absolute top-8 right-1.5 bg-black/70 backdrop-blur-sm text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
+                  <button class="bm-btn absolute top-1.5 right-1.5 w-6 h-6 rounded-full ${saved?'bg-aw-accent text-white':'bg-black/60 text-white/70 hover:text-white'} flex items-center justify-center text-[10px] transition-colors z-10" style="pointer-events:auto" title="${saved?'Unsave':'Save'}" data-saved="${saved?'1':'0'}" data-id="${a.id}" onclick="event.preventDefault();event.stopPropagation();handleRecSave(this,'${a.id}','${nameEsc}')"><i class="${saved?'fas':'far'} fa-bookmark"></i></button>
                 </div>
                 <p class="text-[11px] sm:text-xs font-medium text-aw-fg line-clamp-2 leading-snug group-hover:text-aw-accentL transition-colors">${a.name}</p>
                 ${a.year ? `<p class="text-[10px] text-aw-muted mt-0.5">${a.year}${a.episodes ? ' · ' + a.episodes + ' Ep' : ''}</p>` : ''}
