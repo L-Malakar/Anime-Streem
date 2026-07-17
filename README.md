@@ -2,10 +2,10 @@
 
 ---
 
-### **About**
+### About
 A demo anime streaming platform. Learn how streaming web applications function under the hood or use this codebase as a baseline for your own projects! We provide two different user interface types:
 
-### **Live Websites**
+### Live Websites
 
 <table>
   <tr>
@@ -26,7 +26,7 @@ A demo anime streaming platform. Learn how streaming web applications function u
 
 ---
 
-### **Last Update:** `1.26.4.8` (15/07/2026)
+## Last Update: `1.26.4.8` (15/07/2026)
 
 1. Updated the share option; added it to `anime.html` along with `watch.html`.
 2. Improved the video playback logic for `watch.html`.
