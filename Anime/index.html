@@ -119,6 +119,7 @@
     .aw-preview-watch.aw-preview-coming:hover{background:rgba(234,179,8,1)}
     .aw-preview-details{flex:0 0 auto;width:38px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:8px;background:rgba(255,255,255,0.08);color:#f0f0f0;font-size:0.9rem;text-decoration:none;border:1px solid rgba(255,255,255,0.12)}
     .aw-preview-details:hover{background:rgba(255,255,255,0.14)}
+    .aw-preview-save{flex:0 0 auto;width:38px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:8px;font-size:0.9rem;border:1px solid rgba(255,255,255,0.12);cursor:pointer;transition:background 0.2s ease}
     .card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.2) 40%,transparent 60%);opacity:0;transition:opacity 0.3s ease;border-radius:0.75rem 0.75rem 0 0}
     .card-play{transform:scale(0.5);opacity:0;transition:all 0.3s ease}
 
@@ -1301,11 +1302,13 @@
 
     function handleBookmark(btn, id) {
       const nowSaved = toggleSave(id);
-      btn.dataset.saved = nowSaved ? '1' : '0';
-      btn.title = nowSaved ? 'Unsave' : 'Save';
-      const icon = btn.querySelector('i');
-      if (nowSaved) { icon.classList.replace('far', 'fas'); btn.classList.add('bg-aw-accent', 'text-white'); btn.classList.remove('bg-black/60', 'text-white/70'); }
-      else { icon.classList.replace('fas', 'far'); btn.classList.remove('bg-aw-accent', 'text-white'); btn.classList.add('bg-black/60', 'text-white/70'); }
+      document.querySelectorAll('.bm-btn[data-id="' + CSS.escape(id) + '"]').forEach(function(el) {
+        el.dataset.saved = nowSaved ? '1' : '0';
+        el.title = nowSaved ? 'Unsave' : 'Save';
+        const icon = el.querySelector('i');
+        if (nowSaved) { icon.classList.replace('far', 'fas'); el.classList.add('bg-aw-accent', 'text-white'); el.classList.remove('bg-black/60', 'text-white/70'); }
+        else { icon.classList.replace('fas', 'far'); el.classList.remove('bg-aw-accent', 'text-white'); el.classList.add('bg-black/60', 'text-white/70'); }
+      });
     }
 
     // ── Watch History ──────────────────────────────────────────
@@ -1887,6 +1890,7 @@
                 : `<a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1" class="aw-preview-watch"><i class="fas fa-play"></i> Watch Now</a>`
               }
               <a href="anime.html?id=${encodeURIComponent(a.id)}" class="aw-preview-details" title="Details"><i class="fas fa-circle-info"></i></a>
+              <button class="bm-btn aw-preview-save ${isSaved(a.id)?'bg-aw-accent text-white':'bg-black/60 text-white/70 hover:text-white'}" style="pointer-events:auto" title="${isSaved(a.id)?'Unsave':'Save'}" data-saved="${isSaved(a.id)?'1':'0'}" data-id="${escAttr(a.id)}"><i class="${isSaved(a.id)?'fas':'far'} fa-bookmark"></i></button>
             </div>
           </div>
         </div>`;
