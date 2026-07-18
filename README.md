@@ -1,4 +1,4 @@
-# [<img src="https://avatars.githubusercontent.com/u/261390550?v=4&size=64" width="24" valign="middle" />](https://www.youtube.com/@gdmalakar) Anime-Streem
+# [<img src="https://avatars.githubusercontent.com/u/261390550?v=4&size=64" width="40" valign="top" />](https://www.youtube.com/@gdmalakar) Anime-Streem
 
 ---
 
