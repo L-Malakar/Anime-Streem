@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e63946">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/Anime/sw.js').catch(function (err) {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0a0a0a">
@@ -344,6 +355,7 @@
     .st-item.danger .st-item-title{color:#ff6b6b}
     .st-about{background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:18px;text-align:center}
     .st-about img{width:52px;height:52px;border-radius:14px;margin-bottom:10px}
+    .st-install-btn:active{transform:scale(0.97)}
     .st-about h3{font-family:'Dela Gothic One',cursive;font-size:1rem;color:#f0f0f0;margin-bottom:4px}
     .st-about p{font-size:0.75rem;color:#8a8a8a;line-height:1.5}
     .st-about .st-ver{display:inline-block;margin-top:10px;font-size:0.65rem;color:#3a3a3a;border:1px solid #2a2a2a;border-radius:99px;padding:3px 12px}
@@ -642,7 +654,15 @@
         <h2 class="font-display text-xl sm:text-2xl text-aw-fg">Fresh Drop</h2>
         <span id="freshDropCount" class="text-aw-muted text-xs ml-1"></span>
       </div>
-      <div class="flex gap-2">
+      <div class="flex items-center gap-2">
+        <div class="relative shrink-0" id="freshDropSortWrap">
+          <button id="freshDropSortBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-aw-card border border-aw-border text-sm text-aw-muted hover:text-aw-fg hover:border-aw-accent/40 transition-all whitespace-nowrap">
+            <i class="fas fa-clock text-xs"></i>
+            <span id="freshDropPeriodLabel" class="hidden sm:inline">This Week</span>
+            <i class="fas fa-chevron-down text-[9px]"></i>
+          </button>
+          <div id="freshDropSortDropdown" class="sort-dropdown"></div>
+        </div>
         <button class="scroll-arrow" onclick="scrollRow('freshDropRow',-1)" aria-label="Scroll left"><i class="fas fa-chevron-left"></i></button>
         <button class="scroll-arrow" onclick="scrollRow('freshDropRow',1)" aria-label="Scroll right"><i class="fas fa-chevron-right"></i></button>
       </div>
@@ -712,7 +732,7 @@
       <h2 class="font-display text-2xl sm:text-3xl text-aw-fg">All Animes</h2>
       <div class="flex items-center gap-3">
         <span id="animeCount" class="text-aw-muted text-sm"></span>
-        <div class="relative shrink-0 hidden lg:block" id="sortWrap">
+        <div class="relative shrink-0" id="sortWrap">
           <button id="sortBtn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-aw-card border border-aw-border text-sm text-aw-muted hover:text-aw-fg hover:border-aw-accent/40 transition-all whitespace-nowrap">
             <i class="fas fa-arrow-down-wide-short text-xs"></i>
             <span id="sortLabel" class="hidden sm:inline">Shuffled</span>
@@ -912,7 +932,10 @@
       <div class="st-group">
         <div class="st-group-title">About</div>
         <div class="st-about">
-          <img src="logo.PNG" alt="AnimeWave">
+          <div class="st-about-top">
+            <img src="logo.PNG" alt="AnimeWave">
+            <button id="pwaInstallBtn" class="st-install-btn" onclick="pwaInstallClick()"><i class="fas fa-download"></i> Install App</button>
+          </div>
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
           <p>Last Updated: <span class="st-ver">V1.26x4.8</span></p>
@@ -1144,11 +1167,15 @@
     const FALLBACK = [];
 
     function isRunning(a) { const s = (a.state || '').toLowerCase(); return s === 'watching' || s === 'running' || s === 'ongoing'; }
-    function isFreshDrop(a) {
+    const FRESH_DROP_PERIODS = { today: 1, week: 7, month: 30, year: 365 };
+    let currentFreshDropPeriod = 'week';
+    try { currentFreshDropPeriod = localStorage.getItem('aw_freshdrop_period') || 'week'; } catch(e) {}
+    function isFreshDrop(a, period) {
       if (!a.dnt) return false;
       const t = new Date(a.dnt).getTime();
       if (isNaN(t)) return false;
-      return (Date.now() - t) <= 7 * 24 * 60 * 60 * 1000;
+      const days = FRESH_DROP_PERIODS[period || currentFreshDropPeriod] || 7;
+      return (Date.now() - t) <= days * 24 * 60 * 60 * 1000;
     }
     function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
     function getStateTag(a) {
@@ -1455,7 +1482,7 @@
     }
 
     function renderHorizontalRows() {
-      const freshDrop = [...allAnime].filter(isFreshDrop).sort((a, b) => new Date(b.dnt) - new Date(a.dnt));
+      const freshDrop = [...allAnime].filter(a => isFreshDrop(a, currentFreshDropPeriod)).sort((a, b) => new Date(b.dnt) - new Date(a.dnt));
       const running = shuffledAnime.filter(isRunning);
       const upcoming = shuffledAnime.filter(isUpcoming);
       const topRated = [...allAnime].filter(a => a.rating && a.rating >= 8).sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 20);
@@ -1604,6 +1631,7 @@
     }
 
     let currentSort = 'default';
+    try { currentSort = localStorage.getItem('aw_sort') || 'default'; } catch(e) {}
     const sortOptions = [
       { value: 'default', label: 'Shuffled', icon: 'fa-shuffle' },
       { value: 'az', label: 'Name: A → Z', icon: 'fa-arrow-down-a-z' },
@@ -1618,8 +1646,12 @@
     function initSort() {
       const dd = document.getElementById('sortDropdown');
       dd.innerHTML = sortOptions.map(o => `<button class="sort-option ${o.value === currentSort ? 'active' : ''}" data-sort="${o.value}"><i class="fas ${o.icon} text-xs w-4 text-center"></i>${o.label}</button>`).join('');
+      const savedOpt = sortOptions.find(o => o.value === currentSort);
+      if (savedOpt) document.getElementById('sortLabel').textContent = savedOpt.label;
+      if (currentSort !== 'default') shuffledAnime = sortAnime(shuffledAnime);
       dd.querySelectorAll('.sort-option').forEach(btn => btn.addEventListener('click', () => {
         currentSort = btn.dataset.sort;
+        try { localStorage.setItem('aw_sort', currentSort); } catch(e) {}
         if (currentSort === 'default') shuffledAnime = shuffleArray(allAnime);
         document.getElementById('sortLabel').textContent = btn.textContent.trim();
         dd.querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.sort === currentSort));
@@ -1631,6 +1663,34 @@
         dd.classList.toggle('open');
       });
       document.addEventListener('click', e => { if (!document.getElementById('sortWrap').contains(e.target)) dd.classList.remove('open'); });
+    }
+
+    const freshDropPeriodOptions = [
+      { value: 'today', label: 'Today' },
+      { value: 'week', label: 'This Week' },
+      { value: 'month', label: 'This Month' },
+      { value: 'year', label: 'This Year' }
+    ];
+
+    function initFreshDropSort() {
+      const dd = document.getElementById('freshDropSortDropdown');
+      if (!dd) return;
+      dd.innerHTML = freshDropPeriodOptions.map(o => `<button class="sort-option ${o.value === currentFreshDropPeriod ? 'active' : ''}" data-period="${o.value}">${o.label}</button>`).join('');
+      dd.querySelectorAll('.sort-option').forEach(btn => btn.addEventListener('click', () => {
+        currentFreshDropPeriod = btn.dataset.period;
+        try { localStorage.setItem('aw_freshdrop_period', currentFreshDropPeriod); } catch(e) {}
+        document.getElementById('freshDropPeriodLabel').textContent = btn.textContent.trim();
+        dd.querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.period === currentFreshDropPeriod));
+        dd.classList.remove('open');
+        renderHorizontalRows();
+      }));
+      document.getElementById('freshDropSortBtn').addEventListener('click', e => {
+        e.stopPropagation();
+        dd.classList.toggle('open');
+      });
+      document.addEventListener('click', e => { if (!document.getElementById('freshDropSortWrap').contains(e.target)) dd.classList.remove('open'); });
+      const opt = freshDropPeriodOptions.find(o => o.value === currentFreshDropPeriod);
+      if (opt) document.getElementById('freshDropPeriodLabel').textContent = opt.label;
     }
 
     function sortAnime(list) {
@@ -1681,6 +1741,7 @@
       searchClear.classList.remove('show');
       searchHint.classList.remove('hide');
       currentSort = 'default';
+      try { localStorage.setItem('aw_sort', 'default'); } catch(e) {}
       document.getElementById('sortLabel').textContent = 'Shuffled';
       document.getElementById('sortDropdown').querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.sort === 'default'));
       renderGenreFilters();
@@ -1865,7 +1926,7 @@
       const desc = a.description || a.synopsis || a.overview || '';
       return `
         <div class="aw-preview-inner">
-          <img src="${a.image}" class="aw-preview-img" alt="${a.name}">
+          <img src="${a.image}" class="aw-preview-img" alt="${a.name}" style="cursor:pointer" onclick="console.log('preview image clicked', '${escAttr(a.id)}'); window.location.href='anime.html?id=${encodeURIComponent(a.id)}'">
           <div class="aw-preview-info">
             ${(!isUpcoming(a) && a.episodeLinks && a.episodeLinks.s1 && a.episodeLinks.s1.e1) ? `
             <div class="aw-preview-videobox">
@@ -1978,8 +2039,11 @@
       if (!card) return;
       if (e.relatedTarget && card.contains(e.relatedTarget)) return;
       clearTimeout(awPreviewTimer);
-      if (e.relatedTarget && awPreviewEl && awPreviewEl.contains(e.relatedTarget)) return;
-      awHidePreview();
+      // Don't hide here: the expanded flyout can be positioned away from the
+      // card's original spot, so leaving the card doesn't mean leaving the
+      // visible flyout. awPreviewEl's own 'mouseleave' listener (added in
+      // awShowPreview) already hides it once the cursor truly leaves the
+      // flyout box itself.
     });
 
     let heroSlides = [], heroIndex = 0, heroTimer = null, heroPaused = false, isTransitioning = false;
@@ -2249,6 +2313,7 @@
       renderHorizontalRows();
       renderGenreFilters();
       initSort();
+      initFreshDropSort();
       applySortAndFilter();
       updateSaveBadge();
       updateSaveDirtyIndicator();
