@@ -1,0 +1,14 @@
+{
+  "name": "AnimeWave - Your Ultimate Anime Universe",
+  "short_name": "AnimeWave",
+  "description": "Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "logo.PNG", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "logo.PNG", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
