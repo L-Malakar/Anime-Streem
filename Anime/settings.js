@@ -41,7 +41,7 @@
 
   /* ---------- nav search button (desktop vs mobile keys, like the original) ---------- */
   function navSearchKey() { return isDesktop() ? 'aw_nav_search_d' : 'aw_nav_search_m'; }
-  function navSearchDefault() { return isDesktop() ? false : true; }
+  function navSearchDefault() { return true; }
   function getNavSearch() { return readBool(navSearchKey(), navSearchDefault()); }
   function setNavSearch(show) {
     writeRaw(navSearchKey(), show ? 'true' : 'false');
@@ -58,7 +58,7 @@
 
   /* ---------- random button shortcut ---------- */
   var RANDOM_KEY = 'aw_nav_random';
-  function getRandomBtn() { return readBool(RANDOM_KEY, false); }
+  function getRandomBtn() { return readBool(RANDOM_KEY, true); }
   function setRandomBtn(show) {
     if (show) writeRaw(RANDOM_KEY, 'true');
     else { try { localStorage.removeItem(RANDOM_KEY); } catch (e) {} }
@@ -72,6 +72,54 @@
     writeRaw(SIDEBAR_KEY, v ? 'true' : 'false');
     emit('sidebar', v);
   }
+
+  /* ---------- PWA install prompt (works across every page that loads this file) ---------- */
+  var pwaDeferredPrompt = null;
+
+  function isRunningInstalled() {
+    var standaloneMedia = global.matchMedia && global.matchMedia('(display-mode: standalone)').matches;
+    var iosStandalone = global.navigator && global.navigator.standalone === true; // iOS Safari "Add to Home Screen"
+    return !!(standaloneMedia || iosStandalone);
+  }
+
+  function syncInstallButtons() {
+    var installed = isRunningInstalled();
+    var btns = document.querySelectorAll('.st-install-btn, #pwaInstallBtn');
+    btns.forEach(function (btn) {
+      btn.style.display = installed ? 'none' : '';
+    });
+  }
+
+  global.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    pwaDeferredPrompt = e;
+    syncInstallButtons();
+  });
+
+  global.addEventListener('appinstalled', function () {
+    pwaDeferredPrompt = null;
+    syncInstallButtons();
+  });
+
+  document.addEventListener('DOMContentLoaded', syncInstallButtons);
+  if (document.readyState !== 'loading') syncInstallButtons();
+
+  function pwaInstall() {
+    if (isRunningInstalled()) return; // already installed, nothing to do
+    if (pwaDeferredPrompt) {
+      pwaDeferredPrompt.prompt();
+      pwaDeferredPrompt.userChoice.finally(function () { pwaDeferredPrompt = null; syncInstallButtons(); });
+      return;
+    }
+    var ua = navigator.userAgent || '';
+    var isIOS = /iphone|ipad|ipod/i.test(ua);
+    var msg = isIOS
+      ? 'Tap the Share icon, then "Add to Home Screen"'
+      : 'Use your browser menu → "Install app" / "Add to Home Screen"';
+    if (typeof global.showToast === 'function') global.showToast(msg, 'info');
+    else alert(msg);
+  }
+  global.pwaInstallClick = pwaInstall;
 
   var AWSettings = {
     isDesktop: isDesktop,
