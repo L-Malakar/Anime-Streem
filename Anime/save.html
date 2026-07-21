@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
   <title>Saved Animes — AnimeWave</title>
   <link rel="icon" href="logo.PNG" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -528,6 +529,7 @@
     </div>
   </div>
 
+  <script src="USDSS.js"></script>
   <script src="settings.js"></script>
   <script>window.AW_SAVE_PAGE = true;</script>
   <script src="ui.js"></script>
@@ -560,7 +562,7 @@
     }
 
     /* ====== Saved ====== */
-    function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch(e) { return []; } }
+    function getSaved() { try { return JSON.parse(USDSS.getItem('aw_saved') || '[]'); } catch(e) { return []; } }
     function updateSaveBadge() { /* no badge on this page */ }
 
     /* ====== State Helpers ====== */
@@ -814,13 +816,13 @@
         card.classList.add('card-removing');
         card.addEventListener('animationend', () => {
           let s = getSaved().filter(x => x !== id);
-          localStorage.setItem('aw_saved', JSON.stringify(s));
+          USDSS.setItem('aw_saved', JSON.stringify(s));
           showToast(`Removed "${name}" from saves`, 'info');
           renderSaved();
         }, { once: true });
       } else {
         let s = getSaved().filter(x => x !== id);
-        localStorage.setItem('aw_saved', JSON.stringify(s));
+        USDSS.setItem('aw_saved', JSON.stringify(s));
         showToast(`Removed "${name}" from saves`, 'info');
         renderSaved();
       }
@@ -839,7 +841,7 @@
       savedSearch.value = '';
       searchClear.classList.remove('show');
       searchHint.classList.remove('hide');
-      localStorage.setItem('aw_saved', '[]');
+      USDSS.setItem('aw_saved', '[]');
       showToast('All saved animes cleared', 'info');
       renderSaved();
     });
@@ -931,12 +933,12 @@
       };
       
       window.confirmClearHistory = function(){
-        try { localStorage.setItem('aw_history', '[]'); } catch(e) {}
+        try { USDSS.setItem('aw_history', '[]'); } catch(e) {}
         showToast('Watch history cleared', 'success');
       };
       
       window.confirmClearSaved = function(){
-        localStorage.setItem('aw_saved', '[]');
+        USDSS.setItem('aw_saved', '[]');
         showToast('Saved list cleared', 'success');
         renderSaved();
       };
@@ -946,7 +948,7 @@
       var grid = document.getElementById('settingsStatsGrid');
       var savedCount = getSaved().length;
       var historyCount = 0;
-      try { historyCount = JSON.parse(localStorage.getItem('aw_history') || '[]').length; } catch(e) {}
+      try { historyCount = JSON.parse(USDSS.getItem('aw_history') || '[]').length; } catch(e) {}
       var stats = [
         { icon: 'fa-bookmark', label: 'Saved', value: savedCount },
         { icon: 'fa-clock-rotate-left', label: 'History', value: historyCount }
@@ -1063,7 +1065,7 @@
         .then(function(r){ return r.ok ? r.json() : []; })
         .then(function(data){
           var readState = {};
-          try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
+          try { readState = JSON.parse(USDSS.getItem('aw_notif_read') || '{}'); } catch(e){}
           var now = new Date();
           var visible = (Array.isArray(data) ? data : []).filter(function(n){
             if(n.showAfter && new Date(n.showAfter) > now) return false;
