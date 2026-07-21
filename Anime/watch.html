@@ -161,6 +161,23 @@
     @media(max-width:1023px){ #mobileExtraBtns{display:flex} }
     @media(min-width:1024px){ #mobileExtraBtns{display:none!important} }
     @media(max-width:1023px){footer{padding-bottom:5rem!important}}
+  .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#2a2a2a;color:#8a8a8a;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:0.65rem;transition:all 0.2s;z-index:10}
+    .search-clear:hover{background:#e63946;color:#fff}
+    .search-clear.show{display:flex}
+    .search-hint{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#3a3a3a;font-size:0.7rem;pointer-events:none;transition:opacity 0.2s}
+    .search-hint.hide{opacity:0}
+    .search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:100;border-radius:12px;background:#1a1a1a;border:1px solid #2a2a2a;box-shadow:0 20px 50px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.03);overflow:hidden;max-height:420px;overflow-y:auto;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease}
+    .search-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+    .search-dropdown::-webkit-scrollbar{width:5px}
+    .search-dropdown::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+    .search-suggestion{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background 0.15s ease;min-height:56px}
+    .search-suggestion:hover,.search-suggestion.highlighted{background:#252525}
+    .search-suggestion.touched{background:#2a2a2a;transform:scale(0.98);transition:all 0.1s ease}
+    .search-suggestion img{width:56px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0}
+    .search-suggestion .sg-name{font-size:0.875rem;font-weight:500;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .search-suggestion .sg-name mark{background:none;color:#e63946;font-weight:700}
+    .search-suggestion .sg-meta{font-size:0.7rem;color:#8a8a8a;margin-top:2px}
+    .search-suggestion .sg-icon{margin-left:auto;color:#8a8a8a;font-size:0.75rem;flex-shrink:0}
   </style>
 </head>
 <body class="min-h-screen">
@@ -587,36 +604,36 @@
     function fmt(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ':' + (sec < 10 ? '0' : '') + sec; }
 
     /* Saved */
-    function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch { return []; } }
+    function getSaved() { try { return JSON.parse(USDSS.getItem('aw_saved') || '[]'); } catch { return []; } }
     function isSaved(id) { return getSaved().includes(id); }
     function toggleSave(id, name) {
       let s = getSaved();
       if (s.includes(id)) { s = s.filter(x => x !== id); showToast(`Removed "${name}"`, 'info'); }
       else { s.push(id); showToast(`Saved "${name}"`, 'success'); }
-      localStorage.setItem('aw_saved', JSON.stringify(s));
+      USDSS.setItem('aw_saved', JSON.stringify(s));
       return s.includes(id);
     }
 
     /* Watch History */
     function addToHistory(id, season, episode) {
       try {
-        let h = JSON.parse(localStorage.getItem('aw_history') || '[]');
+        let h = JSON.parse(USDSS.getItem('aw_history') || '[]');
         h = h.filter(x => x.id !== id);
         h.unshift({ id, ts: Date.now(), s: season || 1, e: episode || 1 });
         if (h.length > 50) h = h.slice(0, 50);
-        localStorage.setItem('aw_history', JSON.stringify(h));
+        USDSS.setItem('aw_history', JSON.stringify(h));
       } catch (e) {}
     }
 
     /* Progress — per season */
     function getProgress(animeId, s) {
-      try { return parseInt(localStorage.getItem('aw_prog_' + animeId + '_s' + s) || '0'); } catch { return 0; }
+      try { return parseInt(USDSS.getItem('aw_prog_' + animeId + '_s' + s) || '0'); } catch { return 0; }
     }
     function setProgress(animeId, epNum, s) {
       const key = 'aw_prog_' + animeId + '_s' + s;
       try {
-        const prev = parseInt(localStorage.getItem(key) || '0');
-        if (epNum > prev) localStorage.setItem(key, String(epNum));
+        const prev = parseInt(USDSS.getItem(key) || '0');
+        if (epNum > prev) USDSS.setItem(key, String(epNum));
       } catch (e) { }
     }
 
@@ -972,7 +989,17 @@
         let iframeLoaded = false;
         iframe.onload = () => { iframeLoaded = true; spinner.style.display = 'none'; };
         iframe.onerror = () => { showError('Failed to load video', 'The source may be down — try retrying or pick another episode.'); showToast('Failed to load video', 'error'); };
-        iframe.src = url;
+
+        AdBlocker.requestPlayback(iframe, url, anime.id, function () {
+          iframe.src = url;
+        }, function () {
+          iframe.style.display = 'none';
+          spinner.style.display = 'none';
+          bigPlay.classList.remove('hidden');
+          ctrlOverlay.style.display = '';
+          showError('Playback cancelled', 'This source needs ads/popups allowed to play. Try another server or allow it to continue.');
+          showToast('Playback cancelled — ads not allowed for this source', 'info');
+        });
         return;
       }
 
@@ -1377,7 +1404,10 @@
               return;
             }
             closeSuggestions();
-            window.location.href = 'index.html?q=' + encodeURIComponent(searchInput.value.trim());
+            (function () {
+              var words = searchInput.value.trim().split(/\s+/).filter(Boolean);
+              if (words.length) window.location.href = 'search.html?q=' + words.map(function (w) { return encodeURIComponent(w); }).join('+');
+            })();
           } else if (e.key === 'Escape') { searchInput.blur(); closeSuggestions(); }
         });
         document.addEventListener('click', function (e) { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
@@ -1396,11 +1426,11 @@
     };
     window.hideStConfirm = function (btn) { btn.closest('.st-item').classList.remove('confirming'); };
     window.confirmClearHistory = function () {
-      try { localStorage.setItem('aw_history', '[]'); } catch (e) {}
+      try { USDSS.setItem('aw_history', '[]'); } catch (e) {}
       showToast('Watch history cleared', 'success');
     };
     window.confirmClearSaved = function () {
-      localStorage.setItem('aw_saved', '[]');
+      USDSS.setItem('aw_saved', '[]');
       showToast('Saved list cleared', 'success');
       updateSaveBtn();
     };
@@ -1443,6 +1473,8 @@
     })();
   </script>
 
+  <script src="USDSS.js"></script>
+  <script src="adblocker.js"></script>
   <script src="settings.js"></script>
   <script src="ui.js"></script>
   <script src="share.js"></script>
