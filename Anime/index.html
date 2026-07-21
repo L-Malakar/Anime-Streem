@@ -272,6 +272,10 @@
     .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#2a2a2a;color:#8a8a8a;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:0.65rem;transition:all 0.2s;z-index:10}
     .search-clear:hover{background:#e63946;color:#fff}
     .search-clear.show{display:flex}
+    .modal-backdrop{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s ease}
+    .modal-backdrop.open{opacity:1;pointer-events:auto}
+    .modal-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:1rem;padding:2rem;max-width:380px;width:90%;text-align:center;transform:scale(0.9);transition:transform 0.25s ease;box-shadow:0 25px 60px rgba(0,0,0,0.5)}
+    .modal-backdrop.open .modal-box{transform:scale(1)}
     .search-hint{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#3a3a3a;font-size:0.7rem;pointer-events:none;transition:opacity 0.2s}
     .search-hint.hide{opacity:0}
 
@@ -638,7 +642,7 @@
       </div>
       <div class="flex items-center gap-2">
         <button id="historyEditBtn" onclick="toggleHistoryEdit()" class="text-[11px] text-aw-muted hover:text-sky-400 transition-colors px-2 py-1 rounded hover:bg-aw-card" title="Edit history"><i class="fas fa-pen-to-square mr-1"></i>Edit</button>
-        <button onclick="clearHistory()" class="text-[11px] text-aw-muted hover:text-aw-accent transition-colors px-2 py-1 rounded hover:bg-aw-card" title="Clear history"><i class="fas fa-trash-can mr-1"></i>Clear</button>
+        <button onclick="showClearHistoryModal()" class="text-[11px] text-aw-muted hover:text-aw-accent transition-colors px-2 py-1 rounded hover:bg-aw-card" title="Clear history"><i class="fas fa-trash-can mr-1"></i>Clear</button>
         <button class="scroll-arrow" onclick="scrollRow('historyRow',-1)" aria-label="Scroll left"><i class="fas fa-chevron-left"></i></button>
         <button class="scroll-arrow" onclick="scrollRow('historyRow',1)" aria-label="Scroll right"><i class="fas fa-chevron-right"></i></button>
       </div>
@@ -991,6 +995,7 @@
     </div>
   </div>
 
+  <script src="USDSS.js"></script>
   <script src="settings.js"></script>
   <script src="ui.js"></script>
   <script>
@@ -1121,8 +1126,8 @@
     function safeLocalStorage(action, key, value) {
       try { return action(key, value); } catch(e) { console.warn('localStorage unavailable'); return null; }
     }
-    function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch(e) { return []; } }
-    function setSaved(arr) { try { localStorage.setItem('aw_saved', JSON.stringify(arr)); } catch(e) { console.warn('localStorage unavailable'); } }
+    function getSaved() { try { return JSON.parse(USDSS.getItem('aw_saved') || '[]'); } catch(e) { return []; } }
+    function setSaved(arr) { try { USDSS.setItem('aw_saved', JSON.stringify(arr)); } catch(e) { console.warn('localStorage unavailable'); } }
     function isSaved(id) { return getSaved().includes(id); }
     function toggleSave(id) {
       var anime = allAnime.find(function(a){return a.id===id});
@@ -1169,7 +1174,7 @@
     function isRunning(a) { const s = (a.state || '').toLowerCase(); return s === 'watching' || s === 'running' || s === 'ongoing'; }
     const FRESH_DROP_PERIODS = { today: 1, week: 7, month: 30, year: 365 };
     let currentFreshDropPeriod = 'week';
-    try { currentFreshDropPeriod = localStorage.getItem('aw_freshdrop_period') || 'week'; } catch(e) {}
+    try { currentFreshDropPeriod = USDSS.getItem('aw_freshdrop_period') || 'week'; } catch(e) {}
     function isFreshDrop(a, period) {
       if (!a.dnt) return false;
       const t = new Date(a.dnt).getTime();
@@ -1213,6 +1218,7 @@
       shuffledAnime = shuffleArray(allAnime);
       displayedAnime = [...shuffledAnime];
       renderAll();
+      initScrollReveal();
       const qParam = new URLSearchParams(window.location.search).get('q');
       if (qParam) {
         document.getElementById('searchInput').value = qParam;
@@ -1341,10 +1347,10 @@
     // ── Watch History ──────────────────────────────────────────
     let historyEditMode = false;
     function getWatchHistory() {
-      try { return JSON.parse(localStorage.getItem('aw_history') || '[]'); } catch(e) { return []; }
+      try { return JSON.parse(USDSS.getItem('aw_history') || '[]'); } catch(e) { return []; }
     }
     function saveWatchHistory(arr) {
-      try { localStorage.setItem('aw_history', JSON.stringify(arr)); } catch(e) { console.warn('localStorage unavailable'); }
+      try { USDSS.setItem('aw_history', JSON.stringify(arr)); } catch(e) { console.warn('localStorage unavailable'); }
     }
     function addToHistory(id, season, episode) {
       let h = getWatchHistory();
@@ -1358,13 +1364,26 @@
       renderHistory();
       showToast('Removed from history', 'info');
     }
-    function clearHistory() {
+    function showClearHistoryModal() {
       if (!getWatchHistory().length) return;
+      document.getElementById('clearHistoryModal').classList.add('open');
+    }
+    function clearHistory() {
       saveWatchHistory([]);
       historyEditMode = false;
       renderHistory();
       showToast('Watch history cleared', 'info');
     }
+    document.addEventListener('DOMContentLoaded', function(){
+      const modal = document.getElementById('clearHistoryModal');
+      if (!modal) return;
+      document.getElementById('clearHistoryCancel').addEventListener('click', () => modal.classList.remove('open'));
+      modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+      document.getElementById('clearHistoryYes').addEventListener('click', () => {
+        modal.classList.remove('open');
+        clearHistory();
+      });
+    });
     function toggleHistoryEdit() {
       historyEditMode = !historyEditMode;
       const btn = document.getElementById('historyEditBtn');
@@ -1526,6 +1545,7 @@
     searchInput.addEventListener('input', () => {
       const val = searchInput.value;
       searchClear.classList.toggle('show', val.length > 0);
+      searchClear.style.display = val.length > 0 ? 'flex' : 'none';
       searchHint.classList.toggle('hide', val.length > 0);
       clearTimeout(suggestTimer);
       suggestTimer = setTimeout(() => { showSuggestions(val); }, 150);
@@ -1619,19 +1639,14 @@
     searchInput.addEventListener('focus', () => { if (searchInput.value.trim().length > 0) showSuggestions(searchInput.value); });
     document.addEventListener('click', e => { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
 
-    let searchTimer;
     function doSearch() {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => { 
-        applySortAndFilter(); 
-        setTimeout(() => {
-          document.getElementById('allAnimesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 50);
-      }, 100);
+      const words = searchInput.value.trim().split(/\s+/).filter(Boolean);
+      if (!words.length) return;
+      window.location.href = 'search.html?q=' + words.map(w => encodeURIComponent(w)).join('+');
     }
 
     let currentSort = 'default';
-    try { currentSort = localStorage.getItem('aw_sort') || 'default'; } catch(e) {}
+    try { currentSort = USDSS.getItem('aw_sort') || 'default'; } catch(e) {}
     const sortOptions = [
       { value: 'default', label: 'Shuffled', icon: 'fa-shuffle' },
       { value: 'az', label: 'Name: A → Z', icon: 'fa-arrow-down-a-z' },
@@ -1651,7 +1666,7 @@
       if (currentSort !== 'default') shuffledAnime = sortAnime(shuffledAnime);
       dd.querySelectorAll('.sort-option').forEach(btn => btn.addEventListener('click', () => {
         currentSort = btn.dataset.sort;
-        try { localStorage.setItem('aw_sort', currentSort); } catch(e) {}
+        try { USDSS.setItem('aw_sort', currentSort); } catch(e) {}
         if (currentSort === 'default') shuffledAnime = shuffleArray(allAnime);
         document.getElementById('sortLabel').textContent = btn.textContent.trim();
         dd.querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.sort === currentSort));
@@ -1678,7 +1693,7 @@
       dd.innerHTML = freshDropPeriodOptions.map(o => `<button class="sort-option ${o.value === currentFreshDropPeriod ? 'active' : ''}" data-period="${o.value}">${o.label}</button>`).join('');
       dd.querySelectorAll('.sort-option').forEach(btn => btn.addEventListener('click', () => {
         currentFreshDropPeriod = btn.dataset.period;
-        try { localStorage.setItem('aw_freshdrop_period', currentFreshDropPeriod); } catch(e) {}
+        try { USDSS.setItem('aw_freshdrop_period', currentFreshDropPeriod); } catch(e) {}
         document.getElementById('freshDropPeriodLabel').textContent = btn.textContent.trim();
         dd.querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.period === currentFreshDropPeriod));
         dd.classList.remove('open');
@@ -1741,7 +1756,7 @@
       searchClear.classList.remove('show');
       searchHint.classList.remove('hide');
       currentSort = 'default';
-      try { localStorage.setItem('aw_sort', 'default'); } catch(e) {}
+      try { USDSS.setItem('aw_sort', 'default'); } catch(e) {}
       document.getElementById('sortLabel').textContent = 'Shuffled';
       document.getElementById('sortDropdown').querySelectorAll('.sort-option').forEach(b => b.classList.toggle('active', b.dataset.sort === 'default'));
       renderGenreFilters();
@@ -2850,7 +2865,7 @@
         .then(function(r){ return r.ok ? r.json() : []; })
         .then(function(data){
           var readState = {};
-          try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
+          try { readState = JSON.parse(USDSS.getItem('aw_notif_read') || '{}'); } catch(e){}
           var now = new Date();
           var visible = (Array.isArray(data) ? data : []).filter(function(n){
             if(n.showAfter && new Date(n.showAfter) > now) return false;
@@ -2868,5 +2883,18 @@
     }
     updateNotifUnreadDot();
   </script>
+<div id="clearHistoryModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="w-14 h-14 rounded-2xl bg-aw-accent/10 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-trash-alt text-aw-accent text-xl"></i>
+      </div>
+      <h3 class="font-display text-lg text-aw-fg mb-2">Clear Watch History?</h3>
+      <p class="text-aw-muted text-sm mb-6 leading-relaxed">This will remove all items from your watch history. This action cannot be undone.</p>
+      <div class="flex gap-3 justify-center">
+        <button id="clearHistoryCancel" class="px-5 py-2.5 rounded-lg bg-aw-bg2 border border-aw-border text-aw-fg text-sm font-medium hover:bg-aw-card transition-colors">No</button>
+        <button id="clearHistoryYes" class="px-5 py-2.5 rounded-lg bg-aw-accent text-white text-sm font-semibold hover:bg-aw-accentD transition-colors shadow-lg shadow-aw-accent/25">Yes, Clear All</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
