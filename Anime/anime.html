@@ -301,6 +301,23 @@
     @media(max-width:1023px){ #mobileExtraBtns{display:flex} }
     @media(min-width:1024px){ #mobileExtraBtns{display:none!important} }
     @media(max-width:1023px){footer{padding-bottom:5rem!important}}
+  .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:#2a2a2a;color:#8a8a8a;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:0.65rem;transition:all 0.2s;z-index:10}
+    .search-clear:hover{background:#e63946;color:#fff}
+    .search-clear.show{display:flex}
+    .search-hint{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#3a3a3a;font-size:0.7rem;pointer-events:none;transition:opacity 0.2s}
+    .search-hint.hide{opacity:0}
+    .search-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:100;border-radius:12px;background:#1a1a1a;border:1px solid #2a2a2a;box-shadow:0 20px 50px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.03);overflow:hidden;max-height:420px;overflow-y:auto;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease}
+    .search-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+    .search-dropdown::-webkit-scrollbar{width:5px}
+    .search-dropdown::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px}
+    .search-suggestion{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;transition:background 0.15s ease;min-height:56px}
+    .search-suggestion:hover,.search-suggestion.highlighted{background:#252525}
+    .search-suggestion.touched{background:#2a2a2a;transform:scale(0.98);transition:all 0.1s ease}
+    .search-suggestion img{width:56px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0}
+    .search-suggestion .sg-name{font-size:0.875rem;font-weight:500;color:#f0f0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .search-suggestion .sg-name mark{background:none;color:#e63946;font-weight:700}
+    .search-suggestion .sg-meta{font-size:0.7rem;color:#8a8a8a;margin-top:2px}
+    .search-suggestion .sg-icon{margin-left:auto;color:#8a8a8a;font-size:0.75rem;flex-shrink:0}
   </style>
 </head>
 <body class="min-h-screen">
@@ -642,13 +659,13 @@
       }
     }
 
-    function getSaved() { try { return JSON.parse(localStorage.getItem('aw_saved') || '[]'); } catch { return []; } }
+    function getSaved() { try { return JSON.parse(USDSS.getItem('aw_saved') || '[]'); } catch { return []; } }
     function isSaved(id) { return getSaved().includes(id); }
     function toggleSave(id, name) {
       let s = getSaved();
       if (s.includes(id)) { s = s.filter(x => x !== id); showToast(`Removed "${name}"`, 'info'); }
       else { s.push(id); showToast(`Saved "${name}"`, 'success'); }
-      localStorage.setItem('aw_saved', JSON.stringify(s));
+      USDSS.setItem('aw_saved', JSON.stringify(s));
       updateSaveBadge();
       return s.includes(id);
     }
@@ -672,9 +689,9 @@
       if (mb) { mb.textContent = c > 0 ? label : ''; mb.classList.toggle('show', c > 0); }
     }
 
-    function getProgress(animeId) { try { return parseInt(localStorage.getItem('aw_prog_' + animeId) || '0'); } catch { return 0; } }
-    function setProgress(animeId, epNum) { const prev = getProgress(animeId); if (epNum > prev) localStorage.setItem('aw_prog_' + animeId, String(epNum)); }
-    function clearProgress(animeId) { localStorage.removeItem('aw_prog_' + animeId); }
+    function getProgress(animeId) { try { return parseInt(USDSS.getItem('aw_prog_' + animeId) || '0'); } catch { return 0; } }
+    function setProgress(animeId, epNum) { const prev = getProgress(animeId); if (epNum > prev) USDSS.setItem('aw_prog_' + animeId, String(epNum)); }
+    function clearProgress(animeId) { USDSS.removeItem('aw_prog_' + animeId); }
 
     function shareAnime(e) {
       const a = getAnime(); if (!a) return;
@@ -1543,11 +1560,11 @@
       const seasonKeys = Object.keys(a.episodeLinks || {});
       if (seasonKeys.length <= 1) {
         const prevProgress = getProgress(a.id);
-        localStorage.setItem('aw_prog_' + a.id, String(total));
+        USDSS.setItem('aw_prog_' + a.id, String(total));
         renderPage();
         showToast(`Marked all ${total} episodes as watched`, 'success', {
           label: 'Undo',
-          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+          onClick: () => { USDSS.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
         });
         return;
       }
@@ -1582,20 +1599,20 @@
       overlay.querySelector('#markCancelBtn').onclick = close;
       overlay.querySelector('#markSeasonOnlyBtn').onclick = () => {
         const prevProgress = getProgress(a.id);
-        localStorage.setItem('aw_prog_' + a.id, String(seasonLastGi));
+        USDSS.setItem('aw_prog_' + a.id, String(seasonLastGi));
         close(); renderPage();
         showToast(`Marked ${seasonLabel} as watched`, 'success', {
           label: 'Undo',
-          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+          onClick: () => { USDSS.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
         });
       };
       overlay.querySelector('#markAllSeasonsBtn').onclick = () => {
         const prevProgress = getProgress(a.id);
-        localStorage.setItem('aw_prog_' + a.id, String(total));
+        USDSS.setItem('aw_prog_' + a.id, String(total));
         close(); renderPage();
         showToast(`Marked all ${total} episodes as watched`, 'success', {
           label: 'Undo',
-          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+          onClick: () => { USDSS.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
         });
       };
     }
@@ -1608,7 +1625,7 @@
         renderPage();
         showToast('Progress reset', 'info', {
           label: 'Undo',
-          onClick: () => { localStorage.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
+          onClick: () => { USDSS.setItem('aw_prog_' + a.id, String(prevProgress)); renderPage(); showToast('Undone', 'info'); }
         });
       });
     }
@@ -1784,7 +1801,10 @@
               return;
             }
             closeSuggestions();
-            window.location.href = 'index.html?q=' + encodeURIComponent(searchInput.value.trim());
+            (function () {
+              var words = searchInput.value.trim().split(/\s+/).filter(Boolean);
+              if (words.length) window.location.href = 'search.html?q=' + words.map(function (w) { return encodeURIComponent(w); }).join('+');
+            })();
           } else if (e.key === 'Escape') { searchInput.blur(); closeSuggestions(); }
         });
         document.addEventListener('click', function (e) { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
@@ -1803,11 +1823,11 @@
     };
     window.hideStConfirm = function (btn) { btn.closest('.st-item').classList.remove('confirming'); };
     window.confirmClearHistory = function () {
-      try { localStorage.setItem('aw_history', '[]'); } catch (e) {}
+      try { USDSS.setItem('aw_history', '[]'); } catch (e) {}
       showToast('Watch history cleared', 'success');
     };
     window.confirmClearSaved = function () {
-      localStorage.setItem('aw_saved', '[]');
+      USDSS.setItem('aw_saved', '[]');
       showToast('Saved list cleared', 'success');
       updateSaveBadge();
     };
@@ -1834,7 +1854,7 @@
         .then(function(r){ return r.ok ? r.json() : []; })
         .then(function(data){
           var readState = {};
-          try { readState = JSON.parse(localStorage.getItem('aw_notif_read') || '{}'); } catch(e){}
+          try { readState = JSON.parse(USDSS.getItem('aw_notif_read') || '{}'); } catch(e){}
           var now = new Date();
           var visible = (Array.isArray(data) ? data : []).filter(function(n){
             if(n.showAfter && new Date(n.showAfter) > now) return false;
@@ -1877,6 +1897,7 @@
     })();
   </script>
 
+  <script src="USDSS.js"></script>
   <script src="settings.js"></script>
   <script src="ui.js"></script>
   <script src="share.js"></script>
