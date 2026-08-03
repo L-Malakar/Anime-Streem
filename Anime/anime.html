@@ -69,9 +69,9 @@
 
     .vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.5) 100%)}
 
-    .poster-watch-enter{animation:posterWatchIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s forwards;opacity:0}
+    .poster-watch-enter{opacity:0}
     @keyframes posterWatchIn{0%{opacity:0;transform:translateY(30px) scale(0.85);filter:blur(6px)}60%{opacity:1;transform:translateY(-4px) scale(1.02);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-    .poster-watch-float{animation:posterFloat 3s ease-in-out 1.4s infinite}
+    .poster-watch-float{animation:posterWatchIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s forwards,posterFloat 3s ease-in-out 1.4s infinite}
     @keyframes posterFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
     .poster-watch-btn{position:relative;overflow:hidden;transition:all 0.35s cubic-bezier(0.22,1,0.36,1)}
     .poster-watch-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);transition:left 0.6s ease}
@@ -166,12 +166,29 @@
     #mobileTrailerWrap.docked #mobileTrailerCloseBtn{display:flex}
 
     /* Smooth the poster/video-box re-centering on desktop, and the video box's own entrance/exit */
+    .gallery-item{position:relative;overflow:hidden;border-radius:0.75rem;border:1px solid #2a2a2a;cursor:pointer;flex:0 0 auto;height:220px}
+    #galleryGrid::-webkit-scrollbar{height:6px}
+    #galleryGrid::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:99px}
+    #galleryGrid::-webkit-scrollbar-track{background:transparent}
+    #galleryGrid{cursor:grab;user-select:none;scroll-snap-type:none}
+    #galleryGrid.dragging{cursor:grabbing;scroll-behavior:auto}
+    .gallery-item img{height:100%;width:auto;object-fit:contain;transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),filter 0.4s ease;display:block}
+    .gallery-item::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent 50%);opacity:0;transition:opacity 0.3s ease}
+    .gallery-item:hover img{transform:scale(1.08);filter:brightness(1.05)}
+    .gallery-item:hover::after{opacity:1}
+    #lightboxOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;display:none;align-items:center;justify-content:center}
+    #lightboxOverlay.open{display:flex}
+    #lightboxOverlay img{max-width:90vw;max-height:85vh;border-radius:0.75rem;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s ease}
+    .lb-nav:hover{background:rgba(255,255,255,0.18)}
+    #lbPrev{left:24px}
+    #lbClose{position:absolute;top:24px;right:24px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
     #posterFg.posterfg-smooth{transition:transform 0.45s cubic-bezier(0.22,1,0.36,1)}
     #mobileTrailerVideoBox{transition:opacity 0.35s ease,transform 0.4s cubic-bezier(0.22,1,0.36,1)}
     #mobileTrailerVideoBox.vb-hidden{opacity:0;transform:scale(0.92) translateX(14px);pointer-events:none}
     @media (max-width:1023px){
       #posterSection{min-height:0 !important}
-      #posterSection > .relative.z-\[3\]{min-height:0 !important;padding:1rem 1rem 2rem !important;justify-content:flex-start !important}
+      #posterSection > .relative.z-\[1001\]{min-height:0 !important;padding:1rem 1rem 2rem !important;justify-content:flex-start !important}
     }
 
     .ep-card{transition:all 0.2s ease}
@@ -529,8 +546,8 @@
           </div>
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
-          <p>Last Updated: <span class="st-ver">V1.26x4.8</span></p>
-          <p>Last Updated on: <span class="st-ver">15/07/2026</span></p>
+          <p>Last Updated: <span class="st-ver">V1.26x4.9</span></p>
+          <p>Last Updated on: <span class="st-ver">03/08/2026</span></p>
         </div>
       </div>
     </div>
@@ -591,12 +608,12 @@
     <div class="absolute inset-0 z-[1] poster-darken-overlay" style="background:linear-gradient(to bottom,rgba(10,10,10,0.55) 0%,rgba(10,10,10,0.65) 50%,rgba(10,10,10,0.92) 85%,rgba(10,10,10,1) 100%)"></div>
     <div class="poster-orb" style="top:40%;left:50%"></div>
     <div class="vignette"></div>
-    <div class="relative z-[3] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem">
+    <div class="relative z-[1001] flex items-center justify-center" style="min-height:calc(100vh - 4rem);padding:2rem 1rem 5rem;pointer-events:none">
       <div class="flex flex-col items-center">
-        <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden"></div>
-        <div id="posterWatchWrap" class="mt-5"></div>
+        <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden;pointer-events:none"></div>
       </div>
     </div>
+    <div id="posterWatchWrap" style="position:fixed;top:0;left:0;z-index:1000;pointer-events:none"></div>
     <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
       <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" width="400" height="600" fetchpriority="high" decoding="async" onclick="scrollToContent()">
       <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex flex-col items-center justify-center z-10 cursor-pointer gap-2" onclick="playMobileTrailer()">
@@ -621,6 +638,12 @@
 
   <main id="mainContent" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-12 relative z-10" style="display:none"></main>
 
+  <section id="gallerySection" class="border-t border-aw-border relative z-10" style="display:none">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+      <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-5">Images</h2>
+      <div id="galleryGrid" class="flex gap-3 overflow-x-auto pb-2" style="scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch"></div>
+    </div>
+  </section>
   <section id="recSection" class="border-t border-aw-border relative z-10" style="display:none"></section>
 
   <footer id="mainFooter" class="border-t border-aw-border relative z-10" style="display:none"></footer>
@@ -852,8 +875,11 @@
         // poster itself now, so it docks and scales together with the image.
         const fade = clamp01((rawProgress - CFG.fadeStart) / (CFG.fadeEnd - CFG.fadeStart));
         if (watchWrap) {
+          const wrapW = watchWrap.offsetWidth || 240;
+          const wrapX = x + (fgW * scale - wrapW) / 2;
+          const wrapY = y + fgH * scale + 20;
+          watchWrap.style.transform = `translate(${wrapX}px, ${wrapY}px) scale(${1 - fade * 0.06})`;
           watchWrap.style.opacity = String(1 - fade);
-          watchWrap.style.transform = `translateY(${fade * -12}px) scale(${1 - fade * 0.06})`;
           watchWrap.style.pointerEvents = fade > 0.5 ? 'none' : 'auto';
         }
       }
@@ -1218,37 +1244,119 @@
     let trailerTried = false;
     let quickBtnState = null;
 
+    let lightboxIndex = 0;
+    function openLightbox(i) {
+      lightboxIndex = i;
+      document.getElementById('lightboxImg').src = window.__galleryUrls[i];
+      document.getElementById('lightboxOverlay').classList.add('open');
+    }
+    function closeLightbox() {
+      document.getElementById('lightboxOverlay').classList.remove('open');
+    }
+    function navLightbox(dir) {
+      const urls = window.__galleryUrls || [];
+      lightboxIndex = (lightboxIndex + dir + urls.length) % urls.length;
+      document.getElementById('lightboxImg').src = urls[lightboxIndex];
+    }
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('lightboxOverlay').classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
+    });
+    (function initGalleryDrag() {
+      const grid = document.getElementById('galleryGrid');
+      if (!grid) return;
+      let isDown = false, startX = 0, scrollStart = 0, moved = false;
+      let lastX = 0, lastT = 0, velocity = 0, rafId = null, momentumId = null;
+
+      function applyScroll(x) {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          grid.scrollLeft = x;
+          rafId = null;
+        });
+      }
+
+      grid.addEventListener('mousedown', e => {
+        isDown = true; moved = false;
+        cancelAnimationFrame(momentumId);
+        grid.classList.add('dragging');
+        startX = e.pageX;
+        scrollStart = grid.scrollLeft;
+        lastX = e.pageX;
+        lastT = performance.now();
+        velocity = 0;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        grid.classList.remove('dragging');
+        runMomentum();
+      });
+
+      window.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        const dx = e.pageX - startX;
+        if (Math.abs(dx) > 4) moved = true;
+        applyScroll(scrollStart - dx);
+
+        const now = performance.now();
+        const dt = now - lastT || 16;
+        velocity = (lastX - e.pageX) / dt;
+        lastX = e.pageX;
+        lastT = now;
+      });
+
+      function runMomentum() {
+        let v = velocity * 16;
+        function step() {
+          grid.scrollLeft += v;
+          v *= 0.95;
+          momentumId = requestAnimationFrame(step);
+        }
+        momentumId = requestAnimationFrame(step);
+      }
+
+      grid.addEventListener('click', e => {
+        if (moved) { e.stopPropagation(); e.preventDefault(); }
+      }, true);
+    })();
+    async function renderGallery(a) {
+      const section = document.getElementById('gallerySection');
+      const grid = document.getElementById('galleryGrid');
+      if (!section || !grid) return;
+      section.style.display = 'none';
+      grid.innerHTML = '';
+      if (!a.details || typeof TMDB_API_KEY === 'undefined') return;
+      const m = a.details.match(/tt\d+/);
+      if (!m) return;
+      const imdbId = m[0];
+      try {
+        const findRes = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+        const findData = await findRes.json();
+        const match = (findData.tv_results && findData.tv_results[0]) || (findData.movie_results && findData.movie_results[0]);
+        if (!match) return;
+        const mediaType = (findData.tv_results && findData.tv_results.length) ? 'tv' : 'movie';
+        const imgRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${match.id}/images?api_key=${TMDB_API_KEY}`);
+        const imgData = await imgRes.json();
+        const base = 'https://image.tmdb.org/t/p/w500';
+        const urls = [].concat(imgData.backdrops || [], imgData.posters || []).map(img => base + img.file_path);
+        if (!urls.length) return;
+        window.__galleryUrls = urls;
+        grid.innerHTML = urls.map((u, i) => `
+          <div class="gallery-item" onclick="openLightbox(${i})">
+            <img src="${u}" loading="lazy">
+          </div>`).join('');
+        section.style.display = '';
+      } catch (e) { /* silent fail */ }
+    }
     function renderQuickBtn() {
       const quickBtn = document.getElementById('posterQuickBtn');
-      if (!quickBtn || !quickBtnState) return;
-      const { a, hasEps, watchable, allFinished, hasProgress, nextEp, hasTrailer } = quickBtnState;
-
-      if (hasEps && watchable && !allFinished) {
-        if (!hasProgress && hasTrailer && !trailerTried) {
-          // First-time visitor, trailer available, hasn't tried it yet — offer the trailer first.
-          quickBtn.innerHTML = `
-            <a href="javascript:void(0)" onclick="playMobileTrailer()"
-               class="poster-quick-btn" title="Watch the trailer first">
-              <i class="fas fa-play text-sm"></i>
-              <span>Try Now</span>
-            </a>`;
-        } else {
-          quickBtn.innerHTML = `
-            <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=${hasProgress ? nextEp : 1}"
-               class="poster-quick-btn" title="${hasProgress ? 'Continue from Episode ' + nextEp : 'Play Episode 1'}">
-              <i class="fas ${hasProgress ? 'fa-forward' : 'fa-play'} text-sm"></i>
-              <span>${hasProgress ? 'Continue' : 'Watch Now'}</span>
-              ${hasProgress ? `<span class="text-white/60 text-xs font-normal">Ep ${nextEp}</span>` : ''}
-            </a>`;
-        }
-      } else if (hasEps && watchable && allFinished) {
-        quickBtn.innerHTML = `
-          <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1"
-             class="poster-quick-btn" title="Re-watch from Episode 1" style="background:rgba(26,26,26,0.9);box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 30px rgba(0,0,0,0.4)">
-            <i class="fas fa-rotate-right text-sm text-green-400"></i>
-            <span class="text-green-400">Re-watch</span>
-          </a>`;
-      } else { quickBtn.innerHTML = ''; }
+      if (!quickBtn) return;
+      quickBtn.innerHTML = '';
     }
     function renderPage() {
       const a = getAnime();
@@ -1312,8 +1420,11 @@
       if (!sameAnime) trailerTried = false;
       quickBtnState = { a, hasEps, watchable, allFinished, hasProgress, nextEp, hasTrailer };
       renderQuickBtn();
+      renderGallery(a);
 
       const posterBtn = document.getElementById('posterWatchWrap');
+      posterBtn.className = 'flex items-center justify-center gap-3';
+      posterBtn.style.width = 'auto';
       if (hasEps && !allFinished) {
         const label = hasProgress ? 'Continue Watching' : 'Watch Now';
         const icon = hasProgress ? 'fa-forward' : 'fa-play';
@@ -1324,7 +1435,10 @@
             <i class="fas ${icon} text-sm play-icon-bounce"></i>
             <span>${label}</span>
             ${hasProgress ? `<span class="text-aw-accentL/80 text-sm font-normal ml-0.5">Ep ${nextEp}</span>` : ''}
-          </a>`;
+          </a>
+          <button onclick="shareAnime(event)" class="action-btn inline-flex items-center justify-center bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium w-[52px] h-[52px] rounded-lg" title="Share">
+            <i class="fas fa-share-nodes"></i>
+          </button>`;
       } else if (hasEps && allFinished) {
         posterBtn.innerHTML = `
           <a href="watch.html?id=${encodeURIComponent(a.id)}&s=1&e=1"
@@ -1333,11 +1447,17 @@
             <i class="fas fa-rotate-right text-sm text-green-400 play-icon-bounce"></i>
             <span>Re-watch</span>
             <span class="text-green-400/80 text-sm font-normal ml-0.5"><i class="fas fa-check text-xs mr-1"></i>Completed</span>
-          </a>`;
+          </a>
+          <button onclick="shareAnime(event)" class="action-btn inline-flex items-center justify-center bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium w-[52px] h-[52px] rounded-lg" title="Share">
+            <i class="fas fa-share-nodes"></i>
+          </button>`;
       } else {
         posterBtn.innerHTML = `
           <button disabled class="poster-watch-coming inline-flex items-center gap-2.5 bg-aw-bg2 border border-aw-border text-aw-muted font-medium px-7 py-3.5 rounded-2xl text-base whitespace-nowrap cursor-not-allowed">
             <i class="fas fa-clock text-sm"></i><span>Coming...</span>
+          </button>
+          <button onclick="shareAnime(event)" class="action-btn inline-flex items-center justify-center bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium w-[52px] h-[52px] rounded-lg" title="Share">
+            <i class="fas fa-share-nodes"></i>
           </button>`;
       }
 
@@ -1897,6 +2017,13 @@
     })();
   </script>
 
+  <div id="lightboxOverlay">
+    <button id="lbClose" onclick="closeLightbox()"><i class="fas fa-xmark"></i></button>
+    <button id="lbPrev" class="lb-nav" onclick="navLightbox(-1)"><i class="fas fa-chevron-left"></i></button>
+    <img id="lightboxImg" src="" alt="">
+    <button id="lbNext" class="lb-nav" style="right:24px" onclick="navLightbox(1)"><i class="fas fa-chevron-right"></i></button>
+  </div>
+  <script src="tmdb-config.js"></script>
   <script src="USDSS.js"></script>
   <script src="settings.js"></script>
   <script src="ui.js"></script>
