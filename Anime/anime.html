@@ -223,6 +223,7 @@
 @media (max-width:1023px){
   #posterPlaceholder{display:none}
   #posterFg{position:relative !important;top:auto !important;left:auto !important;transform:none !important;margin:0 auto 12px !important;z-index:5 !important}
+  #posterWatchWrap{position:relative !important;top:auto !important;left:auto !important;transform:none !important;opacity:1 !important;margin:0 auto 16px !important;display:flex !important;justify-content:center;pointer-events:auto !important}
   #stickyInfoWrap{position:static !important;padding-left:0 !important;top:auto !important}
 }
 
@@ -235,9 +236,6 @@
     .rec-watch-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;color:#fff;background:rgba(230,57,70,0.9);transition:all 0.2s ease;cursor:pointer;text-decoration:none;box-shadow:0 4px 12px rgba(230,57,70,0.3)}
     .rec-watch-btn:hover{background:rgba(230,57,70,1);transform:scale(1.05);box-shadow:0 6px 16px rgba(230,57,70,0.4)}
     .rec-watch-btn:active{transform:scale(0.97)}
-    .rec-shuffle{transition:all 0.3s ease}
-    .rec-shuffle:hover{background:#e63946;border-color:#e63946;color:#fff}
-    .rec-shuffle.spinning i{animation:spin 0.5s ease}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
     .rec-grid-transition .rec-card{
@@ -260,6 +258,9 @@
     .back-btn:active{transform:scale(0.92)}
 
     .genre-pill{transition:all 0.2s ease}
+    .collapse-toggle-btn i{transition:transform 0.25s ease}
+    .collapse-toggle-btn.collapsed i{transform:rotate(180deg)}
+    .collapse-body{overflow:hidden;transition:max-height 0.4s cubic-bezier(0.22,1,0.36,1),opacity 0.3s ease}
     .genre-pill:hover{border-color:rgba(230,57,70,0.4);color:#ff6b6b;background:rgba(230,57,70,0.08)}
 
     .info-card{position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease}
@@ -613,7 +614,6 @@
         <div id="posterPlaceholder" class="max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="aspect-ratio:2/3;visibility:hidden;pointer-events:none"></div>
       </div>
     </div>
-    <div id="posterWatchWrap" style="position:fixed;top:0;left:0;z-index:1000;pointer-events:none"></div>
     <div id="posterFg" class="poster-enter-fixed poster-shadow cursor-pointer max-h-[55vh] w-[240px] sm:w-[280px] lg:w-[300px]" style="position:fixed;top:0;left:0;transform-origin:top left;z-index:999;will-change:transform">
       <img id="posterImg" src="" alt="" class="w-full rounded-2xl" style="aspect-ratio:2/3;object-fit:cover" width="400" height="600" fetchpriority="high" decoding="async" onclick="scrollToContent()">
       <div id="mobileTrailerPlayBtn" class="absolute inset-0 flex flex-col items-center justify-center z-10 cursor-pointer gap-2" onclick="playMobileTrailer()">
@@ -623,6 +623,7 @@
       </div>
       <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:20"></div>
     </div>
+    <div id="posterWatchWrap" style="position:fixed;top:0;left:0;z-index:1000;pointer-events:none"></div>
     <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;position:fixed;top:0;left:0;width:720px;max-width:56vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible;z-index:998">
       <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
       <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
@@ -640,8 +641,19 @@
 
   <section id="gallerySection" class="border-t border-aw-border relative z-10" style="display:none">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-      <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-5">Images</h2>
-      <div id="galleryGrid" class="flex gap-3 overflow-x-auto pb-2" style="scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch"></div>
+      <div class="flex items-center justify-between mb-1">
+        <div class="flex items-baseline gap-2">
+          <h2 class="font-display text-2xl sm:text-3xl text-aw-fg">Images</h2>
+          <span id="galleryCount" class="text-aw-muted text-sm font-medium"></span>
+        </div>
+        <button id="galleryToggleBtn" onclick="toggleGallerySection()" class="collapse-toggle-btn shrink-0 w-9 h-9 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted flex items-center justify-center cursor-pointer" title="Collapse">
+          <i class="fas fa-chevron-up text-sm"></i>
+        </button>
+      </div>
+      <div id="galleryBody">
+        <p class="text-aw-muted text-sm mb-5 mt-1">Uploaded by users</p>
+        <div id="galleryGrid" class="flex gap-3 overflow-x-auto pb-2" style="scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch"></div>
+      </div>
     </div>
   </section>
   <section id="recSection" class="border-t border-aw-border relative z-10" style="display:none"></section>
@@ -876,9 +888,11 @@
         const fade = clamp01((rawProgress - CFG.fadeStart) / (CFG.fadeEnd - CFG.fadeStart));
         if (watchWrap) {
           const wrapW = watchWrap.offsetWidth || 240;
-          const wrapX = x + (fgW * scale - wrapW) / 2;
-          const wrapY = y + fgH * scale + 20;
-          watchWrap.style.transform = `translate(${wrapX}px, ${wrapY}px) scale(${1 - fade * 0.06})`;
+          const wrapH = watchWrap.offsetHeight || 60;
+          const wrapX = x + (fgW * scale - wrapW * scale) / 2;
+          const wrapY = y + fgH * scale - (wrapH * scale) - (14 * scale);
+          watchWrap.style.transformOrigin = 'top left';
+          watchWrap.style.transform = `translate(${wrapX}px, ${wrapY}px) scale(${scale * (1 - fade * 0.06)})`;
           watchWrap.style.opacity = String(1 - fade);
           watchWrap.style.pointerEvents = fade > 0.5 ? 'none' : 'auto';
         }
@@ -1017,15 +1031,16 @@
     let recShuffledPool = [];
     let currentRecGrid = { cols: 0, rows: 0, total: 0 };
     let currentRecId = null;
+    let recCollapsed = false;
 
-    function renderRecommendations(currentId, forceShuffle) {
+    function renderRecommendations(currentId) {
       const section = document.getElementById('recSection');
       const pool = allAnime.filter(a => a.id !== currentId && !isUpcoming(a));
 
       if (!pool.length) { section.innerHTML = ''; section.style.display = 'none'; return; }
 
-      /* Build shuffled pool once per anime page (or on force shuffle) */
-      if (forceShuffle || !recShuffledPool.length || currentRecId !== currentId) {
+      /* Build the pool once per anime page */
+      if (!recShuffledPool.length || currentRecId !== currentId) {
         recShuffledPool = shuffleArray(pool);
         currentRecId = currentId;
       }
@@ -1046,11 +1061,11 @@
               <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-1">You Might Also Like</h2>
               <p class="text-aw-muted text-sm">${grid.cols} × ${grid.rows} &middot; ${grid.total} picks</p>
             </div>
-            <button onclick="reshuffleRecs('${currentId.replace(/'/g,"\\'")}')" id="recShuffleBtn" class="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted text-sm font-medium cursor-pointer rec-shuffle">
-              <i class="fas fa-shuffle"></i> <span class="hidden sm:inline">Shuffle</span>
+            <button id="recToggleBtn" onclick="toggleRecSection()" class="collapse-toggle-btn shrink-0 w-9 h-9 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted flex items-center justify-center cursor-pointer${recCollapsed ? ' collapsed' : ''}" title="${recCollapsed ? 'Expand' : 'Collapse'}">
+              <i class="fas fa-chevron-up text-sm"></i>
             </button>
           </div>
-          <div id="recGrid" class="grid rec-grid-transition" style="grid-template-columns:repeat(${grid.cols},minmax(0,1fr));gap:${gap}">
+          <div id="recGrid" class="grid rec-grid-transition collapse-body" style="grid-template-columns:repeat(${grid.cols},minmax(0,1fr));gap:${gap}">
             ${picks.map((a, i) => {
               const tag = getStateTag(a);
               const saved = isSaved(a.id);
@@ -1070,12 +1085,18 @@
           </div>
         </div>`;
       initScrollReveal();
+      const recGridEl = document.getElementById('recGrid');
+      if (recGridEl) slideCollapse(recGridEl, recCollapsed, true);
     }
 
-    function reshuffleRecs(currentId) {
-      const btn = document.getElementById('recShuffleBtn');
-      if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 500); }
-      renderRecommendations(currentId, true);
+    function toggleRecSection() {
+      const grid = document.getElementById('recGrid');
+      const btn = document.getElementById('recToggleBtn');
+      if (!grid || !btn) return;
+      recCollapsed = !recCollapsed;
+      slideCollapse(grid, recCollapsed, false);
+      btn.classList.toggle('collapsed', recCollapsed);
+      btn.title = recCollapsed ? 'Expand' : 'Collapse';
     }
 
     /* ── Resize: re-render grid only when dimensions change ── */
@@ -1086,7 +1107,7 @@
       recResizeTimer = setTimeout(() => {
         const newGrid = getRecGrid(recShuffledPool.length);
         if (newGrid.cols !== currentRecGrid.cols || newGrid.rows !== currentRecGrid.rows) {
-          renderRecommendations(currentRecId, false);
+          renderRecommendations(currentRecId);
         }
       }, 300);
     }, { passive: true });
@@ -1324,6 +1345,36 @@
         if (moved) { e.stopPropagation(); e.preventDefault(); }
       }, true);
     })();
+    async function applyTmdbCoreMetadata(a) {
+      if (!a.details || typeof TMDB_API_KEY === 'undefined') return false;
+      if (a.__tmdbApplied) return false; // already fetched once for this anime
+      const m = a.details.match(/tt\d+/);
+      if (!m) return false;
+      const imdbId = m[0];
+      try {
+        const findRes = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+        const findData = await findRes.json();
+        const match = (findData.tv_results && findData.tv_results[0]) || (findData.movie_results && findData.movie_results[0]);
+        if (!match) { a.__tmdbApplied = true; return false; }
+        const mediaType = (findData.tv_results && findData.tv_results.length) ? 'tv' : 'movie';
+        const detRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${match.id}?api_key=${TMDB_API_KEY}`);
+        const d = await detRes.json();
+        a.__tmdbApplied = true;
+        if (!d || d.success === false) return false;
+
+        let changed = false;
+        const title = d.name || d.title;
+        if (title) { a.name = title; changed = true; }
+        if (d.overview) { a.review = d.overview; changed = true; }
+        if (Array.isArray(d.genres) && d.genres.length) { a.genre = d.genres.map(g => g.name); changed = true; }
+        const dateStr = d.first_air_date || d.release_date;
+        if (dateStr) { a.year = dateStr.slice(0, 4); changed = true; }
+        if (typeof d.vote_average === 'number' && d.vote_average > 0) { a.rating = Math.round(d.vote_average * 10) / 10; changed = true; }
+        if (Array.isArray(d.production_companies) && d.production_companies.length) { a.studio = d.production_companies[0].name; changed = true; }
+
+        return changed;
+      } catch (e) { a.__tmdbApplied = true; return false; /* silent fail, keep local data */ }
+    }
     async function renderGallery(a) {
       const section = document.getElementById('gallerySection');
       const grid = document.getElementById('galleryGrid');
@@ -1346,12 +1397,55 @@
         const urls = [].concat(imgData.backdrops || [], imgData.posters || []).map(img => base + img.file_path);
         if (!urls.length) return;
         window.__galleryUrls = urls;
+        const countEl = document.getElementById('galleryCount');
+        if (countEl) countEl.textContent = `(${urls.length}+)`;
         grid.innerHTML = urls.map((u, i) => `
           <div class="gallery-item" onclick="openLightbox(${i})">
             <img src="${u}" loading="lazy">
           </div>`).join('');
         section.style.display = '';
       } catch (e) { /* silent fail */ }
+    }
+    function slideCollapse(el, collapse, instant) {
+      if (!el) return;
+      el.classList.add('collapse-body');
+      if (instant) {
+        el.style.transition = 'none';
+        el.style.maxHeight = collapse ? '0px' : el.scrollHeight + 'px';
+        el.style.opacity = collapse ? '0' : '1';
+        void el.offsetHeight;
+        el.style.transition = '';
+        if (!collapse) {
+          setTimeout(() => { if (el.style.opacity !== '0') el.style.maxHeight = 'none'; }, 420);
+        }
+        return;
+      }
+      if (collapse) {
+        el.style.maxHeight = el.scrollHeight + 'px';
+        void el.offsetHeight;
+        requestAnimationFrame(() => {
+          el.style.maxHeight = '0px';
+          el.style.opacity = '0';
+        });
+      } else {
+        el.style.maxHeight = el.scrollHeight + 'px';
+        el.style.opacity = '1';
+        el.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName === 'max-height') {
+            el.style.maxHeight = 'none';
+            el.removeEventListener('transitionend', handler);
+          }
+        });
+      }
+    }
+    function toggleGallerySection() {
+      const body = document.getElementById('galleryBody');
+      const btn = document.getElementById('galleryToggleBtn');
+      if (!body || !btn) return;
+      const collapsing = !btn.classList.contains('collapsed');
+      slideCollapse(body, collapsing, false);
+      btn.classList.toggle('collapsed', collapsing);
+      btn.title = collapsing ? 'Expand' : 'Collapse';
     }
     function renderQuickBtn() {
       const quickBtn = document.getElementById('posterQuickBtn');
@@ -1421,6 +1515,9 @@
       quickBtnState = { a, hasEps, watchable, allFinished, hasProgress, nextEp, hasTrailer };
       renderQuickBtn();
       renderGallery(a);
+      applyTmdbCoreMetadata(a).then(changed => {
+        if (changed && getAnime() === a) renderPage();
+      });
 
       const posterBtn = document.getElementById('posterWatchWrap');
       posterBtn.className = 'flex items-center justify-center gap-3';
@@ -1524,7 +1621,7 @@
             ${ratingHTML}
 
             <div class="flex flex-wrap gap-2 mb-6 reveal reveal-delay-2">
-              ${(a.genre || []).map(g => `<span class="genre-pill px-3 py-1 rounded-full bg-aw-bg2 border border-aw-border text-xs text-aw-muted cursor-default">${g}</span>`).join('')}
+              ${(a.genre || []).map(g => `<span class="genre-pill px-3 py-1 rounded-full bg-aw-bg2 border border-aw-border text-xs text-aw-muted cursor-pointer" onclick="window.location.href='search.html?q=' + encodeURIComponent('${g.replace(/'/g, "\\'")}')">${g}</span>`).join('')}
             </div>
 
             <div id="aboutSection" class="mb-8 reveal reveal-delay-3">
