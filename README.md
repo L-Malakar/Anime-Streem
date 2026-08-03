@@ -26,9 +26,9 @@ A demo anime streaming platform. Learn how streaming web applications function u
 
 ---
 
-## Last Update: `1.26.4.8` (15/07/2026)
+## Last Update: `1.26.4.9` (03/08/2026)
 
-1. Updated the share option; added it to `anime.html` along with `watch.html`.
-2. Improved the video playback logic for `watch.html`.
-3. Fixed minor bugs in `anime.html` and `index.html`.
-4. Added an Episode 1 preview/trailer player at the top of the main page and anime page so users can try it out first.
+1. Updated in `anime.html` under [anime folder](https://github.com/L-Malakar/Anime-Streem/tree/main/Anime)
+2. Improved the button logic for `anime.html`.
+3. Fixed minor bugs in `anime.html`.
+4. Added images for all animes using `TMDB` to use `IMDB` linkes.
