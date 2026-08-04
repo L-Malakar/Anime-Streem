@@ -30,7 +30,7 @@
     .ms-back{width:44px;height:44px;border-radius:50%;border:none;background:none;color:#f0f0f0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background 0.15s;touch-action:manipulation}
     .ms-back:active{background:#1a1a1a}
     .ms-field{position:relative;flex:1}
-    .ms-field input{width:100%;background:#141414;border:1px solid #2a2a2a;border-radius:24px;padding:12px 38px 12px 36px;font-size:16px;color:#f0f0f0;outline:none;font-family:'Outfit',sans-serif;transition:border-color 0.2s;-webkit-appearance:none;appearance:none}
+    .ms-field input{width:100%;background:#141414;border:1px solid #2a2a2a;border-radius:24px;padding:12px 38px 12px 36px;font-size:16px;color:#f0f0f0;outline:none;font-family:'Outfit',sans-serif;transition:border-color 0.2s;-webkit-appearance:none;appearance:none;-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}
     .ms-field input:focus{border-color:#e63946}
     .ms-field input::placeholder{color:#8a8a8a}
     .ms-field .ms-x{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:#2a2a2a;color:#8a8a8a;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:12px;transition:all 0.2s;touch-action:manipulation}
@@ -181,3 +181,9 @@
     .aw-preview-details{flex:0 0 auto;width:38px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:8px;background:rgba(255,255,255,0.08);color:#f0f0f0;font-size:0.9rem;text-decoration:none;border:1px solid rgba(255,255,255,0.12)}
     .aw-preview-details:hover{background:rgba(255,255,255,0.14)}
     .aw-preview-save{flex:0 0 auto;width:38px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:8px;font-size:0.9rem;border:1px solid rgba(255,255,255,0.12);cursor:pointer;transition:background 0.2s ease}
+    #awCPBar{position:fixed;display:none;gap:4px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,0.5);z-index:99999}
+    #awCPBar.show{display:flex}
+    #awCPBar button{background:#2a2a2a;color:#f0f0f0;border:none;border-radius:6px;padding:8px 10px;font-size:12px;font-weight:600;white-space:nowrap;touch-action:manipulation}
+    #awCPBar button:active{background:#e63946}
+    html.light #awCPBar{background:#fff;border-color:#e0e0e0}
+    html.light #awCPBar button{background:#eee;color:#111}

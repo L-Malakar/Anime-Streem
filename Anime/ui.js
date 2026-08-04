@@ -442,4 +442,81 @@
   global.awHidePreview = awHidePreview;
   global.AWUI = AWUI;
 
+/* ===== Custom mobile copy/paste toolbar (hold on any input/textarea) ===== */
+  (function () {
+    var awCPBar = null, awCPTarget = null, awCPTimer = null, awCPMoved = false;
+
+    function awCPBuild() {
+      if (awCPBar) return awCPBar;
+      awCPBar = document.createElement('div');
+      awCPBar.id = 'awCPBar';
+      awCPBar.innerHTML =
+        '<button type="button" data-act="selectall">Select All</button>' +
+        '<button type="button" data-act="cut">Cut</button>' +
+        '<button type="button" data-act="copy">Copy</button>' +
+        '<button type="button" data-act="paste">Paste</button>';
+      document.body.appendChild(awCPBar);
+      awCPBar.addEventListener('touchstart', function (e) { e.stopPropagation(); });
+      awCPBar.addEventListener('click', async function (e) {
+        var btn = e.target.closest('button[data-act]');
+        if (!btn || !awCPTarget) return;
+        var el = awCPTarget; el.focus();
+        var act = btn.dataset.act;
+        try {
+          if (act === 'selectall') { el.setSelectionRange(0, el.value.length); }
+          else if (act === 'copy') {
+            var selText = el.value.slice(el.selectionStart, el.selectionEnd) || el.value;
+            await awCPWrite(selText);
+          } else if (act === 'cut') {
+            var s = el.selectionStart, en = el.selectionEnd;
+            var cutText = el.value.slice(s, en) || el.value;
+            await awCPWrite(cutText);
+            if (s === en) { el.value = ''; } else { el.value = el.value.slice(0, s) + el.value.slice(en); el.setSelectionRange(s, s); }
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+          } else if (act === 'paste') {
+            var text = await awCPRead();
+            if (text != null) {
+              var s2 = el.selectionStart, e2 = el.selectionEnd;
+              el.value = el.value.slice(0, s2) + text + el.value.slice(e2);
+              el.setSelectionRange(s2 + text.length, s2 + text.length);
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        } catch (err) {}
+        awCPHide();
+      });
+      return awCPBar;
+    }
+
+    async function awCPWrite(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) { try { await navigator.clipboard.writeText(text); return; } catch (e) {} }
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    async function awCPRead() {
+      if (navigator.clipboard && navigator.clipboard.readText) { try { return await navigator.clipboard.readText(); } catch (e) { return null; } }
+      return null;
+    }
+
+    function awCPShow(el) {
+      var bar = awCPBuild();
+      awCPTarget = el;
+      bar.classList.add('show');
+      var r = el.getBoundingClientRect(), bw = bar.offsetWidth;
+      bar.style.left = Math.max(8, Math.min(window.innerWidth - bw - 8, r.left)) + 'px';
+      bar.style.top = Math.min(window.innerHeight - bar.offsetHeight - 8, r.bottom + 10) + 'px';
+    }
+    function awCPHide() { if (awCPBar) awCPBar.classList.remove('show'); awCPTarget = null; }
+
+    document.addEventListener('touchstart', function (e) {
+      var el = e.target.closest('input,textarea');
+      awCPMoved = false;
+      clearTimeout(awCPTimer);
+      if (!el) { if (!e.target.closest('#awCPBar')) awCPHide(); return; }
+      awCPTimer = setTimeout(function () { if (!awCPMoved) awCPShow(el); }, 450);
+    }, { passive: true });
+    document.addEventListener('touchmove', function () { awCPMoved = true; }, { passive: true });
+    document.addEventListener('touchend', function () { clearTimeout(awCPTimer); }, { passive: true });
+  })();
+
 })(window, document);
