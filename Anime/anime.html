@@ -1097,6 +1097,7 @@
       slideCollapse(grid, recCollapsed, false);
       btn.classList.toggle('collapsed', recCollapsed);
       btn.title = recCollapsed ? 'Expand' : 'Collapse';
+      USDSS.setItem('aw_rec_collapsed', recCollapsed ? '1' : '0');
     }
 
     /* ── Resize: re-render grid only when dimensions change ── */
@@ -1131,6 +1132,7 @@
           showToast('details.json not found — showing demo data', 'info');
         } catch { allAnime = FALLBACK; showToast('Could not load anime data', 'error'); }
       }
+      try { recCollapsed = USDSS.getItem('aw_rec_collapsed') === '1'; } catch (e) {}
       showPage();
     }
 
@@ -1446,6 +1448,16 @@
       slideCollapse(body, collapsing, false);
       btn.classList.toggle('collapsed', collapsing);
       btn.title = collapsing ? 'Expand' : 'Collapse';
+      USDSS.setItem('aw_gallery_collapsed', collapsing ? '1' : '0');
+    }
+    function applyGalleryCollapsedState() {
+      const body = document.getElementById('galleryBody');
+      const btn = document.getElementById('galleryToggleBtn');
+      if (!body || !btn) return;
+      const collapsed = USDSS.getItem('aw_gallery_collapsed') === '1';
+      slideCollapse(body, collapsed, true);
+      btn.classList.toggle('collapsed', collapsed);
+      btn.title = collapsed ? 'Expand' : 'Collapse';
     }
     function renderQuickBtn() {
       const quickBtn = document.getElementById('posterQuickBtn');
@@ -1514,7 +1526,7 @@
       if (!sameAnime) trailerTried = false;
       quickBtnState = { a, hasEps, watchable, allFinished, hasProgress, nextEp, hasTrailer };
       renderQuickBtn();
-      renderGallery(a);
+      renderGallery(a).then(() => applyGalleryCollapsedState());
       applyTmdbCoreMetadata(a).then(changed => {
         if (changed && getAnime() === a) renderPage();
       });
