@@ -30,5 +30,5 @@ A demo anime streaming platform. Learn how streaming web applications function u
 
 1. Updated in `anime.html` under [anime folder](https://github.com/L-Malakar/Anime-Streem/tree/main/Anime)
 2. Improved the button logic for `anime.html`.
-3. Fixed minor bugs in `anime.html`.
+3. Fixed bugs in `anime.html` that is blocking `copy-paste`, and add buttons for that.
 4. Added images for all animes using `TMDB` to use `IMDB` linkes.
