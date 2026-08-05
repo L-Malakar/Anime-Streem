@@ -33,3 +33,4 @@ A demo anime streaming platform. Learn how streaming web applications function u
 3. Fixed bugs in `anime.html` that is blocking `copy-paste`, and add buttons for that.
 4. Added images for all animes using `TMDB` to use `IMDB` linkes.
 5. fix the bug, now animation work find in desktop.
+6. add option to download `images` directly.
