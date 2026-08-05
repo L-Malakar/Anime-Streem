@@ -176,13 +176,15 @@
     .gallery-item::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent 50%);opacity:0;transition:opacity 0.3s ease}
     .gallery-item:hover img{transform:scale(1.08);filter:brightness(1.05)}
     .gallery-item:hover::after{opacity:1}
-    #lightboxOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;display:none;align-items:center;justify-content:center}
+    #lightboxOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;display:none;align-items:center;justify-content:center;overflow:hidden}
     #lightboxOverlay.open{display:flex}
-    #lightboxOverlay img{max-width:90vw;max-height:85vh;border-radius:0.75rem;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
-    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s ease}
+    #lightboxOverlay img{max-width:90vw;max-height:85vh;border-radius:0.75rem;box-shadow:0 20px 60px rgba(0,0,0,0.6);transition:transform 0.25s ease;transform-origin:center center;position:relative;z-index:1}
+    .lb-zoom{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(255,255,255,0.15);z-index:10}
+    .lb-zoom:hover{background:rgba(255,255,255,0.16)}
+    .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s ease;z-index:10}
     .lb-nav:hover{background:rgba(255,255,255,0.18)}
     #lbPrev{left:24px}
-    #lbClose{position:absolute;top:24px;right:24px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    #lbClose{position:absolute;top:24px;right:24px;z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
     #posterFg.posterfg-smooth{transition:transform 0.45s cubic-bezier(0.22,1,0.36,1)}
     #mobileTrailerVideoBox{transition:opacity 0.35s ease,transform 0.4s cubic-bezier(0.22,1,0.36,1)}
     #mobileTrailerVideoBox.vb-hidden{opacity:0;transform:scale(0.92) translateX(14px);pointer-events:none}
@@ -1283,15 +1285,59 @@
     let lightboxIndex = 0;
     function openLightbox(i) {
       lightboxIndex = i;
+      resetLbZoom();
       document.getElementById('lightboxImg').src = window.__galleryUrls[i];
       document.getElementById('lightboxOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
     function closeLightbox() {
       document.getElementById('lightboxOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    let lbZoom = 1;
+    function resetLbZoom() {
+      lbZoom = 1;
+      const img = document.getElementById('lightboxImg');
+      img.style.transform = 'scale(1)';
+    }
+    function zoomLightbox(dir) {
+      lbZoom = Math.min(4, Math.max(1, lbZoom + dir * 0.5));
+      document.getElementById('lightboxImg').style.transform = `scale(${lbZoom})`;
+    }
+    async function downloadLightboxImage() {
+      const url = document.getElementById('lightboxImg').src;
+      if (!url) return;
+      const extMatch = url.match(/\.([a-zA-Z0-9]+)(?:\?.*)?$/);
+      const ext = extMatch ? extMatch[1] : 'jpg';
+      const rawName = (currentAnime && currentAnime.name) ? currentAnime.name : 'anime';
+      const safeName = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const filename = 'animewave-' + safeName + '-' + (lightboxIndex + 1) + '.' + ext;
+      const btn = document.getElementById('lbDownload');
+      if (btn) btn.classList.add('lb-loading');
+      try {
+        const proxied = 'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, ''));
+        const res = await fetch(proxied);
+        if (!res.ok) throw new Error('fetch failed');
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (e) {
+        showToast('Download failed, opening image instead', 'error');
+        window.open(url, '_blank');
+      } finally {
+        if (btn) btn.classList.remove('lb-loading');
+      }
     }
     function navLightbox(dir) {
       const urls = window.__galleryUrls || [];
       lightboxIndex = (lightboxIndex + dir + urls.length) % urls.length;
+      resetLbZoom();
       document.getElementById('lightboxImg').src = urls[lightboxIndex];
     }
     document.addEventListener('keydown', e => {
@@ -1415,7 +1461,7 @@
         const countEl = document.getElementById('galleryCount');
         if (countEl) countEl.textContent = `(${urls.length}+)`;
         grid.innerHTML = urls.map((u, i) => `
-          <div class="gallery-item" onclick="openImageInNewWindow('${u}')">
+          <div class="gallery-item" onclick="openLightbox(${i})">
             <img src="${u}" loading="lazy" onerror="handleImgError(this)">
           </div>`).join('');
         section.style.display = '';
@@ -2170,6 +2216,9 @@
 
   <div id="lightboxOverlay">
     <button id="lbClose" onclick="closeLightbox()"><i class="fas fa-xmark"></i></button>
+    <button id="lbDownload" class="lb-zoom" style="bottom:24px;left:24px" onclick="downloadLightboxImage()"><i class="fas fa-download"></i></button>
+    <button id="lbZoomOut" class="lb-zoom" style="bottom:24px;right:76px" onclick="zoomLightbox(-1)"><i class="fas fa-magnifying-glass-minus"></i></button>
+    <button id="lbZoomIn" class="lb-zoom" style="bottom:24px;right:24px" onclick="zoomLightbox(1)"><i class="fas fa-magnifying-glass-plus"></i></button>
     <button id="lbPrev" class="lb-nav" onclick="navLightbox(-1)"><i class="fas fa-chevron-left"></i></button>
     <img id="lightboxImg" src="" alt="">
     <button id="lbNext" class="lb-nav" style="right:24px" onclick="navLightbox(1)"><i class="fas fa-chevron-right"></i></button>
