@@ -220,6 +220,9 @@
 .save-dirty-dot.show{display:flex}
 #sidebar.expanded .sb-btn #sbNotifDot{right:auto!important;left:24px;top:4px}
 @media(max-width:1023px){ #sbNotifDot{display:none!important} }
+    @media(max-width:1023px){
+      #animeMainGrid #galleryInner{padding-left:0!important;padding-right:0!important;max-width:none!important}
+    }
 @media (max-width:1023px){
   #posterPlaceholder{display:none}
   #posterFg{position:relative !important;top:auto !important;left:auto !important;transform:none !important;margin:0 auto 12px !important;z-index:5 !important}
@@ -640,10 +643,10 @@
   <main id="mainContent" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-12 relative z-10" style="display:none"></main>
 
   <section id="gallerySection" class="border-t border-aw-border relative z-10" style="display:none">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10" id="galleryInner">
       <div class="flex items-center justify-between mb-1">
         <div class="flex items-baseline gap-2">
-          <h2 class="font-display text-2xl sm:text-3xl text-aw-fg">Images</h2>
+          <h2 class="font-display text-2xl sm:text-3xl text-aw-fg cursor-pointer" onclick="toggleGallerySection()">Images</h2>
           <span id="galleryCount" class="text-aw-muted text-sm font-medium"></span>
         </div>
         <button id="galleryToggleBtn" onclick="toggleGallerySection()" class="collapse-toggle-btn shrink-0 w-9 h-9 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted flex items-center justify-center cursor-pointer" title="Collapse">
@@ -1064,7 +1067,7 @@
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-12">
           <div class="flex items-center justify-between mb-8 reveal">
             <div>
-              <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-1">You Might Also Like</h2>
+              <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-1 cursor-pointer" onclick="toggleRecSection()">You Might Also Like</h2>
               <p class="text-aw-muted text-sm">${grid.cols} × ${grid.rows} &middot; ${grid.total} picks</p>
             </div>
             <button id="recToggleBtn" onclick="toggleRecSection()" class="collapse-toggle-btn shrink-0 w-9 h-9 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted flex items-center justify-center cursor-pointer${recCollapsed ? ' collapsed' : ''}" title="${recCollapsed ? 'Expand' : 'Collapse'}">
@@ -1412,8 +1415,24 @@
             <img src="${u}" loading="lazy" onerror="handleImgError(this)">
           </div>`).join('');
         section.style.display = '';
+        repositionGalleryForMobile();
       } catch (e) { /* silent fail */ }
     }
+    function repositionGalleryForMobile() {
+      const gallery = document.getElementById('gallerySection');
+      const grid = document.getElementById('animeMainGrid');
+      const episodesCol = document.getElementById('episodesColumn');
+      if (!gallery || !grid || !episodesCol) return;
+      if (window.innerWidth <= 1023) {
+        if (gallery.parentElement !== grid) grid.insertBefore(gallery, episodesCol);
+      } else {
+        const main = document.getElementById('mainContent');
+        if (main && gallery.parentElement !== main.parentElement) {
+          main.insertAdjacentElement('afterend', gallery);
+        }
+      }
+    }
+    window.addEventListener('resize', () => { repositionGalleryForMobile(); });
     function slideCollapse(el, collapse, instant) {
       if (!el) return;
       el.classList.add('collapse-body');
@@ -1620,8 +1639,15 @@
           <div class="flex flex-wrap gap-2">${a.tags.map(t => `<span class="px-3 py-1 rounded-lg bg-aw-accent/10 text-aw-accentL text-sm border border-aw-accent/20">${t}</span>`).join('')}</div>
         </div>` : '';
 
+      (function(){
+        const g = document.getElementById('gallerySection');
+        const mc = document.getElementById('mainContent');
+        if (g && mc && g.parentElement && mc.contains(g)) {
+          mc.insertAdjacentElement('afterend', g);
+        }
+      })();
       document.getElementById('mainContent').innerHTML = `
-        <div class="grid lg:grid-cols-[1fr_380px] gap-8">
+        <div class="grid lg:grid-cols-[1fr_380px] gap-8" id="animeMainGrid">
           <div id="detailsCol">
             <div id="stickyInfoWrap">
             <div class="flex flex-wrap items-center gap-3 mb-4 reveal">
@@ -1676,7 +1702,7 @@
             </div>
           </div>
 
-          <div class="reveal" style="transition-delay:0.2s">
+          <div class="reveal" style="transition-delay:0.2s" id="episodesColumn">
             <div class="bg-aw-card border border-aw-border rounded-2xl overflow-hidden sticky top-24">
               <div class="p-4 border-b border-aw-border flex items-center justify-between">
                 <h2 class="font-display text-lg text-aw-fg">Episodes</h2>
