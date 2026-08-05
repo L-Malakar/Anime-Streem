@@ -623,7 +623,7 @@
       </div>
       <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:20"></div>
     </div>
-    <div id="posterWatchWrap" style="position:fixed;top:0;left:0;z-index:1000;pointer-events:none"></div>
+    <div id="posterWatchWrap" style="position:fixed;top:0;left:0;z-index:900;pointer-events:none"></div>
     <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;position:fixed;top:0;left:0;width:720px;max-width:56vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible;z-index:998">
       <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
       <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
@@ -677,7 +677,7 @@
     document.addEventListener('selectstart', e => { if (isEditable(e.target)) return; e.preventDefault(); });
     document.addEventListener('dragstart', e => e.preventDefault());
 
-    const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420' fill='%231a1a1a'%3E%3Crect width='300' height='420'/%3E%3Crect x='120' y='170' width='60' height='80' rx='4' fill='%232a2a2a'/%3E%3Ccircle cx='144' cy='190' r='8' fill='%23333'/%3E%3Cpolygon points='139,210 139,230 156,220' fill='%23333'/%3E%3Ctext x='150' y='280' text-anchor='middle' fill='%23333' font-family='sans-serif' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
+    const IMG_FALLBACK = "images/404.jpg";
     function handleImgError(img) { if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = IMG_FALLBACK; } }
 
     function showToast(msg, type = 'info', action = null) {
@@ -1409,7 +1409,7 @@
         if (countEl) countEl.textContent = `(${urls.length}+)`;
         grid.innerHTML = urls.map((u, i) => `
           <div class="gallery-item" onclick="openLightbox(${i})">
-            <img src="${u}" loading="lazy">
+            <img src="${u}" loading="lazy" onerror="handleImgError(this)">
           </div>`).join('');
         section.style.display = '';
       } catch (e) { /* silent fail */ }
