@@ -222,6 +222,8 @@
 @media(max-width:1023px){ #sbNotifDot{display:none!important} }
     @media(max-width:1023px){
       #animeMainGrid #galleryInner{padding-left:0!important;padding-right:0!important;max-width:none!important}
+      #animeMainGrid{grid-template-columns:minmax(0,1fr)!important}
+      #animeMainGrid > #gallerySection{min-width:0!important}
     }
 @media (max-width:1023px){
   #posterPlaceholder{display:none}
@@ -1413,7 +1415,7 @@
         const countEl = document.getElementById('galleryCount');
         if (countEl) countEl.textContent = `(${urls.length}+)`;
         grid.innerHTML = urls.map((u, i) => `
-          <div class="gallery-item" onclick="openLightbox(${i})">
+          <div class="gallery-item" onclick="openImageInNewWindow('${u}')">
             <img src="${u}" loading="lazy" onerror="handleImgError(this)">
           </div>`).join('');
         section.style.display = '';
