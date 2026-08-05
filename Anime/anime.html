@@ -71,7 +71,7 @@
 
     .poster-watch-enter{opacity:0}
     @keyframes posterWatchIn{0%{opacity:0;transform:translateY(30px) scale(0.85);filter:blur(6px)}60%{opacity:1;transform:translateY(-4px) scale(1.02);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
-    .poster-watch-float{animation:posterWatchIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s forwards,posterFloat 3s ease-in-out 1.4s infinite}
+    .poster-watch-float{animation:posterWatchIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.6s forwards}
     @keyframes posterFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
     .poster-watch-btn{position:relative;overflow:hidden;transition:all 0.35s cubic-bezier(0.22,1,0.36,1)}
     .poster-watch-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);transition:left 0.6s ease}
@@ -226,7 +226,7 @@
 @media (max-width:1023px){
   #posterPlaceholder{display:none}
   #posterFg{position:relative !important;top:auto !important;left:auto !important;transform:none !important;margin:0 auto 12px !important;z-index:5 !important}
-  #posterWatchWrap{position:relative !important;top:auto !important;left:auto !important;transform:none !important;opacity:1 !important;margin:0 auto 16px !important;display:flex !important;justify-content:center;pointer-events:auto !important}
+  #posterWatchWrap{position:relative !important;top:auto !important;left:auto !important;bottom:auto !important;transform:none !important;opacity:1 !important;margin:12px auto 0 !important;display:flex !important;justify-content:center;pointer-events:auto !important}
   #stickyInfoWrap{position:static !important;padding-left:0 !important;top:auto !important}
 }
 
@@ -629,8 +629,8 @@
         </div>
       </div>
       <div id="posterQuickBtn" class="absolute left-1/2" style="bottom:14px;transform:translateX(-50%);z-index:20"></div>
+      <div id="posterWatchWrap" style="position:absolute;left:50%;bottom:-64px;transform:translateX(-50%);z-index:20;pointer-events:auto"></div>
     </div>
-    <div id="posterWatchWrap" style="position:fixed;top:0;left:0;z-index:999;pointer-events:none"></div>
     <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;position:fixed;top:0;left:0;width:720px;max-width:56vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible;z-index:998">
       <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
       <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
@@ -841,8 +841,9 @@
       // ease-out for a snappier, less linear feel
       const ease = t => 1 - Math.pow(1 - t, 3);
 
-      // cache poster dimensions; only recompute on resize (avoids layout thrash on scroll)
+      // cache poster + button dimensions; only recompute on resize (avoids layout thrash on scroll)
       let fgW = 0, fgH = 0;
+      let wrapW = 240, wrapH = 60;
       let dockScrollY = null;
       function updateDockOffset() {
         // Width the docked poster occupies once scaled down, plus a gap,
@@ -861,6 +862,7 @@
         if (!fg) return;
         fgW = fg.offsetWidth;
         fgH = fg.offsetHeight;
+        if (watchWrap) { wrapW = watchWrap.offsetWidth || 240; wrapH = watchWrap.offsetHeight || 60; }
         updateDockOffset();
       }
 
@@ -896,16 +898,11 @@
 
         fg.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
 
-        // Only the big centered CTA fades away; the pill button is inside the
-        // poster itself now, so it docks and scales together with the image.
+        // The button now lives INSIDE #posterFg, so it moves, scales and
+        // docks automatically together with the poster — only the fade
+        // needs to be handled here, and only on desktop.
         const fade = clamp01((rawProgress - CFG.fadeStart) / (CFG.fadeEnd - CFG.fadeStart));
-        if (watchWrap) {
-          const wrapW = watchWrap.offsetWidth || 240;
-          const wrapH = watchWrap.offsetHeight || 60;
-          const wrapX = x + (fgW * scale - wrapW * scale) / 2;
-          const wrapY = y + fgH * scale - (wrapH * scale) - (14 * scale);
-          watchWrap.style.transformOrigin = 'top left';
-          watchWrap.style.transform = `translate(${wrapX}px, ${wrapY}px) scale(${scale * (1 - fade * 0.06)})`;
+        if (watchWrap && window.innerWidth >= 1024) {
           watchWrap.style.opacity = String(1 - fade);
           watchWrap.style.pointerEvents = fade > 0.5 ? 'none' : 'auto';
         }
@@ -928,6 +925,7 @@
       }
 
       measure();
+      window.__remeasurePosterGroup = measure;
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', () => {
         CFG.cornerX = computeCornerX();
@@ -1564,6 +1562,10 @@
 
       const posterBtn = document.getElementById('posterWatchWrap');
       posterBtn.className = 'flex items-center justify-center gap-3';
+      requestAnimationFrame(() => {
+        if (window.__remeasurePosterGroup) window.__remeasurePosterGroup();
+        else if (window.__repositionPosterGroup) window.__repositionPosterGroup();
+      });
       posterBtn.style.width = 'auto';
       if (hasEps && !allFinished) {
         const label = hasProgress ? 'Continue Watching' : 'Watch Now';
@@ -1621,8 +1623,8 @@
         </div>` : '';
 
       const infoCards = [];
-      if (a.year) infoCards.push({ icon: 'fa-calendar-alt', label: 'Year', value: a.year });
-      if (a.studio) infoCards.push({ icon: 'fa-film', label: 'Studio', value: a.studio });
+      if (a.year) infoCards.push({ icon: 'fa-calendar-alt', label: 'Year', value: a.year, link: a.year });
+      if (a.studio) infoCards.push({ icon: 'fa-film', label: 'Studio', value: a.studio, link: a.studio });
       if (totalEps > 0) infoCards.push({ icon: 'fa-play-circle', label: 'Episodes', value: totalEps + ' ep' });
       if (seasonKeys.length > 1) infoCards.push({ icon: 'fa-layer-group', label: 'Seasons', value: seasonKeys.length + ' seasons' });
       if (a.language) infoCards.push({ icon: 'fa-language', label: 'Language', value: a.language.split(' ').slice(0, 3).join(', ') });
@@ -1630,7 +1632,7 @@
       const infoCardsHTML = infoCards.length ? `
         <div id="infoCardsRow" class="grid grid-cols-2 sm:grid-cols-${Math.min(infoCards.length, 5)} gap-3 mb-6 reveal reveal-delay-1">
           ${infoCards.map(c => `
-            <div class="info-card bg-aw-card border border-aw-border rounded-xl p-4 text-center">
+            <div class="info-card bg-aw-card border border-aw-border rounded-xl p-4 text-center${c.link ? ' cursor-pointer' : ''}"${c.link ? ` onclick="window.location.href='search.html?q=' + encodeURIComponent('${String(c.link).replace(/'/g, "\\'")}')"` : ''}>
               <i class="fas ${c.icon} text-aw-accent/60 text-base mb-2"></i>
               <div class="text-sm font-bold text-aw-fg">${c.value}</div>
               <div class="text-[10px] text-aw-muted mt-1 uppercase tracking-wide">${c.label}</div>
