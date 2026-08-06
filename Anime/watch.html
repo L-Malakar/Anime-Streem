@@ -147,6 +147,30 @@
     #aw-miniplayer #aw-mp-progress{height:3px;background:#2a2a2a}
     #aw-miniplayer #aw-mp-bar{height:100%;background:#e63946;transition:width 0.3s ease;width:0}
 
+    #watchGalleryGrid::-webkit-scrollbar{height:6px}
+    #watchGalleryGrid::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:99px}
+    #watchGalleryGrid::-webkit-scrollbar-track{background:transparent}
+    #watchGalleryGrid{cursor:grab;user-select:none;scroll-snap-type:none}
+    #watchGalleryGrid.dragging{cursor:grabbing;scroll-behavior:auto}
+    .gallery-item{position:relative;overflow:hidden;border-radius:0.75rem;border:1px solid #2a2a2a;cursor:pointer;flex:0 0 auto;height:220px}
+    .gallery-item img{height:100%;width:auto;object-fit:contain;transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),filter 0.4s ease;display:block}
+    .gallery-item::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.55),transparent 50%);opacity:0;transition:opacity 0.3s ease}
+    .gallery-item:hover img{transform:scale(1.08);filter:brightness(1.05)}
+    .gallery-item:hover::after{opacity:1}
+    .rec-card:hover .rec-img{transform:scale(1.05)}
+    .rec-img{transition:transform 0.35s ease}
+    .collapse-body{overflow:hidden;transition:max-height 0.4s cubic-bezier(0.22,1,0.36,1),opacity 0.3s ease}
+    .collapse-toggle-btn{transition:transform 0.3s ease}
+    .collapse-toggle-btn.collapsed{transform:rotate(180deg)}
+    #lightboxOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;display:none;align-items:center;justify-content:center;overflow:hidden}
+    #lightboxOverlay.open{display:flex}
+    #lightboxOverlay img{max-width:90vw;max-height:85vh;border-radius:0.75rem;box-shadow:0 20px 60px rgba(0,0,0,0.6);transition:transform 0.25s ease;transform-origin:center center;position:relative;z-index:1}
+    .lb-zoom,.lb-nav{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.12);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2001;transition:background 0.2s ease}
+    .lb-zoom:hover,.lb-nav:hover{background:rgba(255,255,255,0.18)}
+    .lb-nav{top:50%;transform:translateY(-50%)}
+    #lbPrev{left:24px}
+    #lbClose{position:absolute;top:24px;right:24px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2001}
+
     /* ── Shared chrome (sidebar toggle / settings backdrop / mobile extra btns) ── */
     #sbToggle{width:36px;height:36px;border-radius:8px;border:none;background:none;cursor:pointer;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4.5px;padding:9px;transition:background 0.2s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
     #sbToggle:hover{background:#1a1a1a}
@@ -554,6 +578,26 @@
         </div>
       </aside>
     </div>
+
+    <!-- Images + You Might Also Like — desktop only, like anime.html -->
+    <section id="watchGallerySection" class="hidden lg:block border-t border-aw-border relative z-10" style="display:none">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10" id="watchGalleryInner">
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-baseline gap-2">
+            <h2 class="font-display text-2xl sm:text-3xl text-aw-fg cursor-pointer" onclick="toggleWatchGallerySection()">Images</h2>
+            <span id="watchGalleryCount" class="text-aw-muted text-sm font-medium"></span>
+          </div>
+          <button id="watchGalleryToggleBtn" onclick="toggleWatchGallerySection()" class="collapse-toggle-btn shrink-0 w-9 h-9 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted flex items-center justify-center cursor-pointer" title="Collapse">
+            <i class="fas fa-chevron-up text-sm"></i>
+          </button>
+        </div>
+        <div id="watchGalleryBody">
+          <p class="text-aw-muted text-sm mb-5 mt-1">Uploaded by users</p>
+          <div id="watchGalleryGrid" class="flex gap-3 overflow-x-auto pb-2" style="scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch"></div>
+        </div>
+      </div>
+    </section>
+    <section id="watchRecSection" class="hidden lg:block border-t border-aw-border relative z-10" style="display:none"></section>
   </main>
 
   <!-- Toast -->
@@ -606,6 +650,354 @@
     /* Saved */
     function getSaved() { try { return JSON.parse(USDSS.getItem('aw_saved') || '[]'); } catch { return []; } }
     function isSaved(id) { return getSaved().includes(id); }
+
+    /* ── Shared helpers ported from anime.html ── */
+    function isUpcoming(a) { return a && a.status && /upcoming/i.test(a.status); }
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+    function getStateTag(a) {
+      if (isUpcoming(a)) return { text: 'UPCOMING', cls: 'bg-aw-accent text-white' };
+      if (a.status && /completed/i.test(a.status)) return { text: 'COMPLETED', cls: 'bg-green-600 text-white' };
+      return null;
+    }
+    function getRecGrid(total) {
+      const w = window.innerWidth;
+      let cols = w >= 1536 ? 6 : w >= 1280 ? 5 : w >= 1024 ? 4 : w >= 640 ? 3 : 2;
+      const rows = 2;
+      return { cols, rows, total: Math.min(total, cols * rows) };
+    }
+    function handleRecSave(btn, id, name) {
+      const s = getSaved();
+      const idx = s.indexOf(id);
+      if (idx >= 0) { s.splice(idx, 1); btn.dataset.saved = '0'; btn.classList.remove('bg-aw-accent', 'text-white'); btn.classList.add('bg-black/60', 'text-white/70'); btn.querySelector('i').className = 'far fa-bookmark'; showToast(name + ' removed', 'info'); }
+      else { s.push(id); btn.dataset.saved = '1'; btn.classList.add('bg-aw-accent', 'text-white'); btn.classList.remove('bg-black/60', 'text-white/70'); btn.querySelector('i').className = 'fas fa-bookmark'; showToast(name + ' saved', 'success'); }
+      USDSS.setItem('aw_saved', JSON.stringify(s));
+    }
+    function initScrollReveal() {
+      document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible'));
+    }
+    function slideCollapse(el, collapse, instant) {
+      if (!el) return;
+      el.classList.add('collapse-body');
+      if (instant) {
+        el.style.transition = 'none';
+        el.style.maxHeight = collapse ? '0px' : el.scrollHeight + 'px';
+        el.style.opacity = collapse ? '0' : '1';
+        void el.offsetHeight;
+        el.style.transition = '';
+        if (!collapse) setTimeout(() => { if (el.style.opacity !== '0') el.style.maxHeight = 'none'; }, 420);
+        return;
+      }
+      if (collapse) {
+        el.style.maxHeight = el.scrollHeight + 'px';
+        void el.offsetHeight;
+        requestAnimationFrame(() => { el.style.maxHeight = '0px'; el.style.opacity = '0'; });
+      } else {
+        el.style.maxHeight = el.scrollHeight + 'px';
+        el.style.opacity = '1';
+        el.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName === 'max-height') { el.style.maxHeight = 'none'; el.removeEventListener('transitionend', handler); }
+        });
+      }
+    }
+
+    /* ── Images (gallery) — desktop only ── */
+    async function renderWatchGallery(a) {
+      if (window.innerWidth < 1024) return; // desktop only
+      const section = document.getElementById('watchGallerySection');
+      const grid = document.getElementById('watchGalleryGrid');
+      if (!section || !grid) return;
+      section.style.display = 'none';
+      grid.innerHTML = '';
+      if (!a.details || typeof TMDB_API_KEY === 'undefined') return;
+      const m = a.details.match(/tt\d+/);
+      if (!m) return;
+      const imdbId = m[0];
+      try {
+        const findRes = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+        const findData = await findRes.json();
+        const match = (findData.tv_results && findData.tv_results[0]) || (findData.movie_results && findData.movie_results[0]);
+        if (!match) return;
+        const mediaType = (findData.tv_results && findData.tv_results.length) ? 'tv' : 'movie';
+        const imgRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${match.id}/images?api_key=${TMDB_API_KEY}`);
+        const imgData = await imgRes.json();
+        const base = 'https://image.tmdb.org/t/p/w500';
+        const urls = [].concat(imgData.backdrops || [], imgData.posters || []).map(img => base + img.file_path);
+        if (!urls.length) return;
+        window.__galleryUrls = urls;
+        const countEl = document.getElementById('watchGalleryCount');
+        if (countEl) countEl.textContent = `(${urls.length}+)`;
+        grid.innerHTML = urls.map((u, i) => `
+          <div class="gallery-item" onclick="openLightbox(${i})">
+            <img src="${u}" loading="lazy" onerror="handleImgError(this)">
+          </div>`).join('');
+        section.style.display = '';
+      } catch (e) { /* silent fail */ }
+    }
+    function toggleWatchGallerySection() {
+      const body = document.getElementById('watchGalleryBody');
+      const btn = document.getElementById('watchGalleryToggleBtn');
+      if (!body || !btn) return;
+      const collapsed = btn.classList.toggle('collapsed');
+      slideCollapse(body, collapsed, false);
+      btn.title = collapsed ? 'Expand' : 'Collapse';
+    }
+
+    /* ── You Might Also Like — desktop only ── */
+    let watchRecShuffledPool = [], watchCurrentRecId = null, watchRecCollapsed = false;
+    function renderWatchRecommendations(currentId) {
+      if (window.innerWidth < 1024) return; // desktop only
+      const section = document.getElementById('watchRecSection');
+      if (!section) return;
+      const pool = allAnime.filter(a => a.id !== currentId && !isUpcoming(a));
+      if (!pool.length) { section.innerHTML = ''; section.style.display = 'none'; return; }
+      if (!watchRecShuffledPool.length || watchCurrentRecId !== currentId) {
+        watchRecShuffledPool = shuffleArray(pool);
+        watchCurrentRecId = currentId;
+      }
+      const grid = getRecGrid(watchRecShuffledPool.length);
+      if (grid.total === 0) { section.innerHTML = ''; section.style.display = 'none'; return; }
+      section.style.display = '';
+      const picks = watchRecShuffledPool.slice(0, grid.total);
+      const gap = grid.cols <= 3 ? '12px' : '16px';
+      section.innerHTML = `
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-12">
+          <div class="flex items-center justify-between mb-8 reveal">
+            <div>
+              <h2 class="font-display text-2xl sm:text-3xl text-aw-fg mb-1 cursor-pointer" onclick="toggleWatchRecSection()">You Might Also Like</h2>
+              <p class="text-aw-muted text-sm">${grid.cols} × ${grid.rows} &middot; ${grid.total} picks</p>
+            </div>
+            <button id="watchRecToggleBtn" onclick="toggleWatchRecSection()" class="collapse-toggle-btn shrink-0 w-9 h-9 rounded-lg border border-aw-border bg-aw-bg2 text-aw-muted flex items-center justify-center cursor-pointer${watchRecCollapsed ? ' collapsed' : ''}" title="${watchRecCollapsed ? 'Expand' : 'Collapse'}">
+              <i class="fas fa-chevron-up text-sm"></i>
+            </button>
+          </div>
+          <div id="watchRecGrid" class="grid rec-grid-transition collapse-body" style="grid-template-columns:repeat(${grid.cols},minmax(0,1fr));gap:${gap}">
+            ${picks.map((a, i) => {
+              const tag = getStateTag(a);
+              const saved = isSaved(a.id);
+              const nameEsc = a.name.replace(/'/g, "\\'");
+              return `
+              <a href="anime.html?id=${encodeURIComponent(a.id)}" class="rec-card group block" data-id="${a.id}" style="animation-delay:${i * 30}ms">
+                <div class="aspect-[5/7] rounded-xl overflow-hidden bg-aw-card border border-aw-border mb-2 relative">
+                  <img class="rec-img w-full h-full object-cover object-center" src="${a.image}" alt="${a.name}" width="350" height="490" loading="lazy" decoding="async" onerror="handleImgError(this)">
+                  ${tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
+                  ${a.rating ? `<div class="absolute top-8 right-1.5 bg-black/70 backdrop-blur-sm text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
+                  <button class="bm-btn absolute top-1.5 right-1.5 w-6 h-6 rounded-full ${saved?'bg-aw-accent text-white':'bg-black/60 text-white/70 hover:text-white'} flex items-center justify-center text-[10px] transition-colors z-10" style="pointer-events:auto" title="${saved?'Unsave':'Save'}" data-saved="${saved?'1':'0'}" data-id="${a.id}" onclick="event.preventDefault();event.stopPropagation();handleRecSave(this,'${a.id}','${nameEsc}')"><i class="${saved?'fas':'far'} fa-bookmark"></i></button>
+                </div>
+                <p class="text-[11px] sm:text-xs font-medium text-aw-fg line-clamp-2 leading-snug group-hover:text-aw-accentL transition-colors">${a.name}</p>
+                ${a.year ? `<p class="text-[10px] text-aw-muted mt-0.5">${a.year}${a.episodes ? ' · ' + a.episodes + ' Ep' : ''}</p>` : ''}
+              </a>`;
+            }).join('')}
+          </div>
+        </div>`;
+      initScrollReveal();
+      const recGridEl = document.getElementById('watchRecGrid');
+      if (recGridEl) slideCollapse(recGridEl, watchRecCollapsed, true);
+    }
+    function toggleWatchRecSection() {
+      const grid = document.getElementById('watchRecGrid');
+      const btn = document.getElementById('watchRecToggleBtn');
+      if (!grid || !btn) return;
+      watchRecCollapsed = !watchRecCollapsed;
+      slideCollapse(grid, watchRecCollapsed, false);
+      btn.classList.toggle('collapsed', watchRecCollapsed);
+      btn.title = watchRecCollapsed ? 'Expand' : 'Collapse';
+    }
+
+    /* ── Lightbox (image viewer with zoom/pan) ── */
+    let lightboxIndex = 0, lbZoom = 1, lbPanX = 0, lbPanY = 0;
+    function openLightbox(i) {
+      lightboxIndex = i;
+      resetLbZoom();
+      document.getElementById('lightboxImg').src = window.__galleryUrls[i];
+      document.getElementById('lightboxOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+      document.getElementById('lightboxOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    function resetLbZoom() {
+      lbZoom = 1; lbPanX = 0; lbPanY = 0;
+      const img = document.getElementById('lightboxImg');
+      img.style.transform = 'translate(0px,0px) scale(1)';
+      img.style.cursor = '';
+    }
+    function applyLbTransform() {
+      const img = document.getElementById('lightboxImg');
+      img.style.transform = `translate(${lbPanX}px,${lbPanY}px) scale(${lbZoom})`;
+      img.style.cursor = lbZoom > 1 ? 'grab' : '';
+    }
+    function zoomLightbox(dir) {
+      lbZoom = Math.min(4, Math.max(1, lbZoom + dir * 0.5));
+      if (lbZoom === 1) { lbPanX = 0; lbPanY = 0; }
+      applyLbTransform();
+    }
+    async function downloadLightboxImage() {
+      const url = document.getElementById('lightboxImg').src;
+      if (!url) return;
+      const extMatch = url.match(/\.([a-zA-Z0-9]+)(?:\?.*)?$/);
+      const ext = extMatch ? extMatch[1] : 'jpg';
+      const rawName = (anime && anime.name) ? anime.name : 'anime';
+      const safeName = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const filename = 'animewave-' + safeName + '-' + (lightboxIndex + 1) + '.' + ext;
+      const btn = document.getElementById('lbDownload');
+      if (btn) btn.classList.add('lb-loading');
+      try {
+        const proxied = 'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, ''));
+        const res = await fetch(proxied);
+        if (!res.ok) throw new Error('fetch failed');
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (e) {
+        showToast('Download failed, opening image instead', 'error');
+        window.open(url, '_blank');
+      } finally { if (btn) btn.classList.remove('lb-loading'); }
+    }
+    function navLightbox(dir) {
+      const urls = window.__galleryUrls || [];
+      lightboxIndex = (lightboxIndex + dir + urls.length) % urls.length;
+      resetLbZoom();
+      document.getElementById('lightboxImg').src = urls[lightboxIndex];
+    }
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('lightboxOverlay').classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
+    });
+    function initLbZoomPan() {
+      const overlay = document.getElementById('lightboxOverlay');
+      const img = document.getElementById('lightboxImg');
+      if (!overlay || !img) return;
+      let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+      overlay.addEventListener('wheel', function (e) {
+        if (!overlay.classList.contains('open')) return;
+        e.preventDefault();
+        const dir = e.deltaY < 0 ? 1 : -1;
+        lbZoom = Math.min(4, Math.max(1, lbZoom + dir * 0.25));
+        if (lbZoom === 1) { lbPanX = 0; lbPanY = 0; }
+        applyLbTransform();
+      }, { passive: false });
+      img.addEventListener('dblclick', function (e) {
+        e.preventDefault();
+        if (lbZoom > 1) { lbZoom = 1; lbPanX = 0; lbPanY = 0; } else { lbZoom = 2; }
+        applyLbTransform();
+      });
+      img.addEventListener('mousedown', function (e) {
+        if (lbZoom <= 1) return;
+        e.preventDefault();
+        dragging = true; startX = e.clientX; startY = e.clientY; startPanX = lbPanX; startPanY = lbPanY;
+        img.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        lbPanX = startPanX + (e.clientX - startX);
+        lbPanY = startPanY + (e.clientY - startY);
+        applyLbTransform();
+      });
+      window.addEventListener('mouseup', function () {
+        if (!dragging) return;
+        dragging = false;
+        img.style.cursor = lbZoom > 1 ? 'grab' : '';
+      });
+      let touchMode = null, pinchStartDist = 0, pinchStartZoom = 1;
+      function touchDist(t) { const dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY; return Math.hypot(dx, dy); }
+      img.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 2) { touchMode = 'pinch'; pinchStartDist = touchDist(e.touches); pinchStartZoom = lbZoom; }
+        else if (e.touches.length === 1 && lbZoom > 1) { touchMode = 'pan'; startX = e.touches[0].clientX; startY = e.touches[0].clientY; startPanX = lbPanX; startPanY = lbPanY; }
+      }, { passive: true });
+      img.addEventListener('touchmove', function (e) {
+        if (touchMode === 'pinch' && e.touches.length === 2) {
+          e.preventDefault();
+          const scale = touchDist(e.touches) / pinchStartDist;
+          lbZoom = Math.min(4, Math.max(1, pinchStartZoom * scale));
+          if (lbZoom === 1) { lbPanX = 0; lbPanY = 0; }
+          applyLbTransform();
+        } else if (touchMode === 'pan' && e.touches.length === 1) {
+          e.preventDefault();
+          lbPanX = startPanX + (e.touches[0].clientX - startX);
+          lbPanY = startPanY + (e.touches[0].clientY - startY);
+          applyLbTransform();
+        }
+      }, { passive: false });
+      img.addEventListener('touchend', function () { touchMode = null; });
+    }
+    function initLbOutsideClose() {
+      const overlay = document.getElementById('lightboxOverlay');
+      if (!overlay) return;
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closeLightbox(); });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { initLbZoomPan(); initLbOutsideClose(); initWatchGalleryDrag(); });
+    } else { initLbZoomPan(); initLbOutsideClose(); initWatchGalleryDrag(); }
+
+    function initWatchGalleryDrag() {
+      const grid = document.getElementById('watchGalleryGrid');
+      if (!grid) return;
+      let isDown = false, startX = 0, scrollStart = 0, moved = false;
+      let lastX = 0, lastT = 0, velocity = 0, rafId = null, momentumId = null;
+
+      function applyScroll(x) {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => { grid.scrollLeft = x; rafId = null; });
+      }
+
+      grid.addEventListener('mousedown', e => {
+        isDown = true; moved = false;
+        cancelAnimationFrame(momentumId);
+        grid.classList.add('dragging');
+        startX = e.pageX;
+        scrollStart = grid.scrollLeft;
+        lastX = e.pageX;
+        lastT = performance.now();
+        velocity = 0;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        grid.classList.remove('dragging');
+        runMomentum();
+      });
+
+      window.addEventListener('mousemove', e => {
+        if (!isDown) return;
+        e.preventDefault();
+        const dx = e.pageX - startX;
+        if (Math.abs(dx) > 4) moved = true;
+        applyScroll(scrollStart - dx);
+        const now = performance.now();
+        const dt = now - lastT || 16;
+        velocity = (lastX - e.pageX) / dt;
+        lastX = e.pageX;
+        lastT = now;
+      });
+
+      function runMomentum() {
+        let v = velocity * 16;
+        function step() {
+          grid.scrollLeft += v;
+          v *= 0.95;
+          momentumId = requestAnimationFrame(step);
+        }
+        momentumId = requestAnimationFrame(step);
+      }
+
+      grid.addEventListener('click', e => {
+        if (moved) { e.stopPropagation(); e.preventDefault(); }
+      }, true);
+    }
     function toggleSave(id, name) {
       let s = getSaved();
       if (s.includes(id)) { s = s.filter(x => x !== id); showToast(`Removed "${name}"`, 'info'); }
@@ -771,6 +1163,9 @@
       const e = parseInt(params.get('e') || '1');
       anime = allAnime.find(a => a.id === id);
       if (!anime) { window.location.href = 'index.html'; return; }
+
+      renderWatchGallery(anime);
+      renderWatchRecommendations(anime.id);
 
       /* Both play and view start at the URL season/episode */
       playSeason = s;
@@ -1473,6 +1868,16 @@
     })();
   </script>
 
+  <div id="lightboxOverlay">
+    <button id="lbClose" onclick="closeLightbox()"><i class="fas fa-xmark"></i></button>
+    <button id="lbDownload" class="lb-zoom" style="bottom:24px;left:24px" onclick="downloadLightboxImage()"><i class="fas fa-download"></i></button>
+    <button id="lbZoomOut" class="lb-zoom" style="bottom:24px;right:76px" onclick="zoomLightbox(-1)"><i class="fas fa-magnifying-glass-minus"></i></button>
+    <button id="lbZoomIn" class="lb-zoom" style="bottom:24px;right:24px" onclick="zoomLightbox(1)"><i class="fas fa-magnifying-glass-plus"></i></button>
+    <button id="lbPrev" class="lb-nav" onclick="navLightbox(-1)"><i class="fas fa-chevron-left"></i></button>
+    <img id="lightboxImg" src="" alt="">
+    <button id="lbNext" class="lb-nav" style="right:24px" onclick="navLightbox(1)"><i class="fas fa-chevron-right"></i></button>
+  </div>
+  <script src="tmdb-config.js"></script>
   <script src="USDSS.js"></script>
   <script src="adblocker.js"></script>
   <script src="settings.js"></script>
