@@ -30,7 +30,9 @@
     html{scrollbar-width:none}
     body{font-family:'Outfit',sans-serif;background:#0a0a0a;color:#f0f0f0;overflow-x:hidden;overflow-y:visible;scrollbar-width:none}
     html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0;height:0;display:none}
+    #galleryGrid::-webkit-scrollbar{display:block}
     *{scrollbar-width:none}
+    #galleryGrid{scrollbar-width:thin;scrollbar-color:#2a2a2a transparent}
 
     @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
     .skel{background:linear-gradient(90deg,#1a1a1a 25%,#252525 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
@@ -170,6 +172,7 @@
     #galleryGrid::-webkit-scrollbar{height:6px}
     #galleryGrid::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:99px}
     #galleryGrid::-webkit-scrollbar-track{background:transparent}
+    #galleryGrid::-webkit-scrollbar-button{display:none;width:0;height:0}
     #galleryGrid{cursor:grab;user-select:none;scroll-snap-type:none}
     #galleryGrid.dragging{cursor:grabbing;scroll-behavior:auto}
     .gallery-item img{height:100%;width:auto;object-fit:contain;transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),filter 0.4s ease;display:block}
@@ -689,7 +692,24 @@
     document.addEventListener('dragstart', e => e.preventDefault());
 
     const IMG_FALLBACK = "images/404.jpg";
-    function handleImgError(img) { if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = IMG_FALLBACK; } }
+    function handleImgError(img) {
+      if (img.dataset.fallback) return; // already gave up, do nothing further
+      const retries = parseInt(img.dataset.retries || '0', 10);
+      const originalSrc = img.dataset.origSrc || img.src;
+      if (!img.dataset.origSrc) img.dataset.origSrc = originalSrc;
+
+      if (retries < 3) {
+        img.dataset.retries = String(retries + 1);
+        setTimeout(function () {
+          // cache-bust so the browser actually retries the network request
+          const sep = originalSrc.includes('?') ? '&' : '?';
+          img.src = originalSrc + sep + '_retry=' + (retries + 1) + '_' + Date.now();
+        }, 600 * (retries + 1)); // 600ms, 1200ms, 1800ms backoff
+      } else {
+        img.dataset.fallback = '1';
+        img.src = IMG_FALLBACK;
+      }
+    }
 
     function showToast(msg, type = 'info', action = null) {
       const c = document.getElementById('toastContainer');
