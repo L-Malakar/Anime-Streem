@@ -35,7 +35,7 @@
     brandUrl: 'https://animewave.web.app',
     synopsisMaxLength: 180,
     // Order controls the order the icons render in the grid.
-    targets: ['copy', 'whatsapp', 'telegram', 'twitter', 'reddit', 'facebook', 'linkedin', 'sms', 'email'],
+    targets: ['copy', 'whatsapp', 'instagram', 'telegram', 'twitter', 'reddit', 'facebook', 'linkedin', 'sms', 'email'],
     // If true, always show the custom app/site menu below — even on mobile —
     // instead of handing off to the OS's native share sheet. Set this to
     // false if you want native-share-first behavior back.
@@ -255,6 +255,7 @@
   const TARGET_META = {
     copy: { icon: 'fas fa-copy', label: 'Copy' },
     whatsapp: { icon: 'fab fa-whatsapp', label: 'WhatsApp' },
+    instagram: { icon: 'fab fa-instagram', label: 'Instagram' },
     telegram: { icon: 'fab fa-telegram', label: 'Telegram' },
     twitter: { icon: 'fab fa-x-twitter', label: 'X' },
     reddit: { icon: 'fab fa-reddit', label: 'Reddit' },
@@ -300,6 +301,7 @@
       .aw-share-item:focus-visible{outline:2px solid #6ea8fe;outline-offset:2px}
       .aw-share-item i{font-size:1.05rem}
       .aw-share-item i.fa-whatsapp{color:#25D366}
+      .aw-share-item i.fa-instagram{color:#E1306C}
       .aw-share-item i.fa-telegram{color:#26A5E4}
       .aw-share-item i.fa-x-twitter{color:#ffffff}
       .aw-share-item i.fa-reddit{color:#FF4500}
@@ -406,7 +408,7 @@
         </div>
         ${a && a.image ? `
         <div class="aw-share-card">
-          <img class="aw-share-card-img" src="${escapeHTML(a.image)}" alt="" loading="lazy" onerror="this.style.display='none'">
+          <img class="aw-share-card-img" src="${escapeHTML(a.image)}" alt="" loading="lazy" onerror="handleImgError(this)">
           <div class="aw-share-card-meta">
             <div class="aw-share-card-title">${escapeHTML((a.name && String(a.name).trim()) || 'Untitled Anime')}</div>
             <div class="aw-share-card-sub">${escapeHTML(stateLabel(a.state))} · ${escapeHTML(safeRating(a.rating))}</div>
@@ -464,6 +466,26 @@
         case 'close':
           close();
           break;
+        case 'instagram': {
+          const ok = await copyToClipboard(text);
+          if (window.showToast) {
+            window.showToast(
+              ok ? 'Caption copied! Paste it into your Instagram DM.' : 'Could not copy caption',
+              ok ? 'success' : 'error'
+            );
+          }
+          const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
+          if (isMobile) {
+            // Try the app deep link first; browsers that can't handle it
+            // will just ignore the navigation, so we don't need a timed
+            // fallback — the Instagram app, when installed, intercepts this.
+            window.location.href = 'instagram://direct/inbox';
+          } else {
+            openWindow('https://www.instagram.com/direct/inbox/');
+          }
+          close();
+          break;
+        }
         case 'more': {
           close();
           try {
