@@ -187,3 +187,8 @@
     #awCPBar button:active{background:#e63946}
     html.light #awCPBar{background:#fff;border-color:#e0e0e0}
     html.light #awCPBar button{background:#eee;color:#111}
+    #awOfflineOverlay{position:fixed;top:64px;left:0;right:0;bottom:0;z-index:9999;display:none;background:#000;overflow:hidden}
+    #awOfflineOverlay.active{display:block}
+    #awOfflineOverlayImg{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+    @media(min-width:1024px){#awOfflineOverlay{left:60px}}
+    @media(max-width:1023px){#awOfflineOverlay{bottom:64px}}
