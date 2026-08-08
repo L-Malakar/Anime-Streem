@@ -13,6 +13,25 @@
 (function (global, document) {
   'use strict';
 
+  global.IMG_FALLBACK = global.IMG_FALLBACK || "images/404.jpg";
+  global.handleImgError = global.handleImgError || function handleImgError(img) {
+    if (img.dataset.fallback) return;
+    var retries = parseInt(img.dataset.retries || '0', 10);
+    var originalSrc = img.dataset.origSrc || img.src;
+    if (!img.dataset.origSrc) img.dataset.origSrc = originalSrc;
+
+    if (retries < 3) {
+      img.dataset.retries = String(retries + 1);
+      setTimeout(function () {
+        var sep = originalSrc.includes('?') ? '&' : '?';
+        img.src = originalSrc + sep + '_retry=' + (retries + 1) + '_' + Date.now();
+      }, 600 * (retries + 1));
+    } else {
+      img.dataset.fallback = '1';
+      img.src = global.IMG_FALLBACK;
+    }
+  };
+
   function $all(sel, root) { return (root || document).querySelectorAll(sel); }
   function toast(msg, type) {
     if (typeof global.showToast === 'function') global.showToast(msg, type);
@@ -198,7 +217,7 @@
       '<nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">' +
         '<div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">' +
           '<button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar"><span></span><span></span><span></span></button>' +
-          '<a href="index.html" class="flex items-center gap-2 shrink-0"><img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover"><span class="font-display text-aw-fg text-lg">AnimeWave</span></a>' +
+          '<a href="index.html" class="flex items-center gap-2 shrink-0"><img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover" onerror="handleImgError(this)"><span class="font-display text-aw-fg text-lg">AnimeWave</span></a>' +
           titleHtml + searchHtml + mobileBtnsHtml +
           '<button id="notifBtn" onclick="' + notifClick + '" class="ml-auto shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">' +
             '<i class="fas fa-bell text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>' +
@@ -333,7 +352,7 @@
     var saved = (typeof isSaved === 'function') ? isSaved(a.id) : false;
     return '' +
       '<div class="aw-preview-inner">' +
-        '<img src="' + a.image + '" class="aw-preview-img" alt="' + a.name + '">' +
+        '<img src="' + a.image + '" class="aw-preview-img" alt="' + a.name + '" onerror="this.onerror=null;this.src=window.IMG_FALLBACK;">' +
         '<div class="aw-preview-info">' +
           ((!isUpcoming(a) && a.episodeLinks && a.episodeLinks.s1 && a.episodeLinks.s1.e1) ?
             '<div class="aw-preview-videobox"><iframe src="' + a.episodeLinks.s1.e1 + '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" loading="lazy"></iframe></div>' :
