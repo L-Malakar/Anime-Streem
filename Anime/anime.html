@@ -166,6 +166,8 @@
     @keyframes pipIn{from{opacity:0;transform:translateY(20px) scale(0.92)}to{opacity:1;transform:translateY(0) scale(1)}}
     #mobileTrailerCloseBtn{display:none}
     #mobileTrailerWrap.docked #mobileTrailerCloseBtn{display:flex}
+    #mobileTrailerFallback{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:5}
+    #mobileTrailerFallback.show{display:block}
 
     /* Smooth the poster/video-box re-centering on desktop, and the video box's own entrance/exit */
     .gallery-item{position:relative;overflow:hidden;border-radius:0.75rem;border:1px solid #2a2a2a;cursor:pointer;flex:0 0 auto;height:220px}
@@ -399,7 +401,7 @@
         <span></span><span></span><span></span>
       </button>
       <a href="index.html" class="flex items-center gap-2 shrink-0">
-        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover" width="36" height="36">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover" width="36" height="36" onerror="handleImgError(this)">
         <span class="font-display text-aw-fg text-lg">AnimeWave</span>
       </a>
       <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
@@ -556,7 +558,7 @@
         <div class="st-group-title">About</div>
         <div class="st-about">
           <div class="st-about-top">
-            <img src="logo.PNG" alt="AnimeWave" width="120" height="120">
+            <img src="logo.PNG" alt="AnimeWave" width="120" height="120" onerror="handleImgError(this)">
             <button id="pwaInstallBtn" class="st-install-btn" onclick="pwaInstallClick()"><i class="fas fa-download"></i> Install App</button>
           </div>
           <h3>AnimeWave</h3>
@@ -639,7 +641,7 @@
       <div id="posterWatchWrap" style="position:absolute;left:50%;bottom:-64px;transform:translateX(-50%);z-index:20;pointer-events:auto"></div>
     </div>
     <div id="mobileTrailerVideoBox" class="rounded-2xl relative" style="display:none;position:fixed;top:0;left:0;width:720px;max-width:56vw;aspect-ratio:16/9;box-shadow:0 14px 40px rgba(0,0,0,0.55);background:#000;mask-image:radial-gradient(white,black);-webkit-mask-image:-webkit-radial-gradient(white,black);overflow:visible;z-index:998">
-      <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate"></iframe>
+      <iframe id="mobileTrailerIframe" title="Episode trailer" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" class="absolute inset-0 w-full h-full" style="border:none;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden;isolation:isolate" onerror="handleTrailerError()"></iframe>
       <div class="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wide flex items-center gap-1.5 pointer-events-none z-10">
         <i class="fas fa-play text-[8px]"></i><span id="mobileTrailerLabel">TRAILER · EP 1</span>
       </div>
@@ -1218,6 +1220,12 @@
       trailerTried = true;
       renderQuickBtn();
 
+      const fallbackImgReset = document.getElementById('mobileTrailerFallback');
+      if (fallbackImgReset) fallbackImgReset.classList.remove('show');
+      iframe.style.visibility = '';
+      clearTimeout(window.__trailerLoadTimer);
+      window.__trailerLoadTimer = setTimeout(handleTrailerError, 3000); // no confirmed playback in 3s → assume failed
+
       function kickRepaint() {
         // Forces the browser to recomposite the iframe's video layer,
         // fixing the black-frame-with-audio bug on desktop GPUs.
@@ -1230,6 +1238,8 @@
       }
 
       if (wrap) {
+        const fallbackImg = document.getElementById('mobileTrailerFallback');
+        if (fallbackImg) wrap.appendChild(fallbackImg);
         wrap.appendChild(iframe);
         if (closeBtn) wrap.appendChild(closeBtn);
         iframe.className = 'w-full h-full';
@@ -1249,6 +1259,14 @@
       }
     };
 
+    window.handleTrailerError = function () {
+      const iframe = document.getElementById('mobileTrailerIframe');
+      const fallbackImg = document.getElementById('mobileTrailerFallback');
+      clearTimeout(window.__trailerLoadTimer);
+      if (iframe) { iframe.removeAttribute('src'); iframe.style.visibility = 'hidden'; }
+      if (fallbackImg) fallbackImg.classList.add('show');
+    };
+
     window.closeMobileTrailer = function () {
       const iframe = document.getElementById('mobileTrailerIframe');
       const playBtn = document.getElementById('mobileTrailerPlayBtn');
@@ -1258,9 +1276,14 @@
       if (iframe) { iframe.removeAttribute('src'); iframe.style.display = 'none'; }
       if (playBtn) playBtn.style.display = '';
       if (closeBtn) closeBtn.style.display = 'none';
+      clearTimeout(window.__trailerLoadTimer);
+      const fallbackImg = document.getElementById('mobileTrailerFallback');
+      if (fallbackImg) fallbackImg.classList.remove('show');
 
       if (wrap && videoBox && iframe) {
-        // Return the iframe to its resting container (unused visually, just a home)
+        // Return the iframe (and fallback image) to their resting container
+        const fallbackImg = document.getElementById('mobileTrailerFallback');
+        if (fallbackImg) videoBox.insertBefore(fallbackImg, videoBox.firstChild);
         videoBox.insertBefore(iframe, videoBox.firstChild);
         if (closeBtn) videoBox.appendChild(closeBtn);
         iframe.className = 'absolute inset-0 w-full h-full';
@@ -1677,10 +1700,10 @@
       currentRecId = null;
 
       document.getElementById('posterBg').src = getBgUrl(a.image);
-      document.getElementById('posterBg').onerror = function(){ this.style.display='none'; };
+      document.getElementById('posterBg').onerror = function(){ handleImgError(this); };
       document.getElementById('posterImg').src = getPosterUrl(a.image);
       document.getElementById('posterImg').alt = a.name;
-      document.getElementById('posterImg').onerror = handleImgError;
+      document.getElementById('posterImg').onerror = function () { handleImgError(this); };
 
       const seasonKeys = Object.keys(a.episodeLinks || {});
       const sameAnime = currentAnime && currentAnime.id === a.id;
@@ -2343,7 +2366,7 @@
     <button id="lbZoomOut" class="lb-zoom" style="bottom:24px;right:76px" onclick="zoomLightbox(-1)"><i class="fas fa-magnifying-glass-minus"></i></button>
     <button id="lbZoomIn" class="lb-zoom" style="bottom:24px;right:24px" onclick="zoomLightbox(1)"><i class="fas fa-magnifying-glass-plus"></i></button>
     <button id="lbPrev" class="lb-nav" onclick="navLightbox(-1)"><i class="fas fa-chevron-left"></i></button>
-    <img id="lightboxImg" src="" alt="">
+    <img id="lightboxImg" src="" alt="" onerror="handleImgError(this)">
     <button id="lbNext" class="lb-nav" style="right:24px" onclick="navLightbox(1)"><i class="fas fa-chevron-right"></i></button>
   </div>
   <script src="tmdb-config.js"></script>
