@@ -1495,6 +1495,14 @@
             </div>
           </a>`;
         }).join('');
+
+        const activeEl = list.querySelector('.ep-item.active');
+        if (activeEl) {
+          const listRect = list.getBoundingClientRect();
+          const elRect = activeEl.getBoundingClientRect();
+          const offset = (elRect.top + elRect.height / 2) - (listRect.top + listRect.height / 2);
+          list.scrollTop += offset;
+        }
       }
 
       /* Mobile list */
