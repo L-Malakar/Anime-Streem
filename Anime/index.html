@@ -661,6 +661,7 @@
           <span id="freshDropCount" class="text-aw-muted text-xs ml-1"></span>
         </div>
         <span id="freshDropUpdated" class="text-aw-muted text-[11px] ml-4"></span>
+        <span id="freshDropFallbackLabel" class="hidden text-amber-400/90 text-[11px] ml-4"></span>
       </div>
       <div class="flex items-center gap-2">
         <div class="relative shrink-0" id="freshDropSortWrap">
@@ -676,6 +677,7 @@
       </div>
     </div>
     <div id="freshDropRow" class="hscroll-row"></div>
+    <div id="freshDropEmpty" class="hidden py-10 text-center text-aw-muted text-sm">No anime uploads for this period.</div>
   </section>
 
   <!-- Running -->
@@ -1177,7 +1179,8 @@
     const FALLBACK = [];
 
     function isRunning(a) { const s = (a.state || '').toLowerCase(); return s === 'watching' || s === 'running' || s === 'ongoing'; }
-    const FRESH_DROP_PERIODS = { today: 1, week: 7, month: 30, year: 365 };
+    const FRESH_DROP_PERIODS = { today: 1, week: 7, month: 30, year: 365, lifetime: Infinity };
+    const FRESH_DROP_FALLBACK_ORDER = ['today', 'week', 'month', 'year', 'lifetime'];
     let currentFreshDropPeriod = 'week';
     try { currentFreshDropPeriod = USDSS.getItem('aw_freshdrop_period') || 'week'; } catch(e) {}
     function isFreshDrop(a, period) {
@@ -1542,7 +1545,21 @@
     }
 
     function renderHorizontalRows() {
-      const freshDrop = [...allAnime].filter(a => isFreshDrop(a, currentFreshDropPeriod)).sort((a, b) => new Date(b.dnt) - new Date(a.dnt));
+      let freshDrop = [...allAnime].filter(a => isFreshDrop(a, currentFreshDropPeriod)).sort((a, b) => new Date(b.dnt) - new Date(a.dnt));
+      let freshDropFallbackLabel = '';
+      if (!freshDrop.length) {
+        const startIdx = FRESH_DROP_FALLBACK_ORDER.indexOf(currentFreshDropPeriod);
+        for (let i = startIdx + 1; i < FRESH_DROP_FALLBACK_ORDER.length; i++) {
+          const tryPeriod = FRESH_DROP_FALLBACK_ORDER[i];
+          const tryResult = [...allAnime].filter(a => isFreshDrop(a, tryPeriod)).sort((a, b) => new Date(b.dnt) - new Date(a.dnt));
+          if (tryResult.length) {
+            freshDrop = tryResult;
+            const opt = freshDropPeriodOptions.find(o => o.value === tryPeriod);
+            freshDropFallbackLabel = opt ? opt.label : '';
+            break;
+          }
+        }
+      }
       const running = shuffledAnime.filter(isRunning);
       const upcoming = shuffledAnime.filter(isUpcoming);
       const topRated = [...allAnime].filter(a => a.rating && a.rating >= 8).sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 20);
@@ -1552,14 +1569,31 @@
       const uSection = document.getElementById('upcomingSection');
       const tSection = document.getElementById('topRatedSection');
 
+      fdSection.classList.remove('hidden');
+      const freshDropRowEl = document.getElementById('freshDropRow');
+      const freshDropEmptyEl = document.getElementById('freshDropEmpty');
+      const freshDropFallbackEl = document.getElementById('freshDropFallbackLabel');
       if (freshDrop.length) {
-        fdSection.classList.remove('hidden');
+        freshDropRowEl.classList.remove('hidden');
+        freshDropEmptyEl.classList.add('hidden');
         document.getElementById('freshDropCount').textContent = freshDrop.length + ' anime' + (freshDrop.length !== 1 ? 's' : '');
-        document.getElementById('freshDropRow').innerHTML = freshDrop.map(a => buildHCard(a, {showEpcount:true})).join('');
+        freshDropRowEl.innerHTML = freshDrop.map(a => buildHCard(a, {showEpcount:true})).join('');
         const updatedEl = document.getElementById('freshDropUpdated');
         updatedEl.dataset.dnt = freshDrop[0].dnt || '';
         refreshFreshDropUpdatedLabel();
-      } else fdSection.classList.add('hidden');
+        if (freshDropFallbackLabel) {
+          freshDropFallbackEl.textContent = 'No uploads for selected period — showing ' + freshDropFallbackLabel;
+          freshDropFallbackEl.classList.remove('hidden');
+        } else {
+          freshDropFallbackEl.classList.add('hidden');
+        }
+      } else {
+        freshDropRowEl.classList.add('hidden');
+        freshDropEmptyEl.classList.remove('hidden');
+        freshDropFallbackEl.classList.add('hidden');
+        document.getElementById('freshDropCount').textContent = '0 animes';
+        document.getElementById('freshDropUpdated').textContent = '';
+      }
 
       if (running.length) {
         rSection.classList.remove('hidden');
@@ -1728,7 +1762,8 @@
       { value: 'today', label: 'Today' },
       { value: 'week', label: 'This Week' },
       { value: 'month', label: 'This Month' },
-      { value: 'year', label: 'This Year' }
+      { value: 'year', label: 'This Year' },
+      { value: 'lifetime', label: 'Life Time' }
     ];
 
     function initFreshDropSort() {
