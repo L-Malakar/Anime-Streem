@@ -77,16 +77,63 @@
     return overlay;
   }
 
+  function preventScrollKeys(e) {
+    var keys = [32, 33, 34, 35, 36, 37, 38, 39, 40];
+    if (keys.indexOf(e.keyCode) !== -1) e.preventDefault();
+  }
+  function preventScrollEvent(e) {
+    e.preventDefault();
+  }
+
+  var lockedElements = [];
+
+  function lockAllScrollableElements() {
+    lockedElements = [];
+    var all = document.querySelectorAll("*");
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.id === OVERLAY_ID) continue;
+      var style = global.getComputedStyle(el);
+      var overflowY = style.overflowY;
+      var canScroll = (overflowY === "auto" || overflowY === "scroll") && el.scrollHeight > el.clientHeight;
+      if (canScroll) {
+        lockedElements.push({ el: el, prevOverflow: el.style.overflow, prevTouchAction: el.style.touchAction });
+        el.style.overflow = "hidden";
+        el.style.touchAction = "none";
+      }
+    }
+  }
+
+  function unlockAllScrollableElements() {
+    for (var i = 0; i < lockedElements.length; i++) {
+      lockedElements[i].el.style.overflow = lockedElements[i].prevOverflow;
+      lockedElements[i].el.style.touchAction = lockedElements[i].prevTouchAction;
+    }
+    lockedElements = [];
+  }
+
   function showOfflineOverlay() {
     var overlay = ensureOverlay();
     var img = document.getElementById(OVERLAY_IMG_ID);
     img.src = findBestImage();
     overlay.classList.add("active");
+    document.documentElement.classList.add("aw-scroll-lock");
+    document.body.classList.add("aw-scroll-lock");
+    lockAllScrollableElements();
+    document.addEventListener("wheel", preventScrollEvent, { passive: false, capture: true });
+    document.addEventListener("touchmove", preventScrollEvent, { passive: false, capture: true });
+    document.addEventListener("keydown", preventScrollKeys, true);
   }
 
   function hideOfflineOverlay() {
     var overlay = document.getElementById(OVERLAY_ID);
     if (overlay) overlay.classList.remove("active");
+    document.documentElement.classList.remove("aw-scroll-lock");
+    document.body.classList.remove("aw-scroll-lock");
+    unlockAllScrollableElements();
+    document.removeEventListener("wheel", preventScrollEvent, { capture: true });
+    document.removeEventListener("touchmove", preventScrollEvent, { capture: true });
+    document.removeEventListener("keydown", preventScrollKeys, true);
   }
 
   // ---- 4. Signal anime.html of the connectivity change ----

@@ -192,3 +192,4 @@
     #awOfflineOverlayImg{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
     @media(min-width:1024px){#awOfflineOverlay{left:60px}}
     @media(max-width:1023px){#awOfflineOverlay{bottom:64px}}
+    html.aw-scroll-lock,body.aw-scroll-lock{overflow:hidden!important;touch-action:none!important;overscroll-behavior:none!important}
