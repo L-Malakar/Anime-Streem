@@ -184,6 +184,7 @@
       .hist-next-btn::before{animation:none}
     }
     .hscroll-row.dragging{cursor:grabbing;scroll-behavior:auto}
+    .hscroll-row.grabbing,.drag-scroll-row.grabbing{cursor:grabbing!important;scroll-behavior:auto!important;scroll-snap-type:none!important}
 
     /* Desktop horizontal scrollbar - always visible */
     @media(hover:hover){
@@ -653,10 +654,13 @@
   <!-- Fresh Drop -->
   <section id="freshDropSection" class="max-w-[1600px] mx-auto px-4 sm:px-6 pb-2 relative z-[1] hidden scroll-reveal">
     <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center gap-3">
-        <div class="w-1 h-6 bg-aw-accent rounded-full"></div>
-        <h2 class="font-display text-xl sm:text-2xl text-aw-fg">Fresh Drop</h2>
-        <span id="freshDropCount" class="text-aw-muted text-xs ml-1"></span>
+      <div class="flex flex-col gap-0.5">
+        <div class="flex items-center gap-3">
+          <div class="w-1 h-6 bg-aw-accent rounded-full"></div>
+          <h2 class="font-display text-xl sm:text-2xl text-aw-fg">Fresh Drop</h2>
+          <span id="freshDropCount" class="text-aw-muted text-xs ml-1"></span>
+        </div>
+        <span id="freshDropUpdated" class="text-aw-muted text-[11px] ml-4"></span>
       </div>
       <div class="flex items-center gap-2">
         <div class="relative shrink-0" id="freshDropSortWrap">
@@ -1286,6 +1290,42 @@
       el.scrollBy({ left: dir * el.clientWidth * 0.7, behavior: 'smooth' });
     }
 
+    function timeAgo(dateStr) {
+      if (!dateStr) return '';
+      const then = new Date(dateStr).getTime();
+      if (isNaN(then)) return '';
+      const now = Date.now();
+      let diff = Math.floor((now - then) / 1000);
+      if (diff < 0) diff = 0;
+
+      if (diff < 60) return diff <= 1 ? '1s ago' : diff + 's ago';
+      const mins = Math.floor(diff / 60);
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+
+      const d = new Date(then), n = new Date(now);
+      const dStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const nStart = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+      const dayDiff = Math.round((nStart - dStart) / 86400000);
+
+      if (dayDiff === 0) return 'Today';
+      if (dayDiff === 1) return 'Yesterday';
+      if (dayDiff < 7) return dayDiff + 'D ago';
+      const weeks = Math.floor(dayDiff / 7);
+      if (dayDiff < 30) return weeks === 1 ? '1 week ago' : weeks + ' weeks ago';
+      const months = Math.floor(dayDiff / 30);
+      if (dayDiff < 365) return months === 1 ? '1 month ago' : months + ' months ago';
+      const years = Math.floor(dayDiff / 365);
+      return years === 1 ? '1 year ago' : years + ' years ago';
+    }
+
+    function refreshFreshDropUpdatedLabel() {
+      const el = document.getElementById('freshDropUpdated');
+      if (!el || !el.dataset.dnt) return;
+      el.textContent = 'Updated ' + timeAgo(el.dataset.dnt);
+    }
+
     function buildHCard(a, opts) {
       opts = opts || {};
       const tag = getStateTag(a);
@@ -1516,6 +1556,9 @@
         fdSection.classList.remove('hidden');
         document.getElementById('freshDropCount').textContent = freshDrop.length + ' anime' + (freshDrop.length !== 1 ? 's' : '');
         document.getElementById('freshDropRow').innerHTML = freshDrop.map(a => buildHCard(a, {showEpcount:true})).join('');
+        const updatedEl = document.getElementById('freshDropUpdated');
+        updatedEl.dataset.dnt = freshDrop[0].dnt || '';
+        refreshFreshDropUpdatedLabel();
       } else fdSection.classList.add('hidden');
 
       if (running.length) {
@@ -2330,6 +2373,7 @@
       renderGenreFilters();
       initSort();
       initFreshDropSort();
+      setInterval(refreshFreshDropUpdatedLabel, 30000);
       applySortAndFilter();
       updateSaveBadge();
       updateSaveDirtyIndicator();
@@ -2883,6 +2927,67 @@
         .catch(function(){});
     }
     updateNotifUnreadDot();
+
+    // Click-and-drag horizontal scrolling for desktop (mirrors touch swipe on mobile)
+    (function(){
+      function enableDragScroll(el){
+        if(!el || el.__dragScrollInit) return;
+        el.__dragScrollInit = true;
+        var isDown = false, startX = 0, scrollStart = 0, moved = false, rafId = null, pendingLeft = null;
+
+        function applyScroll(){
+          rafId = null;
+          if(pendingLeft !== null){
+            el.scrollLeft = pendingLeft;
+            pendingLeft = null;
+          }
+        }
+
+        el.addEventListener('mousedown', function(e){
+          isDown = true;
+          moved = false;
+          el.classList.add('grabbing');
+          startX = e.pageX - el.getBoundingClientRect().left;
+          scrollStart = el.scrollLeft;
+        });
+
+        window.addEventListener('mouseup', function(){
+          if(!isDown) return;
+          isDown = false;
+          el.classList.remove('grabbing');
+        });
+
+        el.addEventListener('mouseleave', function(){
+          if(!isDown) return;
+          isDown = false;
+          el.classList.remove('grabbing');
+        });
+
+        el.addEventListener('mousemove', function(e){
+          if(!isDown) return;
+          e.preventDefault();
+          var x = e.pageX - el.getBoundingClientRect().left;
+          var walk = x - startX;
+          if(Math.abs(walk) > 5) moved = true;
+          pendingLeft = scrollStart - walk;
+          if(rafId === null){ rafId = requestAnimationFrame(applyScroll); }
+        });
+
+        // Prevent accidental link/card clicks right after a drag
+        el.addEventListener('click', function(e){
+          if(moved){ e.preventDefault(); e.stopPropagation(); }
+        }, true);
+      }
+
+      function initAllDragScrollRows(){
+        document.querySelectorAll('.hscroll-row, .drag-scroll-row').forEach(enableDragScroll);
+      }
+
+      initAllDragScrollRows();
+
+      var dragScrollObserver = new MutationObserver(function(){ initAllDragScrollRows(); });
+      dragScrollObserver.observe(document.body, { childList: true, subtree: true });
+    })();
   </script>
 <div id="clearHistoryModal" class="modal-backdrop">
     <div class="modal-box">
