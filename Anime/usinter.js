@@ -122,8 +122,19 @@
     }, 200);
   });
 
+  // Precache the offline images via a Service Worker so they can still
+  // load from cache when the device has zero network connectivity.
+  function registerOfflineServiceWorker() {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw-offline.js").catch(function (err) {
+        console.warn("usinter.js: service worker registration failed", err);
+      });
+    }
+  }
+
   // Initial check on load.
   document.addEventListener("DOMContentLoaded", function () {
+    registerOfflineServiceWorker();
     if (navigator.onLine === false) {
       handleOffline();
     } else {
