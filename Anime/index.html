@@ -944,7 +944,7 @@
         <div class="st-about">
           <div class="st-about-top">
             <img src="logo.PNG" alt="AnimeWave">
-            <button id="pwaInstallBtn" class="st-install-btn" onclick="pwaInstallClick()"><i class="fas fa-download"></i> Install App</button>
+            <button id="pwaInstallBtn" class="st-install-btn hidden" onclick="pwaInstallClick()"><i class="fas fa-download"></i> Install App</button>
           </div>
           <h3>AnimeWave</h3>
           <p>Your ultimate anime universe. Discover, watch, and track your favorite anime series all in one place.</p>
@@ -1418,7 +1418,77 @@
       renderHistory();
       showToast('Watch history cleared', 'info');
     }
+    let pwaDeferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      pwaDeferredPrompt = e;
+    });
+    window.addEventListener('appinstalled', function(){
+      pwaDeferredPrompt = null;
+      markPwaInstalled();
+      closePwaInstallOverlay();
+    });
+
+    function isPwaInstallAllowedDomain() {
+      return window.location.hostname === 'animewave.web.app';
+    }
+
+    function isPwaInstalled() {
+      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return true;
+      try { return USDSS.getItem('aw_pwa_installed') === '1'; } catch(e) { return false; }
+    }
+
+    function markPwaInstalled() {
+      try { USDSS.setItem('aw_pwa_installed', '1'); } catch(e) {}
+    }
+
+    function closePwaInstallOverlay() {
+      const overlay = document.getElementById('pwaInstallOverlay');
+      if (overlay) overlay.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function initPwaInstallBanner() {
+      const overlay = document.getElementById('pwaInstallOverlay');
+      if (!overlay || !isPwaInstallAllowedDomain() || isPwaInstalled()) return;
+
+      setTimeout(function(){
+        overlay.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }, 1500);
+
+      overlay.addEventListener('click', function(e){
+        if (e.target === overlay) e.stopPropagation();
+      });
+      overlay.addEventListener('wheel', function(e){ e.preventDefault(); }, { passive: false });
+      overlay.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive: false });
+
+      document.getElementById('pwaBannerNotNow').addEventListener('click', function(){
+        closePwaInstallOverlay();
+      });
+
+      document.getElementById('pwaBannerDownload').addEventListener('click', function(){
+        if (pwaDeferredPrompt) {
+          pwaDeferredPrompt.prompt();
+          pwaDeferredPrompt.userChoice.then(function(choice){
+            pwaDeferredPrompt = null;
+            if (choice && choice.outcome === 'accepted') markPwaInstalled();
+            closePwaInstallOverlay();
+          }).catch(function(){ closePwaInstallOverlay(); });
+        } else {
+          if (typeof pwaInstallClick === 'function') pwaInstallClick();
+          markPwaInstalled();
+          closePwaInstallOverlay();
+        }
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', function(){
+      initPwaInstallBanner();
+      if (isPwaInstallAllowedDomain()) {
+        const installBtn = document.getElementById('pwaInstallBtn');
+        if (installBtn) installBtn.classList.remove('hidden');
+      }
       const modal = document.getElementById('clearHistoryModal');
       if (!modal) return;
       document.getElementById('clearHistoryCancel').addEventListener('click', () => modal.classList.remove('open'));
@@ -3034,6 +3104,22 @@
       <div class="flex gap-3 justify-center">
         <button id="clearHistoryCancel" class="px-5 py-2.5 rounded-lg bg-aw-bg2 border border-aw-border text-aw-fg text-sm font-medium hover:bg-aw-card transition-colors">No</button>
         <button id="clearHistoryYes" class="px-5 py-2.5 rounded-lg bg-aw-accent text-white text-sm font-semibold hover:bg-aw-accentD transition-colors shadow-lg shadow-aw-accent/25">Yes, Clear All</button>
+      </div>
+    </div>
+  </div>
+<!-- Install App Banner -->
+  <div id="pwaInstallOverlay" class="hidden fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="pwaInstallBanner" class="w-full max-w-sm bg-aw-card border border-aw-border rounded-2xl shadow-2xl px-5 py-6 flex flex-col items-center text-center gap-3">
+      <div class="w-14 h-14 rounded-xl bg-aw-accent/15 flex items-center justify-center">
+        <i class="fas fa-download text-aw-accent text-xl"></i>
+      </div>
+      <div>
+        <div class="text-aw-fg text-base font-semibold">Get the AnimeWave App</div>
+        <div class="text-aw-muted text-xs mt-1">Install for a faster, full-screen experience.</div>
+      </div>
+      <div class="flex items-center gap-2 w-full mt-2">
+        <button id="pwaBannerNotNow" class="flex-1 px-3 py-2 rounded-lg text-sm text-aw-muted border border-aw-border hover:text-aw-fg transition-colors">Not now</button>
+        <button id="pwaBannerDownload" class="flex-1 px-3 py-2 rounded-lg text-sm font-semibold bg-aw-accent text-white hover:opacity-90 transition-opacity">Download</button>
       </div>
     </div>
   </div>
