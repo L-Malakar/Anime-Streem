@@ -106,6 +106,10 @@
     .poster-card .poster-img{aspect-ratio:5/7;width:100%;object-fit:cover;display:block;border-radius:0.75rem 0.75rem 0 0;transition:opacity 0.3s ease}
     .poster-card .poster-img[loading="lazy"]{opacity:0}
     .poster-card .poster-img.loaded{opacity:1}
+    .poster-card-new{border-color:rgba(10,132,255,0.55)!important;box-shadow:0 0 0 1.5px rgba(10,132,255,0.55),0 0 24px rgba(10,132,255,0.25),0 12px 32px rgba(0,0,0,0.35)}
+    .new-pill{padding:4px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.02em;color:#fff;background:#0a84ff;box-shadow:0 2px 8px rgba(10,132,255,0.5);border:0.5px solid rgba(255,255,255,0.3)}
+    .poster-card-fresh{border-color:rgba(48,209,88,0.55)!important;box-shadow:0 0 0 1.5px rgba(48,209,88,0.55),0 0 24px rgba(48,209,88,0.25),0 12px 32px rgba(0,0,0,0.35)}
+    .fresh-pill{padding:4px 9px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.02em;color:#fff;background:#30d158;box-shadow:0 2px 8px rgba(48,209,88,0.5);border:0.5px solid rgba(255,255,255,0.3)}
 
     #awCardPreview{position:fixed;z-index:900;border-radius:0.75rem;overflow:hidden;background:#141414;opacity:0;pointer-events:none;transition:left 0.28s cubic-bezier(0.22,1,0.36,1),top 0.28s cubic-bezier(0.22,1,0.36,1),width 0.28s cubic-bezier(0.22,1,0.36,1),height 0.28s cubic-bezier(0.22,1,0.36,1),opacity 0.2s ease,box-shadow 0.28s ease}
     #awCardPreview.active{opacity:1;pointer-events:auto}
@@ -535,6 +539,24 @@
       .wn-story.leaving{transition:opacity 0.01ms!important}
       .wn-dot.active .wn-dot-fill{animation:none!important;transform:scaleX(1)!important}
     }
+  .pwa-sheet{width:100%;max-width:360px;background:rgba(29,29,31,0.78);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,0.1);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);padding:32px 28px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Helvetica,Arial,sans-serif;animation:pwaSheetIn 0.5s cubic-bezier(0.16,1,0.3,1)}
+    @keyframes pwaSheetIn{from{opacity:0;transform:translateY(24px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .pwa-icon{width:72px;height:72px;border-radius:18px;background:linear-gradient(155deg,#ff6b6b,#e63946 60%,#c1121f);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(230,57,70,0.35),inset 0 1px 1px rgba(255,255,255,0.25);margin-bottom:18px}
+    .pwa-icon i{font-size:28px;color:#fff}
+    .pwa-title{font-size:19px;font-weight:600;letter-spacing:-0.01em;color:#f5f5f7;line-height:1.3}
+    .pwa-subtitle{font-size:13.5px;font-weight:400;color:rgba(235,235,245,0.6);margin-top:6px;line-height:1.4;padding:0 6px}
+    .pwa-actions{width:100%;margin-top:22px}
+    .pwa-btn-primary{width:100%;padding:13px;border-radius:12px;background:#0a84ff;color:#fff;font-size:15px;font-weight:590;letter-spacing:-0.01em;border:none;transition:background 0.15s ease,transform 0.1s ease}
+    .pwa-btn-primary:hover{background:#3396ff}
+    .pwa-btn-primary:active{transform:scale(0.97);background:#006edc}
+    .pwa-btn-secondary{width:100%;padding:13px;margin-top:8px;border-radius:12px;background:transparent;color:#0a84ff;font-size:15px;font-weight:400;border:none;transition:background 0.15s ease,transform 0.1s ease}
+    .pwa-btn-secondary:hover{background:rgba(10,132,255,0.1)}
+    .pwa-btn-secondary:active{transform:scale(0.97)}
+    .pwa-dontshow{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);font-size:12.5px;font-weight:400;color:rgba(235,235,245,0.45);cursor:pointer;user-select:none}
+    .pwa-dontshow input{appearance:none;-webkit-appearance:none;width:16px;height:16px;border-radius:5px;border:1.5px solid rgba(235,235,245,0.35);background:transparent;display:grid;place-content:center;cursor:pointer;transition:background 0.15s ease,border-color 0.15s ease}
+    .pwa-dontshow input::before{content:'';width:9px;height:9px;transform:scale(0);border-radius:2px;background:#fff;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,45% 62%);transition:transform 0.1s ease}
+    .pwa-dontshow input:checked{background:#0a84ff;border-color:#0a84ff}
+    .pwa-dontshow input:checked::before{transform:scale(1)}
   </style>
 </head>
 <body class="min-h-screen">
@@ -1191,6 +1213,23 @@
       return (Date.now() - t) <= days * 24 * 60 * 60 * 1000;
     }
     function isUpcoming(a) { const s = (a.state || '').toLowerCase(); return s === 'planned' || s === 'upcoming' || s === 'plan_to_watch' || s === 'plan'; }
+    function isNew24h(a) {
+      if (!a.dnt) return false;
+      const t = new Date(a.dnt).getTime();
+      if (isNaN(t)) return false;
+      return (Date.now() - t) <= 24 * 60 * 60 * 1000;
+    }
+    function isFirstFewEps(a) {
+      const links = a.episodeLinks || {};
+      const seasonKeys = Object.keys(links);
+      if (seasonKeys.length !== 1 || seasonKeys[0] !== 's1') return false;
+      const epCount = Object.keys(links.s1 || {}).length;
+      if (epCount < 1 || epCount > 3) return false;
+      if (!a.dnt) return false;
+      const t = new Date(a.dnt).getTime();
+      if (isNaN(t)) return false;
+      return (Date.now() - t) <= 7 * 24 * 60 * 60 * 1000;
+    }
     function getStateTag(a) {
       if (isRunning(a)) return { text: 'Running', cls: 'bg-aw-accent/90 text-white' };
       if (isUpcoming(a)) return { text: 'Upcoming', cls: 'bg-yellow-500/90 text-black' };
@@ -1332,6 +1371,7 @@
     function buildHCard(a, opts) {
       opts = opts || {};
       const tag = getStateTag(a);
+      const isFresh = isFirstFewEps(a);
       const saved = isSaved(a.id);
       const ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
       let epBadge = '';
@@ -1349,7 +1389,7 @@
         }
       }
       return `
-        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer" onclick="window.location.href='${targetUrl}'">
+        <div class="hcard w-[130px] sm:w-[150px] lg:w-[160px] rounded-xl overflow-hidden bg-aw-card cursor-pointer${isFresh ? ' poster-card-fresh' : ''}" onclick="window.location.href='${targetUrl}'">
           <div class="relative overflow-hidden">
             <img src="${a.image}" alt="${a.name}" class="hcard-img" loading="lazy" onerror="handleImgError(this)">
             <div class="hcard-overlay">
@@ -1360,7 +1400,7 @@
             <div class="hcard-play absolute inset-0 flex items-center justify-center">
               <div class="w-9 h-9 rounded-full bg-aw-accent/90 flex items-center justify-center shadow-lg shadow-aw-accent/30"><i class="fas fa-play text-white text-xs ml-0.5"></i></div>
             </div>
-            ${opts.showEpcount ? (seasonLabel ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold bg-aw-accent/90 text-white">${escAttr(seasonLabel)}</div>` : '') : (tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : '')}
+            ${isFresh ? `<div class="fresh-pill absolute top-1.5 left-1.5">New</div>` : (opts.showEpcount ? (seasonLabel ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold bg-aw-accent/90 text-white">${escAttr(seasonLabel)}</div>` : '') : (tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''))}
             ${epBadge ? `<div class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold text-white">${escAttr(epBadge)}</div>` : ''}
             ${a.rating ? `<div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold ${ratingColor} flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
             </div>
@@ -1430,7 +1470,7 @@
     });
 
     function isPwaInstallAllowedDomain() {
-      return window.location.hostname === 'animewave.web.app';
+      return window.location.hostname === 'animewave.web.app' || window.location.hostname === '127.0.0.1';
     }
 
     function isPwaInstalled() {
@@ -1442,6 +1482,14 @@
       try { USDSS.setItem('aw_pwa_installed', '1'); } catch(e) {}
     }
 
+    function isPwaDontShowSet() {
+      try { return USDSS.getItem('aw_pwa_dont_show') === '1'; } catch(e) { return false; }
+    }
+
+    function markPwaDontShow() {
+      try { USDSS.setItem('aw_pwa_dont_show', '1'); } catch(e) {}
+    }
+
     function closePwaInstallOverlay() {
       const overlay = document.getElementById('pwaInstallOverlay');
       if (overlay) overlay.classList.add('hidden');
@@ -1450,7 +1498,7 @@
 
     function initPwaInstallBanner() {
       const overlay = document.getElementById('pwaInstallOverlay');
-      if (!overlay || !isPwaInstallAllowedDomain() || isPwaInstalled()) return;
+      if (!overlay || !isPwaInstallAllowedDomain() || isPwaInstalled() || isPwaDontShowSet()) return;
 
       setTimeout(function(){
         overlay.classList.remove('hidden');
@@ -1464,10 +1512,12 @@
       overlay.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive: false });
 
       document.getElementById('pwaBannerNotNow').addEventListener('click', function(){
+        if (document.getElementById('pwaBannerDontShow').checked) markPwaDontShow();
         closePwaInstallOverlay();
       });
 
       document.getElementById('pwaBannerDownload').addEventListener('click', function(){
+        if (document.getElementById('pwaBannerDontShow').checked) markPwaDontShow();
         if (pwaDeferredPrompt) {
           pwaDeferredPrompt.prompt();
           pwaDeferredPrompt.userChoice.then(function(choice){
@@ -1972,9 +2022,11 @@
     function buildCardHTML(a) {
       const saved = isSaved(a.id);
       const tag = getStateTag(a);
+      const isTodayDrop = isNew24h(a);
+      const isFresh = isFirstFewEps(a);
       const ratingColor = a.rating >= 8 ? 'text-amber-400' : a.rating >= 6 ? 'text-green-400' : 'text-aw-muted';
       return `
-        <article class="poster-card rounded-xl overflow-hidden bg-aw-card" data-id="${escAttr(a.id)}">
+        <article class="poster-card rounded-xl overflow-hidden bg-aw-card${isFresh ? ' poster-card-fresh' : (isTodayDrop ? ' poster-card-new' : '')}" data-id="${escAttr(a.id)}">
           <a href="anime.html?id=${encodeURIComponent(a.id)}" class="block relative overflow-hidden">
             <img src="${a.image}" alt="${a.name}" class="poster-img" loading="lazy" onerror="handleImgError(this)">
             <div class="card-overlay">
@@ -1985,7 +2037,7 @@
             <div class="card-play absolute inset-0 flex items-center justify-center">
               <div class="w-11 h-11 rounded-full bg-aw-accent/90 flex items-center justify-center shadow-lg shadow-aw-accent/30"><i class="fas fa-play text-white text-sm ml-0.5"></i></div>
             </div>
-            ${tag ? `<div class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold ${tag.cls}">${tag.text}</div>` : ''}
+            ${isFresh ? `<div class="fresh-pill absolute top-2 left-2">New</div>` : (isTodayDrop ? `<div class="new-pill absolute top-2 left-2">Today</div>` : (tag ? `<div class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold ${tag.cls}">${tag.text}</div>` : ''))}
             ${a.tear ? `<div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold text-aw-accentL border border-aw-accent/30">${a.tear}</div>` : ''}
             ${a.rating ? `<div class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/70 text-[10px] font-bold ${ratingColor} flex items-center gap-1"><i class="fas fa-star text-[8px]"></i>${a.rating}</div>` : ''}
           </a>
@@ -3108,19 +3160,19 @@
     </div>
   </div>
 <!-- Install App Banner -->
-  <div id="pwaInstallOverlay" class="hidden fixed inset-0 z-[999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div id="pwaInstallBanner" class="w-full max-w-sm bg-aw-card border border-aw-border rounded-2xl shadow-2xl px-5 py-6 flex flex-col items-center text-center gap-3">
-      <div class="w-14 h-14 rounded-xl bg-aw-accent/15 flex items-center justify-center">
-        <i class="fas fa-download text-aw-accent text-xl"></i>
+  <div id="pwaInstallOverlay" class="hidden fixed inset-0 z-[999] bg-black/50 backdrop-blur-md flex items-center justify-center p-4">
+    <div id="pwaInstallBanner" class="pwa-sheet">
+      <div class="pwa-icon"><i class="fas fa-arrow-down"></i></div>
+      <div class="pwa-title">Get the AnimeWave App</div>
+      <div class="pwa-subtitle">Add to your Home Screen for a faster, full‑screen experience.</div>
+      <div class="pwa-actions">
+        <button id="pwaBannerDownload" class="pwa-btn-primary">Add to Home Screen</button>
+        <button id="pwaBannerNotNow" class="pwa-btn-secondary">Not Now</button>
       </div>
-      <div>
-        <div class="text-aw-fg text-base font-semibold">Get the AnimeWave App</div>
-        <div class="text-aw-muted text-xs mt-1">Install for a faster, full-screen experience.</div>
-      </div>
-      <div class="flex items-center gap-2 w-full mt-2">
-        <button id="pwaBannerNotNow" class="flex-1 px-3 py-2 rounded-lg text-sm text-aw-muted border border-aw-border hover:text-aw-fg transition-colors">Not now</button>
-        <button id="pwaBannerDownload" class="flex-1 px-3 py-2 rounded-lg text-sm font-semibold bg-aw-accent text-white hover:opacity-90 transition-opacity">Download</button>
-      </div>
+      <label class="pwa-dontshow">
+        <input type="checkbox" id="pwaBannerDontShow">
+        Don't show this again
+      </label>
     </div>
   </div>
 </body>
