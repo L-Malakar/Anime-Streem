@@ -192,8 +192,8 @@
     if (config.search && config.search.mode !== 'none') {
       searchHtml =
         '<div class="' + (config.search.mode === 'saved' ? 'flex-1 max-w-lg mx-auto relative' : 'hidden lg:flex lg:flex-1 lg:max-w-xl lg:mx-auto relative') + '" id="searchWrap">' +
-          '<i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-aw-muted text-sm z-10"></i>' +
-          '<input id="' + (config.search.id || 'searchInput') + '" type="text" placeholder="' + (config.search.placeholder || 'Search animes...') + '" autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border border-aw-border rounded-full pl-10 pr-16 py-2 text-sm text-aw-fg placeholder-aw-muted focus:outline-none focus:border-aw-accent focus:ring-1 focus:ring-aw-accent/30 transition-all">' +
+          '<i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-aw-muted text-xs z-10"></i>' +
+          '<input id="' + (config.search.id || 'searchInput') + '" type="text" placeholder="' + (config.search.placeholder || 'Search animes...') + '" autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border-0 rounded-[10px] pl-9 pr-16 py-2 text-[15px] text-aw-fg placeholder-aw-muted focus:outline-none focus:ring-2 focus:ring-aw-accent/40 transition-all">' +
           '<span id="searchHint" class="search-hint">/</span>' +
           '<button id="searchClear" class="search-clear" aria-label="Clear search"><i class="fas fa-xmark"></i></button>' +
           '<div id="searchDropdown" class="search-dropdown"></div>' +
@@ -201,27 +201,27 @@
     }
 
     var titleHtml = config.title
-      ? '<div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div><span class="text-aw-muted text-sm hidden sm:block font-medium">' + config.title + '</span>'
+      ? '<div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div><span class="text-aw-muted text-[13px] hidden sm:block font-medium tracking-tight">' + config.title + '</span>'
       : '';
 
     var mobileBtnsHtml = config.mobileSearchBtn
-      ? '<div id="mobileExtraBtns" class="shrink-0 items-center gap-1 lg:hidden">' +
-          '<button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()"><i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i></button>' +
-          '<button id="mobileRandomBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group hidden" title="Random Anime" onclick="goRandom()"><i class="fas fa-dice text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i></button>' +
+      ? '<div id="mobileExtraBtns" class="shrink-0 items-center gap-0.5 lg:hidden">' +
+          '<button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full active:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()"><i class="fas fa-magnifying-glass text-aw-muted text-[17px] group-hover:text-aw-accent transition-colors"></i></button>' +
+          '<button id="mobileRandomBtn" class="w-10 h-10 flex items-center justify-center rounded-full active:bg-aw-bg2 transition-colors group hidden" title="Random Anime" onclick="goRandom()"><i class="fas fa-dice text-aw-muted text-[17px] group-hover:text-aw-accent transition-colors"></i></button>' +
         '</div>'
       : '';
 
     var notifClick = config.notifOnClick === 'custom' ? 'AW_onNotifClick()' : "window.location.href='notification.html'";
 
     mount.innerHTML =
-      '<nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">' +
-        '<div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">' +
+      '<nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-2xl backdrop-saturate-150 border-b border-aw-border" style="border-bottom-width:0.5px">' +
+        '<div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">' +
           '<button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar"><span></span><span></span><span></span></button>' +
-          '<a href="index.html" class="flex items-center gap-2 shrink-0"><img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover" onerror="handleImgError(this)"><span class="font-display text-aw-fg text-lg">AnimeWave</span></a>' +
+          '<a href="index.html" class="flex items-center gap-2 shrink-0"><img src="logo.PNG" alt="AnimeWave" class="h-8 w-8 rounded-[9px] object-cover" onerror="handleImgError(this)"><span class="font-display text-aw-fg text-[15px] tracking-tight">AnimeWave</span></a>' +
           titleHtml + searchHtml + mobileBtnsHtml +
-          '<button id="notifBtn" onclick="' + notifClick + '" class="ml-auto shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">' +
-            '<i class="fas fa-bell text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>' +
-            '<span id="notifDot" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-aw-accent rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none" style="font-variant-numeric:tabular-nums"></span>' +
+          '<button id="notifBtn" onclick="' + notifClick + '" class="ml-auto shrink-0 w-10 h-10 flex items-center justify-center rounded-full active:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">' +
+            '<i class="fas fa-bell text-aw-muted text-[17px] group-hover:text-aw-accent transition-colors"></i>' +
+            '<span id="notifDot" class="hidden absolute top-1 right-1 min-w-[15px] h-[15px] px-1 bg-aw-accent rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none" style="font-variant-numeric:tabular-nums"></span>' +
           '</button>' +
         '</div>' +
       '</nav>';
@@ -380,16 +380,19 @@
   }
 
   function awPositionExpand(rect) {
-    var margin = 16, topBar = 74, sidebarW = 70, previewW = 560;
+    /* topBar/sidebarW match the actual chrome dims in ui.css (#awTopbar h-14 = 56px,
+       #sidebar collapsed width = 60px) instead of the old guessed 74/70 values, so the
+       expanded card never clips under the translucent nav or behind the dock. */
+    var margin = 20, topBar = 56, sidebarW = 60, previewW = 560;
     var left = rect.left + rect.width / 2 - previewW / 2;
     left = Math.max(sidebarW + margin, Math.min(left, global.innerWidth - previewW - margin));
     awPreviewEl.style.left = left + 'px';
     awPreviewEl.style.width = previewW + 'px';
     awPreviewEl.style.height = 'auto';
-    var availH = global.innerHeight - topBar - margin;
+    var availH = global.innerHeight - topBar - margin * 2;
     var realH = Math.min(awPreviewEl.scrollHeight, availH);
-    var top = rect.top - 20;
-    top = Math.max(topBar, Math.min(top, global.innerHeight - realH - margin));
+    var top = rect.top - 24;
+    top = Math.max(topBar + margin, Math.min(top, global.innerHeight - realH - margin));
     awPreviewEl.style.top = top + 'px';
     awPreviewEl.style.maxHeight = availH + 'px';
     awPreviewEl.style.overflowY = 'auto';
