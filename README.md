@@ -26,7 +26,7 @@ A demo anime streaming platform. Learn how streaming web applications function u
 
 ---
 
-## Last Update: `1.26.4.10 and 1.26.4.11` (11/08/2026)
+## Last Update: `1.26.4.10` and `1.26.4.11` (11/08/2026)
 
 1. Updated in `watch.html` and `index.html` along with other `JS` and `CSS` under [anime folder](https://github.com/L-Malakar/Anime-Streem/tree/main/Anime)
 2. Improved the ep logic for `watch.html`.
