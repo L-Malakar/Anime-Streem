@@ -274,46 +274,48 @@
     const style = document.createElement('style');
     style.id = 'aw-share-menu-styles';
     style.textContent = `
-      .aw-share-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:9998;display:flex;align-items:flex-end;justify-content:center}
+      .aw-share-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9998;display:flex;align-items:flex-end;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Outfit',sans-serif}
       @media(min-width:640px){.aw-share-backdrop{align-items:center}}
-      .aw-share-sheet{background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:16px 16px 0 0;padding:1.25rem;width:100%;max-width:420px;box-shadow:0 -8px 30px rgba(0,0,0,.5);animation:awShareUp .25s ease}
-      @media(min-width:640px){.aw-share-sheet{border-radius:16px;margin-bottom:2rem}}
-      @keyframes awShareUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
-      .aw-share-handle{width:36px;height:4px;border-radius:3px;background:rgba(255,255,255,.22);margin:0 auto .9rem;cursor:grab}
-      .aw-share-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
-      .aw-share-title{color:#f0f0f0;font-weight:700;font-size:1rem}
-      .aw-share-x{display:none;background:transparent;border:none;color:#8a8a8a;cursor:pointer;font-size:1.05rem;line-height:1;padding:.2rem .35rem;border-radius:6px}
-      .aw-share-x:hover,.aw-share-x:focus-visible{color:#fff;background:rgba(255,255,255,.08)}
-      .aw-share-preview{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.75rem;font-size:.78rem;line-height:1.5;color:#b8b8b8;white-space:pre-wrap;margin-bottom:1rem;max-height:140px;overflow-y:auto;font-family:ui-monospace,monospace}
-      .aw-share-linkrow{display:flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:.4rem .4rem .4rem 1rem;margin-bottom:1rem}
-      .aw-share-linktext{flex:1;min-width:0;color:#b8b8b8;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .aw-share-copybtn{flex-shrink:0;background:#fff;color:#141414;border:none;border-radius:20px;padding:.5rem 1rem;font-weight:600;font-size:.78rem;cursor:pointer}
-      .aw-share-copybtn:hover,.aw-share-copybtn:focus-visible{background:#e5e5e5}
-      .aw-share-copybtn.aw-copied{background:#6ea8fe;color:#0a0a0a}
-      .aw-share-card{display:flex;align-items:center;gap:.7rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.5rem;margin-bottom:.6rem}
-      .aw-share-card-img{width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;background:rgba(255,255,255,.08)}
+      .aw-share-sheet{background:rgba(28,28,30,.82);backdrop-filter:blur(30px) saturate(1.6);-webkit-backdrop-filter:blur(30px) saturate(1.6);border:0.5px solid rgba(255,255,255,.12);border-radius:20px 20px 0 0;padding:1.25rem;width:100%;max-width:420px;box-shadow:0 -8px 40px rgba(0,0,0,.45);animation:awShareUp .42s cubic-bezier(0.32,0.72,0,1)}
+      @media(min-width:640px){.aw-share-sheet{border-radius:20px;margin-bottom:2rem}}
+      @keyframes awShareUp{from{transform:translateY(100%);opacity:0.4}to{transform:translateY(0);opacity:1}}
+      .aw-share-handle{width:36px;height:5px;border-radius:3px;background:rgba(255,255,255,.28);margin:0 auto 1rem;cursor:grab}
+      .aw-share-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+      .aw-share-title{color:#f5f5f7;font-weight:600;font-size:1.05rem;letter-spacing:-0.01em}
+      .aw-share-x{display:none;background:rgba(118,118,128,.24);border:none;color:#f5f5f7;cursor:pointer;font-size:.75rem;line-height:1;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center}
+      .aw-share-x:hover,.aw-share-x:focus-visible{background:rgba(118,118,128,.4)}
+      .aw-share-preview{background:rgba(118,118,128,.16);border:0.5px solid rgba(255,255,255,.1);border-radius:14px;padding:.9rem 1rem;font-size:.8rem;line-height:1.55;color:rgba(235,235,245,.72);white-space:pre-wrap;margin-bottom:1rem;max-height:140px;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif}
+      .aw-share-linkrow{display:flex;align-items:center;gap:.5rem;background:rgba(118,118,128,.24);border:0.5px solid rgba(255,255,255,.1);border-radius:980px;padding:.4rem .4rem .4rem 1rem;margin-bottom:1rem}
+      .aw-share-linktext{flex:1;min-width:0;color:rgba(235,235,245,.6);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .aw-share-copybtn{flex-shrink:0;background:#0a84ff;color:#fff;border:none;border-radius:980px;padding:.5rem 1.1rem;font-weight:590;font-size:.78rem;cursor:pointer;transition:opacity .15s}
+      .aw-share-copybtn:hover,.aw-share-copybtn:focus-visible{opacity:.85}
+      .aw-share-copybtn:active{transform:scale(0.96)}
+      .aw-share-copybtn.aw-copied{background:#30d158}
+      .aw-share-card{display:flex;align-items:center;gap:.8rem;background:rgba(118,118,128,.16);border:0.5px solid rgba(255,255,255,.1);border-radius:14px;padding:.7rem .8rem;margin-bottom:.9rem}
+      .aw-share-card-img{width:46px;height:62px;object-fit:cover;border-radius:8px;flex-shrink:0;background:rgba(255,255,255,.08);box-shadow:0 2px 8px rgba(0,0,0,.35)}
       .aw-share-card-meta{min-width:0}
-      .aw-share-card-title{color:#f0f0f0;font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .aw-share-card-sub{color:#8a8a8a;font-size:.72rem;margin-top:.15rem}
-      .aw-share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:.75rem}
-      .aw-share-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:.4rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:.7rem .3rem;cursor:pointer;color:#e5e5e5;font-size:.68rem;transition:background .15s,transform .15s}
-      .aw-share-item:hover,.aw-share-item:focus-visible{background:rgba(255,255,255,.09);transform:translateY(-2px)}
-      .aw-share-item:focus-visible{outline:2px solid #6ea8fe;outline-offset:2px}
-      .aw-share-item i{font-size:1.05rem}
-      .aw-share-item i.fa-whatsapp{color:#25D366}
-      .aw-share-item i.fa-instagram{color:#E1306C}
-      .aw-share-item i.fa-telegram{color:#26A5E4}
-      .aw-share-item i.fa-x-twitter{color:#ffffff}
-      .aw-share-item i.fa-reddit{color:#FF4500}
-      .aw-share-item i.fa-facebook{color:#1877F2}
-      .aw-share-item i.fa-linkedin{color:#0A66C2}
-      .aw-share-item i.fa-comment-sms{color:#34C759}
-      .aw-share-item i.fa-envelope{color:#EA4335}
-      .aw-share-item i.fa-copy{color:#8a8a8a}
-      .aw-share-item i.fa-ellipsis{color:#8a8a8a}
-      .aw-share-item .aw-share-key{position:absolute;top:3px;right:5px;font-size:.58rem;color:#6a6a6a;display:none}
-      .aw-share-close{width:100%;text-align:center;padding:.7rem;border-radius:10px;background:rgba(255,255,255,.06);color:#b8b8b8;font-weight:600;font-size:.85rem;cursor:pointer;border:none}
-      .aw-share-close:hover,.aw-share-close:focus-visible{background:rgba(255,255,255,.1)}
+      .aw-share-card-title{color:#f5f5f7;font-weight:590;font-size:.9rem;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .aw-share-card-sub{color:rgba(235,235,245,.5);font-size:.75rem;margin-top:.2rem}
+      .aw-share-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem 0;margin-bottom:.75rem}
+      .aw-share-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:.45rem;background:transparent;border:none;border-radius:12px;padding:.2rem;cursor:pointer;color:rgba(235,235,245,.82);font-size:.7rem;font-weight:400;letter-spacing:-0.01em;transition:transform .15s cubic-bezier(0.32,0.72,0,1),opacity .15s}
+      .aw-share-item:active{transform:scale(0.92);opacity:0.7}
+      .aw-share-item:focus-visible{outline:2px solid #0a84ff;outline-offset:2px;border-radius:16px}
+      .aw-share-item i{font-size:1.3rem;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;box-shadow:inset 0 0 0 0.5px rgba(255,255,255,.15)}
+      .aw-share-item i.fa-whatsapp{background:#25D366}
+      .aw-share-item i.fa-instagram{background:radial-gradient(circle at 30% 110%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%)}
+      .aw-share-item i.fa-telegram{background:#229ED9}
+      .aw-share-item i.fa-x-twitter{background:#000;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+      .aw-share-item i.fa-reddit{background:#FF4500}
+      .aw-share-item i.fa-facebook{background:#1877F2}
+      .aw-share-item i.fa-linkedin{background:#0A66C2}
+      .aw-share-item i.fa-comment-sms{background:#34C759}
+      .aw-share-item i.fa-envelope{background:linear-gradient(180deg,#6ec1ff,#0a84ff)}
+      .aw-share-item i.fa-copy{background:#8e8e93}
+      .aw-share-item i.fa-ellipsis{background:#8e8e93}
+      .aw-share-item .aw-share-key{position:absolute;top:-2px;right:2px;font-size:.58rem;color:#6a6a6a;display:none}
+      .aw-share-close{width:100%;text-align:center;padding:.85rem;border-radius:14px;background:rgba(118,118,128,.24);color:#0a84ff;font-weight:590;font-size:.95rem;cursor:pointer;border:none;margin-top:.25rem;transition:opacity .15s}
+      .aw-share-close:hover,.aw-share-close:focus-visible{opacity:.75}
+      .aw-share-close:active{transform:scale(0.98)}
 
       /* ---------- Mobile sheet: drag handle, no desktop chrome ---------- */
       .aw-share-backdrop:not(.aw-share-backdrop--popover) .aw-share-x{display:none}
@@ -322,12 +324,13 @@
          instead of a full-width mobile-style bottom sheet. */
       .aw-share-backdrop--popover{background:transparent;backdrop-filter:none;align-items:flex-start;justify-content:flex-start}
       .aw-share-backdrop--popover .aw-share-sheet{
-        max-width:300px;border-radius:14px;padding:1rem;
-        box-shadow:0 12px 32px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);
-        animation:awSharePop .16s ease;
+        max-width:300px;border-radius:16px;padding:1rem;
+        background:rgba(40,40,42,.78);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);
+        box-shadow:0 12px 32px rgba(0,0,0,.45),0 0 0 0.5px rgba(255,255,255,.1);
+        animation:awSharePop .22s cubic-bezier(0.32,0.72,0,1);
       }
       .aw-share-backdrop--popover .aw-share-handle{display:none}
-      .aw-share-backdrop--popover .aw-share-x{display:block}
+      .aw-share-backdrop--popover .aw-share-x{display:flex}
       .aw-share-backdrop--popover .aw-share-close{display:none}
       .aw-share-backdrop--popover .aw-share-grid{grid-template-columns:repeat(4,1fr);gap:.5rem}
       .aw-share-backdrop--popover .aw-share-item{padding:.55rem .3rem;font-size:.65rem}
