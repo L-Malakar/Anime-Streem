@@ -41,7 +41,7 @@
     .skel-title{height:32px;border-radius:10px;width:70%}
     .skel-btn{height:48px;border-radius:12px;width:180px}
 
-    .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.7s cubic-bezier(0.22,1,0.36,1),transform 0.7s cubic-bezier(0.22,1,0.36,1)}
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity 0.8s cubic-bezier(0.32,0.72,0,1),transform 0.8s cubic-bezier(0.32,0.72,0,1)}
     .reveal.visible{opacity:1;transform:translateY(0)}
     .reveal-delay-1{transition-delay:0.08s}
     .reveal-delay-2{transition-delay:0.16s}
@@ -55,7 +55,7 @@
     @keyframes bgEnter{from{opacity:0;transform:scale(1.08)}to{opacity:1;transform:scale(1)}}
     .poster-shadow{
       box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 25px 80px -12px rgba(0,0,0,0.8),0 0 120px -20px rgba(230,57,70,0.15);
-      transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),box-shadow 0.4s ease;
+      transition:transform 0.5s cubic-bezier(0.32,0.72,0,1),box-shadow 0.5s cubic-bezier(0.32,0.72,0,1);
     }
     .poster-shadow:hover{
       transform:scale(1.03) translateY(-4px);
@@ -198,21 +198,24 @@
       #posterSection > .relative.z-\[1001\]{min-height:0 !important;padding:1rem 1rem 2rem !important;justify-content:flex-start !important}
     }
 
-    .ep-card{transition:all 0.2s ease}
-    .ep-card:hover{background:#252525;border-color:rgba(230,57,70,0.4)}
-    .ep-card.watched{border-left:3px solid #22c55e}
-    .ep-card.current{border-left:3px solid #e63946;background:rgba(230,57,70,0.06)}
-    .ep-card.watched:hover{border-left-color:#22c55e}
-    .ep-card.current:hover{border-left-color:#e63946}
+    .ep-card{transition:background 0.2s cubic-bezier(0.32,0.72,0,1)}
+    .ep-card:hover{background:rgba(255,255,255,0.045)}
+    .ep-card.current{background:rgba(230,57,70,0.06)}
+    @keyframes epRowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .ep-row-in{animation:epRowIn 0.45s cubic-bezier(0.32,0.72,0,1) both}
+    @media(prefers-reduced-motion:reduce){.ep-row-in{animation:none}}
     .ep-current-dot{width:6px;height:6px;border-radius:50%;background:#e63946;animation:dotPulse 1.5s ease-in-out infinite;flex-shrink:0}
     @keyframes dotPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
 
-    .progress-track{height:3px;background:#1a1a1a;overflow:hidden}
-    .progress-fill{height:100%;background:linear-gradient(90deg,#e63946,#ff6b6b);transition:width 0.5s cubic-bezier(0.22,1,0.36,1);border-radius:0 2px 2px 0}
+    .progress-track{height:2px;background:rgba(255,255,255,0.06);overflow:hidden}
+    .progress-fill{height:100%;background:#e63946;transition:width 0.6s cubic-bezier(0.32,0.72,0,1);border-radius:0 2px 2px 0}
 
     .rating-track{height:6px;background:#1a1a1a;border-radius:99px;overflow:hidden;position:relative}
-    .rating-fill{height:100%;border-radius:99px;position:relative;transition:width 0.8s cubic-bezier(0.22,1,0.36,1)}
-    .rating-fill::after{content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,0.5)}
+    .rating-fill{height:0%;width:0%;border-radius:99px;position:relative;transition:width 1s cubic-bezier(0.32,0.72,0,1) 0.4s}
+    .rating-fill-in{height:100%}
+    @keyframes ratingMetaIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .rating-meta-in{animation:ratingMetaIn 0.6s cubic-bezier(0.32,0.72,0,1) 0.2s both}
+    @media(prefers-reduced-motion:reduce){.rating-fill,.rating-meta-in{animation:none;transition:none}}
 
     .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:2}
     .line-clamp-4{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;line-clamp:4}
@@ -275,9 +278,16 @@
     .collapse-body{overflow:hidden;transition:max-height 0.4s cubic-bezier(0.22,1,0.36,1),opacity 0.3s ease}
     .genre-pill:hover{border-color:rgba(230,57,70,0.4);color:#ff6b6b;background:rgba(230,57,70,0.08)}
 
-    .info-card{position:relative;overflow:hidden;transition:transform 0.3s ease,border-color 0.3s ease}
-    .info-card:hover{transform:translateY(-2px);border-color:rgba(230,57,70,0.3)}
-    .info-card::after{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(230,57,70,0.04) 0%,transparent 70%);pointer-events:none}
+    .action-btn{transition:background 0.2s cubic-bezier(0.32,0.72,0,1),border-color 0.2s cubic-bezier(0.32,0.72,0,1),transform 0.15s cubic-bezier(0.32,0.72,0,1),opacity 0.2s cubic-bezier(0.32,0.72,0,1)}
+    .action-btn:active{transform:scale(0.96)}
+    .genre-pill{transition:background 0.2s cubic-bezier(0.32,0.72,0,1),color 0.2s cubic-bezier(0.32,0.72,0,1),transform 0.15s cubic-bezier(0.32,0.72,0,1)}
+    .genre-pill:active{transform:scale(0.94)}
+    .info-card{position:relative;overflow:hidden;transition:background 0.25s cubic-bezier(0.32,0.72,0,1),border-color 0.25s cubic-bezier(0.32,0.72,0,1),transform 0.15s cubic-bezier(0.32,0.72,0,1)}
+    .info-card:hover{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.14)}
+    .info-card:active{transform:scale(0.97)}
+    @keyframes infoCardIn{from{opacity:0;transform:translateY(10px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+    .info-card-in{animation:infoCardIn 0.6s cubic-bezier(0.32,0.72,0,1) both}
+    @media(prefers-reduced-motion:reduce){.info-card-in{animation:none}}
 
     .glow-line{height:2px;background:linear-gradient(90deg,transparent,#e63946,transparent);animation:glowPulseLine 3s ease infinite}
     @keyframes glowPulseLine{0%,100%{opacity:0.3}50%{opacity:1}}
@@ -1803,16 +1813,16 @@
       const rLabel = r > 0 ? ratingLabel(r) : '';
       const ratingHTML = r > 0 ? `
         <div class="reveal mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <i class="fas fa-star text-yellow-500"></i>
-              <span class="text-aw-fg font-bold text-lg">${r}</span>
-              <span class="text-aw-muted text-sm">/ 10</span>
+          <div class="flex items-center justify-between mb-2 rating-meta-in">
+            <div class="flex items-center gap-1.5">
+              <i class="fas fa-star text-yellow-500 text-sm"></i>
+              <span class="text-aw-fg font-semibold text-base tracking-tight">${r}</span>
+              <span class="text-aw-muted text-sm">/10</span>
             </div>
-            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gradient-to-r ${rGrad} text-white">${rLabel}</span>
+            <span class="text-[11px] font-medium px-2.5 py-1 rounded-full bg-gradient-to-r ${rGrad} text-white tracking-wide">${rLabel}</span>
           </div>
           <div class="rating-track">
-            <div class="rating-fill bg-gradient-to-r ${rGrad}" style="width:${rPct}%"></div>
+            <div class="rating-fill rating-fill-in bg-gradient-to-r ${rGrad}" data-target-width="${rPct}%"></div>
           </div>
         </div>` : '';
 
@@ -1825,11 +1835,11 @@
 
       const infoCardsHTML = infoCards.length ? `
         <div id="infoCardsRow" class="grid grid-cols-2 sm:grid-cols-${Math.min(infoCards.length, 5)} gap-3 mb-6 reveal reveal-delay-1">
-          ${infoCards.map(c => `
-            <div class="info-card bg-aw-card border border-aw-border rounded-xl p-4 text-center${c.link ? ' cursor-pointer' : ''}"${c.link ? ` onclick="window.location.href='search.html?q=' + encodeURIComponent('${String(c.link).replace(/'/g, "\\'")}')"` : ''}>
-              <i class="fas ${c.icon} text-aw-accent/60 text-base mb-2"></i>
-              <div class="text-sm font-bold text-aw-fg">${c.value}</div>
-              <div class="text-[10px] text-aw-muted mt-1 uppercase tracking-wide">${c.label}</div>
+          ${infoCards.map((c, i) => `
+            <div class="info-card info-card-in bg-aw-card border border-aw-border rounded-2xl p-4 text-center${c.link ? ' cursor-pointer' : ''}" style="animation-delay:${0.25 + i * 0.06}s"${c.link ? ` onclick="window.location.href='search.html?q=' + encodeURIComponent('${String(c.link).replace(/'/g, "\\'")}')"` : ''}>
+              <i class="fas ${c.icon} text-aw-muted text-sm mb-2.5"></i>
+              <div class="text-[0.95rem] font-semibold text-aw-fg tracking-tight">${c.value}</div>
+              <div class="text-[10px] text-aw-muted mt-1 uppercase tracking-widest">${c.label}</div>
             </div>`).join('')}
         </div>` : '';
 
@@ -1925,8 +1935,8 @@
                 </button>` : ''}
               </div>` : ''}
               ${hasEps && seasonKeys.length > 1 ? `
-              <div class="flex border-b border-aw-border" id="seasonTabs">
-                ${seasonKeys.map((sk, i) => `<button class="flex-1 py-2.5 text-sm font-medium transition-colors ${sk === activeSk ? 'text-aw-accent border-b-2 border-aw-accent' : 'text-aw-muted hover:text-aw-fg'}" data-season="${sk}" onclick="switchSeason('${sk}')">Season ${i + 1}</button>`).join('')}
+              <div class="flex gap-1 p-1 m-3 rounded-xl bg-aw-bg2" id="seasonTabs">
+                ${seasonKeys.map((sk, i) => `<button class="flex-1 py-2 text-[13px] font-medium rounded-lg transition-all duration-200 ${sk === activeSk ? 'text-white bg-aw-accent shadow-sm' : 'text-aw-muted hover:text-aw-fg'}" data-season="${sk}" onclick="switchSeason('${sk}')">Season ${i + 1}</button>`).join('')}
               </div>` : ''}
               <div id="episodeList" class="max-h-[60vh] overflow-y-auto p-2"></div>
             </div>
@@ -1947,7 +1957,11 @@
       }
 
       updateSaveBadge();
-      requestAnimationFrame(() => { checkAboutOverflow(); checkTitleOverflow(); initScrollReveal(); });
+      requestAnimationFrame(() => {
+        checkAboutOverflow(); checkTitleOverflow(); initScrollReveal();
+        const rf = document.querySelector('.rating-fill');
+        if (rf) requestAnimationFrame(() => { rf.style.width = rf.dataset.targetWidth; });
+      });
       if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(() => { checkTitleOverflow(); checkAboutOverflow(); });
       }
@@ -1979,17 +1993,18 @@
         return `
         <a href="watch.html?id=${encodeURIComponent(a.id)}&s=${sk.replace('s', '')}&e=${en}"
            onclick="setProgress('${a.id.replace(/'/g, "\\'")}', ${gi})"
-           class="ep-card ${stateClass} flex items-center gap-3 p-3 rounded-xl border border-transparent cursor-pointer group">
-          <div class="w-9 h-9 rounded-lg bg-aw-bg2 flex items-center justify-center text-sm font-bold text-aw-muted group-hover:bg-aw-accent/20 group-hover:text-aw-accentL transition-colors shrink-0">
-            ${isWatched ? '<i class="fas fa-check text-green-400 text-xs"></i>' : isCurrent ? '<i class="fas fa-play text-aw-accent text-[10px]"></i>' : en}
+           class="ep-card ${stateClass} ep-row-in flex items-center gap-3 p-3 rounded-2xl border border-transparent cursor-pointer group"
+           style="animation-delay:${Math.min(en, 12) * 0.035}s">
+          <div class="w-10 h-10 rounded-full ${isWatched ? 'bg-green-500/15' : isCurrent ? 'bg-aw-accent/15' : 'bg-aw-bg2'} flex items-center justify-center text-sm font-semibold ${isWatched ? 'text-green-400' : isCurrent ? 'text-aw-accentL' : 'text-aw-muted'} group-hover:bg-aw-accent/15 group-hover:text-aw-accentL transition-colors duration-200 shrink-0">
+            ${isWatched ? '<i class="fas fa-check text-xs"></i>' : isCurrent ? '<i class="fas fa-play text-[10px]"></i>' : en}
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-aw-fg truncate">Episode ${en}</p>
+            <p class="text-[13px] font-medium text-aw-fg truncate tracking-tight">Episode ${en}</p>
             <p class="text-[11px] text-aw-muted mt-0.5">${isWatched ? '<span class="text-green-400/80">Watched</span>' : isCurrent ? '<span class="text-aw-accentL">Up next</span>' : dur + ' min'}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             ${isCurrent ? '<div class="ep-current-dot"></div>' : ''}
-            <i class="fas fa-play text-xs text-aw-muted group-hover:text-aw-accent transition-colors opacity-0 group-hover:opacity-100"></i>
+            <i class="fas fa-chevron-right text-[11px] text-aw-border group-hover:text-aw-accent group-hover:translate-x-0.5 transition-all duration-200"></i>
           </div>
         </a>`;
       }).join('');
@@ -1999,12 +2014,22 @@
       if (!currentAnime) return;
       document.querySelectorAll('#seasonTabs button').forEach(b => {
         const active = b.dataset.season === sk;
-        b.classList.toggle('text-aw-accent', active);
-        b.classList.toggle('border-b-2', active);
-        b.classList.toggle('border-aw-accent', active);
+        b.classList.toggle('bg-aw-accent', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('shadow-sm', active);
         b.classList.toggle('text-aw-muted', !active);
       });
-      renderEpisodes(currentAnime, sk);
+      const list = document.getElementById('episodeList');
+      if (list) {
+        list.style.transition = 'opacity 0.18s cubic-bezier(0.32,0.72,0,1)';
+        list.style.opacity = '0';
+        setTimeout(() => {
+          renderEpisodes(currentAnime, sk);
+          requestAnimationFrame(() => { list.style.opacity = '1'; });
+        }, 180);
+      } else {
+        renderEpisodes(currentAnime, sk);
+      }
     }
 
     function handleSave() {
