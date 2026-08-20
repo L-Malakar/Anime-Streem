@@ -2,7 +2,7 @@
    so they are available from cache even when there is no network
    connection at all (usinter.js alone cannot fetch them offline). */
 
-const CACHE_NAME = "aw-offline-images-v1";
+const CACHE_NAME = "aw-offline-images-v3"; // bump this on every deploy to force-update cached users
 
 const APP_SHELL = [
   "anime.html",
@@ -21,8 +21,7 @@ const APP_SHELL = [
   "ui.css",
   "ui.js",
   "USDSS.js",
-  "usinter.js",
-  "logo.PNG"
+  "usinter.js"
 ];
 
 const OFFLINE_IMAGES = [
@@ -57,9 +56,10 @@ self.addEventListener("activate", (event) => {
           .filter((key) => key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
+     .then(() => self.clients.matchAll())
+     .then((clients) => clients.forEach((client) => client.navigate(client.url)))
   );
-  self.clients.claim();
 });
 
 // Serve page navigations from cache when offline, instead of the
@@ -77,11 +77,24 @@ self.addEventListener("fetch", (event) => {
   const isOfflineImage = OFFLINE_IMAGES.some((path) => url.endsWith(path));
   const isAppShell = APP_SHELL.some((path) => url.endsWith(path));
 
-  if (isOfflineImage || isAppShell) {
+  if (isAppShell) {
     event.respondWith(
-      caches.match(event.request).then((cached) => {
-        return cached || fetch(event.request);
-      })
+      fetch(event.request)
+        .then((fresh) => {
+          const copy = fresh.clone(); // clone FIRST, before the body is read anywhere
+          event.waitUntil(
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
+          );
+          return fresh;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  if (isOfflineImage) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached || fetch(event.request))
     );
   }
 });
