@@ -414,6 +414,7 @@
     .pwa-dontshow input:checked{background:#0a84ff;border-color:#0a84ff}
     .pwa-dontshow input:checked::before{transform:scale(1)}
   </style>
+  <meta name="msvalidate.01" content="31CE10BADA20B461DE908552B9B42CA8" />
 </head>
 <body class="min-h-screen">
 
@@ -1132,7 +1133,7 @@
         }
       }
       shuffledAnime = shuffleArray(allAnime);
-      displayedAnime = [...shuffledAnime];
+      displayedAnime = [...shuffledAnime].slice(0, 20);
       renderAll();
       initScrollReveal();
       const qParam = new URLSearchParams(window.location.search).get('q');
@@ -1796,7 +1797,7 @@
     function getSortedGenresWithCounts() {
       const counts = {};
       allAnime.forEach(a => (a.genre || []).forEach(g => { counts[g] = (counts[g] || 0) + 1; }));
-      return [{ name: 'All', count: allAnime.length }, ...Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(e => ({ name: e[0], count: e[1] }))];
+      return [{ name: 'All', count: allAnime.length }, ...Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(e => ({ name: e[0], count: e[1] })).slice(0, 20)];
     }
 
     function renderGenreFilters() {
@@ -1883,7 +1884,7 @@
         }
         return true;
       });
-      displayedAnime = sortAnime(filtered);
+      displayedAnime = sortAnime(filtered).slice(0, 20);
       resetLoaded();
       renderGridFull();
     }
@@ -2995,6 +2996,21 @@
       }
 
       initAllDragScrollRows();
+
+      // Desktop: vertical mouse wheel over horizontal-scroll rows scrolls them sideways instead of the page
+      (function(){
+        var isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (!isDesktop) return;
+        function enableWheelToHorizontal(el){
+          el.addEventListener('wheel', function(e){
+            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+            if (el.scrollWidth <= el.clientWidth) return; // nothing to scroll, let page scroll normally
+            e.preventDefault();
+            el.scrollLeft += e.deltaY;
+          }, { passive: false });
+        }
+        document.querySelectorAll('.hscroll-row, .drag-scroll-row').forEach(enableWheelToHorizontal);
+      })();
 
       var dragScrollObserver = new MutationObserver(function(){ initAllDragScrollRows(); });
       dragScrollObserver.observe(document.body, { childList: true, subtree: true });
