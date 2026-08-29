@@ -210,6 +210,27 @@
     .search-suggestion .sg-name mark{background:none;color:#e63946;font-weight:700}
     .search-suggestion .sg-meta{font-size:0.7rem;color:#8a8a8a;margin-top:2px}
     .search-suggestion .sg-icon{margin-left:auto;color:#8a8a8a;font-size:0.75rem;flex-shrink:0}
+
+    .hscroll-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:8px;cursor:grab}
+    .rec-row{gap:16px}
+    #recommendRow,#recommendRowMobile{scrollbar-width:none;-ms-overflow-style:none}
+    #recommendRow::-webkit-scrollbar,#recommendRowMobile::-webkit-scrollbar{display:none}
+    .rec-card-frame{transition:transform 0.45s cubic-bezier(.22,1,.36,1),box-shadow 0.45s cubic-bezier(.22,1,.36,1),border-color 0.45s ease;border:1px solid rgba(255,255,255,0.07)}
+    .rec-card-bg{transition:transform 0.6s cubic-bezier(.22,1,.36,1)}
+    .rec-card-vignette{background:linear-gradient(180deg,rgba(0,0,0,0) 42%,rgba(0,0,0,0.78) 100%)}
+    .rec-card-caption{transform:translateY(2px);transition:transform 0.4s cubic-bezier(.22,1,.36,1)}
+    .rec-rating-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(28,28,30,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#fff;font-size:11px;font-weight:600;border:0.5px solid rgba(255,255,255,0.14)}
+    .rec-rating-pill i{color:#ff9f0a;font-size:9px}
+    .hscroll-row .rec-card:hover .rec-card-frame{transform:translateY(-6px);box-shadow:0 28px 56px -16px rgba(0,0,0,0.65);border-color:rgba(255,255,255,0.16)}
+    .hscroll-row .rec-card:hover .rec-card-bg{transform:scale(1.06)}
+    .hscroll-row .rec-card:hover .rec-card-caption{transform:translateY(0)}
+    .hscroll-row .rec-card:active .rec-card-frame{transform:translateY(-2px) scale(0.99)}
+    .hscroll-row.dragging{cursor:grabbing;scroll-behavior:auto}
+    .hscroll-row.grabbing{cursor:grabbing!important;scroll-behavior:auto!important;scroll-snap-type:none!important}
+    @media(hover:none){.hscroll-row{cursor:auto}}
+    @media(hover:hover){.hscroll-row:hover{cursor:grab}}
+    @media(min-width:1024px){#recommendSectionMobile{display:none!important}}
+    @media(min-width:1024px){#mobileSearchOverlay{display:none!important}}
   </style>
 </head>
 <body class="min-h-screen">
@@ -299,6 +320,13 @@
       <h2>Settings</h2>
     </div>
     <div class="st-body">
+      <div class="st-group">
+        <div class="st-group-title">Recommended for You</div>
+        <section id="recommendSection" class="w-full pb-1 hidden">
+          <span id="recommendCount" class="hidden"></span>
+          <div id="recommendRow" class="hscroll-row rec-row items-start"></div>
+        </section>
+      </div>
       <div class="st-group">
         <div class="st-group-title">Data</div>
         <div class="st-item" onclick="showStConfirm(this,'Clear all watch history?',confirmClearHistory)">
@@ -408,6 +436,11 @@
     <div id="mobileSearchBody" class="ms-body">
       <div id="mobileSearchEmpty" class="text-center py-16 px-6">
         <p class="text-aw-muted text-sm leading-relaxed">Search by title, genre, studio, or year</p>
+        <section id="recommendSectionMobile" class="w-full mt-8 text-left hidden">
+          <p class="text-[10px] font-bold text-aw-muted uppercase tracking-widest mb-3">Recommended for You</p>
+          <span id="recommendCountMobile" class="hidden"></span>
+          <div id="recommendRowMobile" class="hscroll-row rec-row items-start"></div>
+        </section>
       </div>
       <div id="mobileSearchGrid" class="flex flex-col gap-1"></div>
     </div>
@@ -662,6 +695,178 @@
 
     /* ── Shared helpers ported from anime.html ── */
     function isUpcoming(a) { return a && a.status && /upcoming/i.test(a.status); }
+    function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+    function bannerOrImage(a) { return (a.banner && a.banner.trim()) ? a.banner : a.image; }
+
+    function buildRecCard(a) {
+      const bg = bannerOrImage(a);
+      let targetUrl = 'anime.html?id=' + encodeURIComponent(a.id).replace(/'/g,'%27');
+      return `
+        <div class="rec-card w-[280px] sm:w-[340px] lg:w-[380px] flex-shrink-0 cursor-pointer" onclick="window.location.href='${targetUrl}'">
+          <div class="rec-card-frame relative rounded-[20px] overflow-hidden aspect-[16/9] bg-aw-card">
+            <img src="${bg}" alt="${escAttr(a.name)}" class="absolute inset-0 w-full h-full object-cover rec-card-bg" loading="lazy" onerror="handleImgError(this)">
+            <div class="absolute inset-0 rec-card-vignette"></div>
+            <div class="absolute top-3 right-3 rec-rating-pill">
+              <i class="fas fa-star"></i>${a.rating}
+            </div>
+            <div class="absolute inset-x-0 bottom-0 p-3.5 rec-card-caption">
+              <h3 class="text-[14px] sm:text-[15px] font-semibold text-white leading-snug truncate" title="${escAttr(a.name)}">${escAttr(a.name)}</h3>
+              <div class="flex items-center gap-1.5 text-[11px] text-white/60 mt-0.5">
+                ${(a.genre||[])[0] ? `<span class="truncate">${escAttr((a.genre||[])[0])}</span>` : ''}
+                ${a.year ? `<span>&middot;</span><span>${a.year}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function initRecAutoScroll(row) {
+      if (!row || row.__recAutoInit) return;
+      row.__recAutoInit = true;
+      var paused = false;
+      var rafId = null;
+      var resumeTimer = null;
+      var halfWidth = 0;
+
+      function measure() { halfWidth = row.scrollWidth / 2; }
+      window.addEventListener('resize', measure);
+      if (window.ResizeObserver) { new ResizeObserver(measure).observe(row); }
+
+      function step() {
+        if (!paused) {
+          if (halfWidth <= 0) measure();
+          row.scrollLeft += 0.5;
+          if (halfWidth > 0 && row.scrollLeft >= halfWidth) {
+            row.scrollLeft -= halfWidth;
+          }
+        } else if (halfWidth > 0) {
+          if (row.scrollLeft <= 0) {
+            row.scrollLeft += halfWidth;
+          } else if (row.scrollLeft >= halfWidth) {
+            row.scrollLeft -= halfWidth;
+          }
+        }
+        rafId = requestAnimationFrame(step);
+      }
+
+      function pauseAndResume() {
+        paused = true;
+        if (resumeTimer) clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(function () {
+          if (halfWidth > 0) {
+            row.scrollLeft = ((row.scrollLeft % halfWidth) + halfWidth) % halfWidth;
+          }
+          paused = false;
+        }, 1000);
+      }
+
+      ['mousedown', 'touchstart', 'wheel'].forEach(function (evt) {
+        row.addEventListener(evt, pauseAndResume, { passive: true });
+      });
+      row.addEventListener('scroll', function () {
+        if (paused) pauseAndResume();
+      }, { passive: true });
+
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          measure();
+          rafId = requestAnimationFrame(step);
+        });
+      });
+    }
+
+    function renderRecommendPanels() {
+      var recSection = document.getElementById('recommendSection');
+      var recSectionMobile = document.getElementById('recommendSectionMobile');
+      if (!recSection && !recSectionMobile) return;
+      var recommendPool = allAnime.filter(a =>
+        a.rating && a.rating > 8.0 &&
+        a.image && a.image.trim() &&
+        a.banner && a.banner.trim() &&
+        (a.state || '').toLowerCase() === 'watched'
+      );
+      var recommendCount = Math.min(recommendPool.length, 6 + Math.floor(Math.random() * 5));
+      var recommended = shuffleArray(recommendPool).slice(0, recommendCount);
+      if (!recommended.length) {
+        if (recSection) recSection.classList.add('hidden');
+        if (recSectionMobile) recSectionMobile.classList.add('hidden');
+        return;
+      }
+      var recCardsHtml = recommended.map(a => buildRecCard(a)).join('');
+      var recLoopHtml = recCardsHtml + recCardsHtml;
+
+      if (recSection) {
+        recSection.classList.remove('hidden');
+        var recCountEl = document.getElementById('recommendCount');
+        if (recCountEl) recCountEl.textContent = recommended.length;
+        var recRowEl = document.getElementById('recommendRow');
+        recRowEl.innerHTML = recLoopHtml;
+        initRecAutoScroll(recRowEl);
+      }
+      if (recSectionMobile) {
+        recSectionMobile.classList.remove('hidden');
+        var recCountElMobile = document.getElementById('recommendCountMobile');
+        if (recCountElMobile) recCountElMobile.textContent = recommended.length;
+        var recRowElMobile = document.getElementById('recommendRowMobile');
+        recRowElMobile.innerHTML = recLoopHtml;
+        initRecAutoScroll(recRowElMobile);
+      }
+    }
+
+    (function(){
+      function enableDragScroll(el){
+        if(!el || el.__dragScrollInit) return;
+        el.__dragScrollInit = true;
+        var isDown = false, startX = 0, scrollStart = 0, moved = false, rafId = null, pendingLeft = null;
+        function applyScroll(){
+          rafId = null;
+          if(pendingLeft !== null){ el.scrollLeft = pendingLeft; pendingLeft = null; }
+        }
+        el.addEventListener('mousedown', function(e){
+          isDown = true; moved = false; el.classList.add('grabbing');
+          startX = e.pageX - el.getBoundingClientRect().left;
+          scrollStart = el.scrollLeft;
+        });
+        window.addEventListener('mouseup', function(){
+          if(!isDown) return; isDown = false; el.classList.remove('grabbing');
+        });
+        el.addEventListener('mouseleave', function(){
+          if(!isDown) return; isDown = false; el.classList.remove('grabbing');
+        });
+        el.addEventListener('mousemove', function(e){
+          if(!isDown) return;
+          e.preventDefault();
+          var x = e.pageX - el.getBoundingClientRect().left;
+          var walk = x - startX;
+          if(Math.abs(walk) > 5) moved = true;
+          pendingLeft = scrollStart - walk;
+          if(rafId === null){ rafId = requestAnimationFrame(applyScroll); }
+        });
+        el.addEventListener('click', function(e){
+          if(moved){ e.preventDefault(); e.stopPropagation(); }
+        }, true);
+      }
+      function initAllDragScrollRows(){
+        document.querySelectorAll('.hscroll-row, .drag-scroll-row').forEach(enableDragScroll);
+      }
+      initAllDragScrollRows();
+      (function(){
+        var isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (!isDesktop) return;
+        function enableWheelToHorizontal(el){
+          el.addEventListener('wheel', function(e){
+            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+            if (el.scrollWidth <= el.clientWidth) return;
+            e.preventDefault();
+            el.scrollLeft += e.deltaY;
+          }, { passive: false });
+        }
+        document.querySelectorAll('.hscroll-row, .drag-scroll-row').forEach(enableWheelToHorizontal);
+      })();
+      var dragScrollObserver = new MutationObserver(function(){ initAllDragScrollRows(); });
+      dragScrollObserver.observe(document.body, { childList: true, subtree: true });
+    })();
+
     function shuffleArray(arr) {
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -1150,6 +1355,7 @@
           showToast('details.json not found — showing demo data', 'info');
         } catch { allAnime = []; showToast('Could not load anime data', 'error'); }
       }
+      renderRecommendPanels();
       initPlayer();
     }
 
