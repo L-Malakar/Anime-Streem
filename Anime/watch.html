@@ -1909,7 +1909,7 @@
         if (a.year) mp.push(a.year);
         if (a.genre && a.genre.length) mp.push(a.genre[0]);
         if (a.episodes) mp.push(a.episodes + ' Ep');
-        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + a.image + '" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+        return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + bannerOrImage(a) + '" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
       }
 
       window.openMobileSearch = function () {
