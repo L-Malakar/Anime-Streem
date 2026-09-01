@@ -231,6 +231,14 @@
     @media(hover:hover){.hscroll-row:hover{cursor:grab}}
     @media(min-width:1024px){#recommendSectionMobile{display:none!important}}
     @media(min-width:1024px){#mobileSearchOverlay{display:none!important}}
+    /* Mobile YouTube-style playlist collapse */
+    @media(max-width:1023px){
+      .mobile-extras-hidden{display:none!important}
+      #mobileEpisodeSection.playlist-collapsed #seasonDrawerMobile,
+      #mobileEpisodeSection.playlist-collapsed #epListMobile{display:none!important}
+      #mobilePlaylistToggleBtn i{transition:transform 0.25s ease}
+      #mobilePlaylistToggleBtn.collapsed i{transform:rotate(180deg)}
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -556,6 +564,9 @@
               <button id="shareBtn" type="button" onclick="handleShare(event)" class="action-btn order-4 shrink-0 ml-auto inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-3 sm:px-4 py-2 rounded-lg text-xs">
                 <i class="fas fa-share-alt"></i> <span class="hidden sm:inline">Share</span>
               </button>
+              <a id="imdbBtn" href="#" target="_blank" rel="noopener noreferrer" class="action-btn order-4 shrink-0 hidden items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-yellow-400 hover:border-yellow-400/40 font-bold px-3 sm:px-4 py-2 rounded-lg text-xs" title="View on IMDb">
+                <span class="text-yellow-400">IMDb</span>
+              </a>
               <button id="watchSaveBtn" type="button" onclick="handleSave()" class="action-btn order-5 shrink-0 inline-flex items-center gap-2 bg-aw-bg2 border border-aw-border text-aw-muted hover:text-aw-fg font-medium px-3 sm:px-4 py-2 rounded-lg text-xs">
                 <i class="far fa-bookmark"></i> <span class="hidden sm:inline">Save</span>
               </button>
@@ -564,11 +575,16 @@
         </div>
 
         <!-- Mobile Episode Section -->
-        <div class="lg:hidden border-t border-aw-border bg-aw-bg2">
+        <div class="lg:hidden border-t border-aw-border bg-aw-bg2" id="mobileEpisodeSection">
           <div class="sticky z-10 bg-aw-bg2 border-b border-aw-border" style="top:calc(64px + 56.25vw)">
             <div class="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
               <h3 class="font-display text-sm text-aw-fg">Episodes</h3>
-              <span id="epCountMobile" class="text-[10px] text-aw-muted bg-aw-bg px-2 py-0.5 rounded-full"></span>
+              <div class="flex items-center gap-2">
+                <span id="epCountMobile" class="text-[10px] text-aw-muted bg-aw-bg px-2 py-0.5 rounded-full"></span>
+                <button id="mobilePlaylistToggleBtn" onclick="toggleMobilePlaylist()" class="w-7 h-7 rounded-md border border-aw-border bg-aw-bg text-aw-muted flex items-center justify-center" title="Hide playlist" aria-label="Toggle playlist">
+                  <i class="fas fa-chevron-up text-[10px]"></i>
+                </button>
+              </div>
             </div>
             <div id="seasonDrawerMobile" class="px-3 pb-1.5" style="display:none">
               <button class="season-drawer-trigger w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border border-aw-border bg-aw-bg" onclick="toggleSeasonDrawer('mobile')">
@@ -621,8 +637,8 @@
       </aside>
     </div>
 
-    <!-- Images + You Might Also Like — desktop only, like anime.html -->
-    <section id="watchGallerySection" class="hidden lg:block border-t border-aw-border relative z-10" style="display:none">
+    <!-- Images + You Might Also Like — desktop always, mobile only when playlist is closed -->
+    <section id="watchGallerySection" class="border-t border-aw-border relative z-10 mobile-extras-hidden" style="display:none">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-10" id="watchGalleryInner">
         <div class="flex items-center justify-between mb-1">
           <div class="flex items-baseline gap-2">
@@ -639,7 +655,7 @@
         </div>
       </div>
     </section>
-    <section id="watchRecSection" class="hidden lg:block border-t border-aw-border relative z-10" style="display:none"></section>
+    <section id="watchRecSection" class="border-t border-aw-border relative z-10 mobile-extras-hidden" style="display:none"></section>
   </main>
 
   <!-- Toast -->
@@ -923,7 +939,6 @@
 
     /* ── Images (gallery) — desktop only ── */
     async function renderWatchGallery(a) {
-      if (window.innerWidth < 1024) return; // desktop only
       const section = document.getElementById('watchGallerySection');
       const grid = document.getElementById('watchGalleryGrid');
       if (!section || !grid) return;
@@ -965,10 +980,32 @@
       btn.title = collapsed ? 'Expand' : 'Collapse';
     }
 
+    /* Mobile: YouTube-style playlist open/close, revealing Images + Recommendations when closed */
+    let mobilePlaylistOpen = true;
+    function updateMobileExtrasVisibility() {
+      if (window.innerWidth >= 1024) return; // desktop unaffected, always shown once built
+      const show = !mobilePlaylistOpen;
+      ['watchGallerySection', 'watchRecSection'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('mobile-extras-hidden', !show);
+      });
+    }
+    function toggleMobilePlaylist() {
+      mobilePlaylistOpen = !mobilePlaylistOpen;
+      const wrap = document.getElementById('mobileEpisodeSection');
+      const btn = document.getElementById('mobilePlaylistToggleBtn');
+      if (wrap) wrap.classList.toggle('playlist-collapsed', !mobilePlaylistOpen);
+      if (btn) {
+        btn.classList.toggle('collapsed', !mobilePlaylistOpen);
+        btn.title = mobilePlaylistOpen ? 'Hide playlist' : 'Show playlist';
+      }
+      updateMobileExtrasVisibility();
+    }
+    window.addEventListener('resize', updateMobileExtrasVisibility);
+
     /* ── You Might Also Like — desktop only ── */
     let watchRecShuffledPool = [], watchCurrentRecId = null, watchRecCollapsed = false;
     function renderWatchRecommendations(currentId) {
-      if (window.innerWidth < 1024) return; // desktop only
       const section = document.getElementById('watchRecSection');
       if (!section) return;
       const pool = allAnime.filter(a => a.id !== currentId && !isUpcoming(a));
@@ -1381,8 +1418,9 @@
       anime = allAnime.find(a => a.id === id);
       if (!anime) { window.location.href = 'index.html'; return; }
 
-      renderWatchGallery(anime);
+      renderWatchGallery(anime).then(updateMobileExtrasVisibility);
       renderWatchRecommendations(anime.id);
+      updateMobileExtrasVisibility();
 
       /* Both play and view start at the URL season/episode */
       playSeason = s;
@@ -1415,6 +1453,18 @@
       document.getElementById('epMeta').innerHTML = metaParts.join('<span class="text-aw-border">&middot;</span>');
 
       document.getElementById('detailLink').href = `anime.html?id=${encodeURIComponent(anime.id)}`;
+      const imdbBtn = document.getElementById('imdbBtn');
+      if (imdbBtn) {
+        const imdbMatch = anime.details && anime.details.match(/tt\d+/);
+        if (imdbMatch) {
+          imdbBtn.href = `https://www.imdb.com/title/${imdbMatch[0]}/`;
+          imdbBtn.classList.remove('hidden');
+          imdbBtn.classList.add('inline-flex');
+        } else {
+          imdbBtn.classList.add('hidden');
+          imdbBtn.classList.remove('inline-flex');
+        }
+      }
       updateSaveBtn();
       loadVideo(videoUrl);
       renderSeasonDrawer();
