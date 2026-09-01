@@ -1229,6 +1229,29 @@
       el.scrollBy({ left: dir * el.clientWidth * 0.7, behavior: 'smooth' });
     }
 
+    // Horizontal scroll only works when hovering directly over the scrollbar strip
+    (function initScrollbarHoverHorizontalScroll() {
+      const SCROLLBAR_HIT_ZONE = 14; // px tolerance from the bottom edge, covers the 6px bar comfortably
+
+      document.addEventListener('wheel', (e) => {
+        const row = e.target.closest('.hscroll-row, .drag-scroll-row');
+        if (!row) return;
+
+        const rect = row.getBoundingClientRect();
+        const distanceFromBottom = rect.bottom - e.clientY;
+        const overScrollbar = distanceFromBottom >= 0 && distanceFromBottom <= SCROLLBAR_HIT_ZONE;
+
+        if (overScrollbar) {
+          // Cursor is over the scrollbar strip: scroll the row horizontally, block page scroll
+          e.preventDefault();
+          e.stopPropagation();
+          row.scrollLeft += (e.deltaY !== 0 ? e.deltaY : e.deltaX);
+        }
+        // Elsewhere on the row: let the event pass through untouched so the
+        // browser's native vertical page scroll happens as normal.
+      }, { passive: false, capture: true });
+    })();
+
     function timeAgo(dateStr) {
       if (!dateStr) return '';
       const then = new Date(dateStr).getTime();
@@ -1298,7 +1321,6 @@
               <div class="w-9 h-9 rounded-full bg-aw-accent/90 flex items-center justify-center shadow-lg shadow-aw-accent/30"><i class="fas fa-play text-white text-xs ml-0.5"></i></div>
             </div>
             ${isFresh ? `<div class="fresh-pill absolute top-1.5 left-1.5">New</div>` : (opts.showEpcount ? (seasonLabel ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold bg-aw-accent/90 text-white">${escAttr(seasonLabel)}</div>` : '') : (tag ? `<div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${tag.cls}">${tag.text}</div>` : ''))}
-            ${epBadge ? `<div class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold text-white">${escAttr(epBadge)}</div>` : ''}
             ${a.rating ? `<div class="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-bold ${ratingColor} flex items-center gap-0.5"><i class="fas fa-star text-[7px]"></i>${a.rating}</div>` : ''}
             </div>
           <div class="p-2 flex items-start justify-between gap-1.5">
@@ -3145,21 +3167,6 @@
       }
 
       initAllDragScrollRows();
-
-      // Desktop: vertical mouse wheel over horizontal-scroll rows scrolls them sideways instead of the page
-      (function(){
-        var isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-        if (!isDesktop) return;
-        function enableWheelToHorizontal(el){
-          el.addEventListener('wheel', function(e){
-            if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-            if (el.scrollWidth <= el.clientWidth) return; // nothing to scroll, let page scroll normally
-            e.preventDefault();
-            el.scrollLeft += e.deltaY;
-          }, { passive: false });
-        }
-        document.querySelectorAll('.hscroll-row, .drag-scroll-row').forEach(enableWheelToHorizontal);
-      })();
 
       var dragScrollObserver = new MutationObserver(function(){ initAllDragScrollRows(); });
       dragScrollObserver.observe(document.body, { childList: true, subtree: true });
