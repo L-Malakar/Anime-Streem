@@ -111,6 +111,20 @@ html{--mnav-h:4.5rem}
     .st-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}
     .st-group{margin-bottom:20px}
     .st-group-title{font-size:10px;font-weight:700;color:#8a8a8a;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-left:2px}
+    .hscroll-row{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:8px;cursor:grab}
+    .rec-row{gap:16px}
+    #recommendRow,#recommendRowMobile{scrollbar-width:none;-ms-overflow-style:none}
+    #recommendRow::-webkit-scrollbar,#recommendRowMobile::-webkit-scrollbar{display:none}
+    .rec-card-frame{transition:transform 0.45s cubic-bezier(.22,1,.36,1),box-shadow 0.45s cubic-bezier(.22,1,.36,1),border-color 0.45s ease;border:1px solid rgba(255,255,255,0.07)}
+    .rec-card-bg{transition:transform 0.6s cubic-bezier(.22,1,.36,1)}
+    .rec-card-vignette{background:linear-gradient(180deg,rgba(0,0,0,0) 42%,rgba(0,0,0,0.78) 100%)}
+    .rec-card-caption{transform:translateY(2px);transition:transform 0.4s cubic-bezier(.22,1,.36,1)}
+    .rec-rating-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(28,28,30,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);color:#fff;font-size:11px;font-weight:600;border:0.5px solid rgba(255,255,255,0.14)}
+    .rec-rating-pill i{color:#ff9f0a;font-size:9px}
+    .rec-card:hover .rec-card-frame{transform:translateY(-6px);box-shadow:0 28px 56px -16px rgba(0,0,0,0.65);border-color:rgba(255,255,255,0.16)}
+    .rec-card:hover .rec-card-bg{transform:scale(1.06)}
+    .rec-card:hover .rec-card-caption{transform:translateY(0)}
+    .rec-card:active .rec-card-frame{transform:translateY(-2px) scale(0.99)}
     .st-item{display:flex;align-items:center;gap:14px;padding:14px;background:#141414;border:1px solid #2a2a2a;border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
     .st-item:active{transform:scale(0.98);background:#1a1a1a}
     .st-item-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
@@ -509,6 +523,13 @@ html{--mnav-h:4.5rem}
     </div>
     <div class="st-body">
       <div class="grid grid-cols-2 gap-3 mb-5" id="settingsStatsGrid"></div>
+      <div class="st-group">
+        <div class="st-group-title">Recommended for You</div>
+        <section id="recommendSection" class="w-full pb-2 relative z-[1] hidden">
+          <span id="recommendCount" class="hidden"></span>
+          <div id="recommendRow" class="hscroll-row rec-row items-start"></div>
+        </section>
+      </div>
       <div class="st-group">
         <div class="st-group-title">Data</div>
         <div class="st-item" onclick="showStConfirm(this,'Clear all watch history?',confirmClearHistory)">
@@ -913,6 +934,84 @@ html{--mnav-h:4.5rem}
     /* ====== Random Button Visibility + Long Press ====== */
     // rKey/isRandomAdded/applyRandomBtn/startRandomLongPress/cancelRandomLongPress/hideRandomConfirm
     // now come from settings.js + ui.js.
+    const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420' fill='%231a1a1a'%3E%3Crect width='300' height='420'/%3E%3Crect x='120' y='170' width='60' height='80' rx='4' fill='%232a2a2a'/%3E%3Ccircle cx='144' cy='190' r='8' fill='%23333'/%3E%3Cpolygon points='139,210 139,230 156,220' fill='%23333'/%3E%3Ctext x='150' y='280' text-anchor='middle' fill='%23333' font-family='sans-serif' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
+    function handleImgError(img) { if (!img.dataset.fallback) { img.dataset.fallback = '1'; img.src = IMG_FALLBACK; } }
+    function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+    function bannerOrImage(a) { return (a.banner && a.banner.trim()) ? a.banner : a.image; }
+    function shuffleArray(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function buildRecCard(a) {
+      const bg = bannerOrImage(a);
+      let targetUrl = 'anime.html?id=' + encodeURIComponent(a.id).replace(/'/g,'%27');
+      return `
+        <div class="rec-card w-[280px] sm:w-[340px] lg:w-[380px] flex-shrink-0 cursor-pointer" onclick="window.location.href='${targetUrl}'">
+          <div class="rec-card-frame relative rounded-[20px] overflow-hidden aspect-[16/9] bg-aw-card">
+            <img src="${bg}" alt="${escAttr(a.name)}" class="absolute inset-0 w-full h-full object-cover rec-card-bg" loading="lazy" onerror="handleImgError(this)">
+            <div class="absolute inset-0 rec-card-vignette"></div>
+            <div class="absolute top-3 right-3 rec-rating-pill"><i class="fas fa-star"></i>${a.rating}</div>
+            <div class="absolute inset-x-0 bottom-0 p-3.5 rec-card-caption">
+              <h3 class="text-[14px] sm:text-[15px] font-semibold text-white leading-snug truncate" title="${escAttr(a.name)}">${escAttr(a.name)}</h3>
+              <div class="flex items-center gap-1.5 text-[11px] text-white/60 mt-0.5">
+                ${(a.genre||[])[0] ? `<span class="truncate">${escAttr((a.genre||[])[0])}</span>` : ''}
+                ${a.year ? `<span>&middot;</span><span>${a.year}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+    function initRecAutoScroll(row) {
+      if (!row || row.__recAutoInit) return;
+      row.__recAutoInit = true;
+      let paused = false, rafId = null, resumeTimer = null, halfWidth = 0;
+      function measure() { halfWidth = row.scrollWidth / 2; }
+      window.addEventListener('resize', measure);
+      if (window.ResizeObserver) new ResizeObserver(measure).observe(row);
+      function step() {
+        if (!paused) {
+          if (halfWidth <= 0) measure();
+          row.scrollLeft += 0.5;
+          if (halfWidth > 0 && row.scrollLeft >= halfWidth) row.scrollLeft -= halfWidth;
+        }
+        rafId = requestAnimationFrame(step);
+      }
+      row.addEventListener('mouseenter', () => paused = true);
+      row.addEventListener('mouseleave', () => { clearTimeout(resumeTimer); paused = false; });
+      row.addEventListener('touchstart', () => { paused = true; clearTimeout(resumeTimer); }, { passive: true });
+      row.addEventListener('touchend', () => { resumeTimer = setTimeout(() => paused = false, 1500); });
+      measure();
+      rafId = requestAnimationFrame(step);
+    }
+    function renderRecommendSection() {
+      const recommendPool = allAnime.filter(a =>
+        a.rating && a.rating > 8.0 && a.image && a.image.trim() && a.banner && a.banner.trim() &&
+        (a.state || '').toLowerCase() === 'watched'
+      );
+      const recSection = document.getElementById('recommendSection');
+      if (!recSection) return;
+      const count = Math.min(recommendPool.length, 6 + Math.floor(Math.random() * 5));
+      const recommended = shuffleArray(recommendPool).slice(0, count);
+      if (recommended.length) {
+        const html = recommended.map(a => buildRecCard(a)).join('');
+        recSection.classList.remove('hidden');
+        const countEl = document.getElementById('recommendCount');
+        if (countEl) countEl.textContent = recommended.length;
+        const rowEl = document.getElementById('recommendRow');
+        rowEl.innerHTML = html + html;
+        initRecAutoScroll(rowEl);
+        const recSectionMobile = document.getElementById('recommendSectionMobile');
+        if (recSectionMobile) {
+          recSectionMobile.classList.remove('hidden');
+          const countElMobile = document.getElementById('recommendCountMobile');
+          if (countElMobile) countElMobile.textContent = recommended.length;
+          const rowElMobile = document.getElementById('recommendRowMobile');
+          rowElMobile.innerHTML = html + html;
+          initRecAutoScroll(rowElMobile);
+        }
+      } else {
+        recSection.classList.add('hidden');
+        const recSectionMobile = document.getElementById('recommendSectionMobile');
+        if (recSectionMobile) recSectionMobile.classList.add('hidden');
+      }
+    }
     var allAnime = [];
     (async function loadAnimeForRandom(){
       try {
@@ -923,6 +1022,7 @@ html{--mnav-h:4.5rem}
       } catch(e) {
         allAnime = [];
       }
+      renderRecommendSection();
     })();
     function goRandom(){
       if (!allAnime.length) { showToast('Anime data not loaded yet', 'error'); return; }
@@ -1302,6 +1402,11 @@ html{--mnav-h:4.5rem}
     <div id="mobileSearchBody" class="ms-body">
       <div id="mobileSearchEmpty" class="text-center py-16 px-6">
         <p class="text-aw-muted text-sm leading-relaxed">Search by title, genre, studio, or year</p>
+        <section id="recommendSectionMobile" class="w-full pt-6 text-left relative z-[1] hidden">
+          <p class="text-[10px] font-bold text-aw-muted uppercase tracking-widest mb-3 px-0">Recommended for You</p>
+          <span id="recommendCountMobile" class="hidden"></span>
+          <div id="recommendRowMobile" class="hscroll-row rec-row items-start"></div>
+        </section>
       </div>
       <div id="mobileSearchGrid" class="flex flex-col gap-1"></div>
     </div>
