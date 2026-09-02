@@ -681,7 +681,7 @@
         <i class="fas fa-magnifying-glass mnav-icon"></i>
         <span class="mnav-label">Search</span>
       </button>
-      <button class="mnav-btn no-select" onclick="openShortsPanel()" title="Shorts" aria-label="Shorts">
+      <button class="mnav-btn no-select" onclick="goToShorts()" title="Shorts" aria-label="Shorts">
         <i class="fas fa-clapperboard mnav-icon"></i>
         <span class="mnav-label">Shorts</span>
       </button>
@@ -2684,14 +2684,17 @@
       });
     })();
 
-    function handleSbShorts(btn){
-      if(window.innerWidth>=1024){
-        openComingSoon('Shorts','fa-clapperboard','Shorts','Short-form anime clips are currently under development. Stay tuned for updates!');
-        setSbActive(btn);
-      }else{
-        openShortsPanel();
-        setSbActive(btn);
+    function goToShorts(){
+      if (allAnime && allAnime.length) {
+        const a = allAnime[Math.floor(Math.random() * allAnime.length)];
+        window.location.href = 'shorts.html?' + encodeURIComponent(a.id);
+      } else {
+        window.location.href = 'shorts.html';
       }
+    }
+    function handleSbShorts(btn){
+      setSbActive(btn);
+      goToShorts();
     }
     (function(){
       var overlay=document.getElementById('csOverlay');
