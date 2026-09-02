@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; img-src * data: blob:; media-src * blob:; font-src https: data:; style-src 'self' 'unsafe-inline' https:; connect-src *;">
+  <title>Shorts — AnimeWave</title>
+  <link rel="icon" href="logo.PNG" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="ui.css">
+  <script src="share.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'aw': { bg:'#0a0a0a', bg2:'#141414', card:'#1a1a1a', border:'#2a2a2a', fg:'#f0f0f0', muted:'#8a8a8a', accent:'#e63946', accentL:'#ff6b6b', accentD:'#c1121f' }
+          },
+          fontFamily: { display:['"Dela Gothic One"','cursive'], body:['"Outfit"','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    .no-select{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+    html,body{height:100%;overflow:hidden;background:#000;font-family:'Outfit',sans-serif;color:#f0f0f0}
+    #shortsFeed{padding-top:64px}
+    @media(max-width:1023px){ #shortsFeed{padding-bottom:0} }
+    @media(min-width:1024px){ #shortsFeed{margin-left:60px;width:calc(100% - 60px)} }
+
+    #loadingScreen{position:fixed;inset:0;z-index:99999;background:#0a0a0a;display:flex;align-items:center;justify-content:center;transition:opacity .5s ease,visibility .5s ease}
+    #loadingScreen.hide{opacity:0;visibility:hidden;pointer-events:none}
+    @keyframes loadPulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.05);opacity:1}}
+
+    /* Top bar */
+    #shortsTopBar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(to bottom,rgba(0,0,0,0.65),transparent)}
+    #shortsTopBar .st-back{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.08);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;color:#fff;border:none;cursor:pointer}
+    #shortsTopBar h1{font-family:'Dela Gothic One',cursive;font-size:15px;letter-spacing:.02em}
+
+    /* Feed */
+    #shortsFeed{height:100%;width:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+    #shortsFeed::-webkit-scrollbar{display:none}
+    #shortsFeed{scrollbar-width:none}
+
+    .short-slide{position:relative;height:100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden}
+    .short-media-wrap{position:relative;height:100%;width:100%;max-width:520px;margin:0 auto;background:#000}
+    @media(min-width:640px){ .short-media-wrap{border-radius:18px;overflow:hidden;height:calc(100% - 28px);margin-top:14px} }
+
+    .short-media-wrap video, .short-media-wrap .short-poster, .short-media-wrap .short-iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+    .short-media-wrap .short-poster{object-fit:cover;filter:blur(0);transition:opacity .25s ease}
+    .short-tap-layer{position:absolute;inset:0;z-index:5}
+
+    .short-center-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;opacity:0;transition:opacity .2s ease;pointer-events:none;z-index:6}
+    .short-center-play.show{opacity:1}
+
+    .short-bottom-grad{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(to top,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.35) 55%,transparent 100%);pointer-events:none;z-index:4}
+
+    .short-info{position:absolute;left:14px;right:78px;bottom:20px;z-index:7;pointer-events:none}
+    .short-info .si-title{font-weight:700;font-size:15px;line-height:1.35;text-shadow:0 1px 6px rgba(0,0,0,.6);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .short-info .si-meta{font-size:12px;color:#d8d8d8;margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .short-info .si-meta span{white-space:nowrap}
+    .short-info .si-watch{margin-top:12px;pointer-events:auto;display:inline-flex;align-items:center;gap:8px;background:#e63946;color:#fff;font-weight:700;font-size:12.5px;padding:9px 16px;border-radius:999px;box-shadow:0 8px 20px -6px rgba(230,57,70,0.6)}
+    .short-info .si-watch:active{transform:scale(0.96)}
+
+    .short-side-actions{position:absolute;right:10px;bottom:26px;z-index:7;display:flex;flex-direction:column;align-items:center;gap:20px}
+    .short-side-actions .sa-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;color:#fff;cursor:pointer}
+    .short-side-actions .sa-circle{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:19px;transition:transform .15s ease,background .2s ease}
+    .short-side-actions .sa-btn:active .sa-circle{transform:scale(0.88)}
+    .short-side-actions .sa-btn.liked .sa-circle{background:rgba(230,57,70,0.85)}
+    .short-side-actions .sa-btn.saved .sa-circle{background:rgba(230,57,70,0.85)}
+    .short-side-actions .sa-label{font-size:10.5px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+    .short-side-actions .sa-cover{width:38px;height:38px;border-radius:10px;overflow:hidden;border:2px solid #fff;margin-top:4px}
+    .short-side-actions .sa-cover img{width:100%;height:100%;object-fit:cover}
+
+    .short-mute-btn{position:absolute;top:16px;right:14px;z-index:7;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;border:none;cursor:pointer}
+
+    .short-progress{position:absolute;top:0;left:0;right:0;height:2.5px;background:rgba(255,255,255,0.15);z-index:8}
+    .short-progress-bar{height:100%;width:0%;background:#fff}
+
+    #shortsEmpty{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px;color:#8a8a8a;z-index:50}
+    #shortsEmpty i{font-size:40px;color:#2a2a2a}
+
+    @keyframes heartPop{0%{transform:scale(0)}30%{transform:scale(1.25)}55%{transform:scale(0.95)}100%{transform:scale(1);opacity:0}}
+    .short-heart-burst{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:90px;color:#e63946;z-index:9;pointer-events:none;text-shadow:0 4px 24px rgba(0,0,0,.5);animation:heartPop .75s ease forwards}
+  </style>
+</head>
+<body>
+
+  <div id="loadingScreen">
+    <div class="text-center">
+      <div style="animation:loadPulse 1.4s ease-in-out infinite" class="font-display text-xl text-aw-fg mb-2">AnimeWave</div>
+      <div class="text-aw-muted text-xs tracking-widest uppercase">Loading Shorts</div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-[1000] bg-aw-bg/80 backdrop-blur-xl border-b border-aw-border">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+      <button id="sbToggle" class="-ml-1" title="Toggle sidebar (M)" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="logo.PNG" alt="AnimeWave" class="h-9 w-9 rounded-lg object-cover">
+        <span class="font-display text-aw-fg text-lg">AnimeWave</span>
+      </a>
+      <div class="ml-3 h-5 w-px bg-aw-border hidden sm:block"></div>
+      <div class="hidden lg:flex lg:flex-1 lg:max-w-xl lg:mx-auto relative" id="searchWrap">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-aw-muted text-sm z-10"></i>
+        <input id="searchInput" type="text" placeholder="Search animes..." autocomplete="off" spellcheck="false" class="w-full bg-aw-bg2 border border-aw-border rounded-full pl-10 pr-16 py-2 text-sm text-aw-fg placeholder-aw-muted focus:outline-none focus:border-aw-accent focus:ring-1 focus:ring-aw-accent/30 transition-all">
+        <span id="searchHint" class="search-hint">/</span>
+        <button id="searchClear" class="search-clear" aria-label="Clear search"><i class="fas fa-xmark"></i></button>
+        <div id="searchDropdown" class="search-dropdown"></div>
+      </div>
+      <div id="mobileExtraBtns" class="shrink-0 items-center gap-1 lg:hidden">
+        <button id="mobileSearchOpenBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Search" onclick="openMobileSearch()">
+          <i class="fas fa-magnifying-glass text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        </button>
+        <button id="mobileRandomBtn" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group" title="Random Anime" onclick="goRandom()">
+          <i class="fas fa-dice text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        </button>
+      </div>
+      <button id="notifBtn" onclick="window.location.href='notification.html'" class="ml-auto shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-aw-bg2 transition-colors group relative" title="Notifications (N)">
+        <i class="fas fa-bell text-aw-muted text-lg group-hover:text-aw-accent transition-colors"></i>
+        <span id="notifDot" class="hidden absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-aw-accent rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none" style="font-variant-numeric:tabular-nums"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="flex flex-col gap-1 w-full px-2">
+      <button class="sb-btn" data-sb="home" onclick="window.location.href='index.html'" title="Home (H)">
+        <i class="fas fa-house"></i><span class="sb-label">Home</span><span class="sb-tip">Home (H)</span>
+      </button>
+      <button class="sb-btn" data-sb="search" onclick="window.location.href='index.html'" title="Search">
+        <i class="fas fa-magnifying-glass"></i><span class="sb-label">Search</span><span class="sb-tip">Search</span>
+      </button>
+      <button class="sb-btn active" data-sb="shorts" title="Shorts">
+        <i class="fas fa-clapperboard"></i><span class="sb-label">Shorts</span><span class="sb-tip">Shorts</span>
+      </button>
+      <button class="sb-btn" id="sbRandomBtn" data-sb="random" onclick="goRandom()" title="Random (R)">
+        <i class="fas fa-dice"></i><span class="sb-label">Random</span><span class="sb-tip">Random</span>
+      </button>
+      <button class="sb-btn" data-sb="saved" onclick="window.location.href='save.html'" title="Saved (S)">
+        <i class="fas fa-bookmark"></i><span class="sb-label">Saved</span><span class="sb-tip">Saved (S)</span>
+        <span class="save-dirty-dot" id="sbSaveDirty"></span>
+      </button>
+      <button class="sb-btn" data-sb="profile" onclick="window.location.href='index.html'" title="Profile">
+        <i class="fas fa-user"></i><span class="sb-label">Profile</span><span class="sb-tip">Profile</span>
+      </button>
+      <div class="sb-sep"></div>
+    </div>
+    <div class="flex-1"></div>
+    <div class="flex flex-col gap-1 w-full px-2 pb-2">
+      <div class="sb-sep"></div>
+      <button class="sb-btn" data-sb="settings" onclick="window.location.href='index.html'" title="Settings">
+        <i class="fas fa-gear"></i><span class="sb-label">Settings</span><span class="sb-tip">Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <div id="toastContainer" class="fixed top-20 right-4 z-[10000] flex flex-col gap-2"></div>
+
+  <div id="shortsFeed"></div>
+
+  <div id="mobileSearchOverlay">
+    <div class="ms-head">
+      <button class="ms-back" onclick="closeMobileSearch()" aria-label="Close"><i class="fas fa-arrow-left"></i></button>
+      <div class="ms-field">
+        <i class="fas fa-search ms-si"></i>
+        <input id="mobileSearchInput" type="text" placeholder="Search animes... (Enter to search)" autocomplete="off" spellcheck="false">
+        <button id="mobileSearchClear" class="ms-x" aria-label="Clear"><i class="fas fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="mobileSearchSugs" class="ms-sugs"></div>
+    <div id="mobileSearchBody" class="ms-body">
+      <div id="mobileSearchEmpty" class="text-center py-16 px-6">
+        <p class="text-aw-muted text-sm leading-relaxed">Search by title, genre, studio, or year</p>
+      </div>
+      <div id="mobileSearchGrid" class="flex flex-col gap-1"></div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <div id="mobileNavBar">
+    <div class="flex items-stretch max-w-[500px] mx-auto">
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html'" title="Home" aria-label="Home">
+        <i class="fas fa-house mnav-icon"></i>
+        <span class="mnav-label">Home</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html'" title="Search" aria-label="Search">
+        <i class="fas fa-magnifying-glass mnav-icon"></i>
+        <span class="mnav-label">Search</span>
+      </button>
+      <button class="mnav-btn active no-select" title="Shorts" aria-label="Shorts">
+        <i class="fas fa-clapperboard mnav-icon"></i>
+        <span class="mnav-label">Shorts</span>
+      </button>
+      <button class="mnav-btn no-select relative" onclick="window.location.href='save.html'" title="Saved" aria-label="Saved">
+        <i class="fas fa-bookmark mnav-icon"></i>
+        <span class="mnav-label">Save</span>
+      </button>
+      <button class="mnav-btn no-select" onclick="window.location.href='index.html'" title="Settings" aria-label="Settings">
+        <i class="fas fa-gear mnav-icon"></i>
+        <span class="mnav-label">Settings</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="shortsEmpty">
+    <i class="fas fa-clapperboard"></i>
+    <div>
+      <p class="text-aw-fg font-semibold mb-1">No shorts available yet</p>
+      <p class="text-sm">Come back once episodes have direct video sources.</p>
+    </div>
+    <button onclick="goBack()" class="mt-2 px-5 py-2 rounded-full bg-aw-accent text-white text-sm font-semibold">Go Back</button>
+  </div>
+
+  <script>
+    /* ============ Data Loading ============ */
+    let allAnime = [];
+    const IMG_FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420' fill='%231a1a1a'%3E%3Crect width='300' height='420'/%3E%3Crect x='120' y='170' width='60' height='80' rx='4' fill='%232a2a2a'/%3E%3Ccircle cx='144' cy='190' r='8' fill='%23333'/%3E%3Cpolygon points='139,210 139,230 156,220' fill='%23333'/%3E%3Ctext x='150' y='280' text-anchor='middle' fill='%23333' font-family='sans-serif' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
+    function handleImgError(img){ if(!img.dataset.fallback){ img.dataset.fallback='1'; img.src = IMG_FALLBACK; } }
+    function escAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function bannerOrImage(a){ return (a.banner && a.banner.trim()) ? a.banner : a.image; }
+    function shuffleArray(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+    function isDirectMedia(url) {
+      try {
+        const u = new URL(url, window.location.href);
+        const path = u.pathname.toLowerCase();
+        if (/\.(mp4|webm|ogg|ogv|mov|mkv|m3u8|ts)(\?|$)/.test(path)) return true;
+        if (/\/(stream|hls|media|video\.m3u8|master\.m3u8)/.test(path)) return true;
+        return false;
+      } catch { return false; }
+    }
+
+    /* Pick the first episode link for an anime — direct media (mp4/hls) OR an embeddable iframe source */
+    function firstPlayableEpisode(a) {
+      if (!a.episodeLinks) return null;
+      const seasons = Object.keys(a.episodeLinks);
+      for (const sk of seasons) {
+        const eps = a.episodeLinks[sk] || {};
+        const epKeys = Object.keys(eps).sort((x, y) => Number(x) - Number(y));
+        for (const ek of epKeys) {
+          const url = eps[ek];
+          if (url) return { season: sk, episode: ek, url, direct: isDirectMedia(url) };
+        }
+      }
+      return null;
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('details.json');
+        if (!res.ok) throw new Error();
+        allAnime = await res.json();
+        if (!Array.isArray(allAnime)) allAnime = [allAnime];
+      } catch (e) {
+        try {
+          const demo = await fetch('demo.json');
+          if (!demo.ok) throw new Error();
+          allAnime = await demo.json();
+          if (!Array.isArray(allAnime)) allAnime = [allAnime];
+        } catch { allAnime = []; }
+      }
+
+      shortsPool = allAnime
+        .map(a => {
+          const ep = firstPlayableEpisode(a);
+          return ep ? { anime: a, ep } : null;
+        })
+        .filter(Boolean);
+
+      document.getElementById('loadingScreen').classList.add('hide');
+
+      if (!shortsPool.length) {
+        document.getElementById('shortsEmpty').style.display = 'flex';
+        return;
+      }
+      startFeed();
+    }
+
+    /* ============ Dynamic infinite random feed ============ */
+    let shortsPool = [];
+    let shortsList = [];      // items actually rendered, in scroll order (acts as history)
+    let shownIds = new Set(); // ids already shown this session, to avoid immediate repeats
+
+    function idFromUrl() {
+      const raw = window.location.search.replace(/^\?/, '');
+      return raw ? decodeURIComponent(raw) : null;
+    }
+
+    function pickRandomItem(preferId) {
+      if (preferId) {
+        const forced = shortsPool.find(it => it.anime.id === preferId);
+        if (forced) return forced;
+      }
+      let candidates = shortsPool.filter(it => !shownIds.has(it.anime.id));
+      if (!candidates.length) { shownIds.clear(); candidates = shortsPool; } // reshuffle once pool exhausted
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    function appendItem(item, opts) {
+      opts = opts || {};
+      shownIds.add(item.anime.id);
+      const idx = shortsList.length;
+      shortsList.push(item);
+      const feed = document.getElementById('shortsFeed');
+      feed.insertAdjacentHTML('beforeend', slideTemplate(item, idx));
+      const slide = feed.lastElementChild;
+      feedObserver.observe(slide);
+      return slide;
+    }
+
+    function startFeed() {
+      const startItem = pickRandomItem(idFromUrl());
+      const firstSlide = appendItem(startItem);
+      appendItem(pickRandomItem());     // preload one ahead so the first swipe is instant
+      requestAnimationFrame(() => activateSlide(firstSlide));
+      history.replaceState({ id: startItem.anime.id }, '', 'shorts.html?' + encodeURIComponent(startItem.anime.id));
+    }
+
+    /* ====== Shared chrome wiring — ported 1:1 from watch.html ====== */
+    function highlightMatch(text, query) {
+      if (!query) return text;
+      var idx = text.toLowerCase().indexOf(query.toLowerCase());
+      if (idx === -1) return text;
+      return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+    }
+    function suggestionRow(a, q) {
+      var dn = a.name.length > 50 ? a.name.slice(0, 50) + '...' : a.name;
+      var mp = [];
+      if (a.year) mp.push(a.year);
+      if (a.genre && a.genre.length) mp.push(a.genre[0]);
+      if (a.episodes) mp.push(a.episodes + ' Ep');
+      return '<div class="search-suggestion" data-msid="' + a.id + '"><img src="' + bannerOrImage(a) + '" alt="" width="64" height="64" loading="lazy" decoding="async" onerror="handleImgError(this)"><div class="flex-1 min-w-0"><div class="sg-name">' + highlightMatch(dn, q) + '</div><div class="sg-meta">' + mp.join(' · ') + '</div></div><span class="sg-icon"><i class="fas fa-arrow-up-right-from-square"></i></span></div>';
+    }
+
+    (function () {
+      var msTimer = null, msHlIdx = -1, msSugs_arr = [];
+      var msInput = document.getElementById('mobileSearchInput');
+      var msClear = document.getElementById('mobileSearchClear');
+      var msSugsEl = document.getElementById('mobileSearchSugs');
+      var msEmpty = document.getElementById('mobileSearchEmpty');
+      var msGrid = document.getElementById('mobileSearchGrid');
+      var msOverlay = document.getElementById('mobileSearchOverlay');
+
+      window.openMobileSearch = function () {
+        msOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () { msInput.focus(); }, 350);
+      };
+      window.closeMobileSearch = function () {
+        msOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(function () {
+          msInput.value = ''; msClear.classList.remove('show'); msSugsEl.innerHTML = '';
+          msEmpty.classList.remove('hidden'); msGrid.innerHTML = '';
+          msSugs_arr = []; msHlIdx = -1;
+        }, 350);
+      };
+
+      function msFilter() {
+        var q = msInput.value.trim().toLowerCase();
+        msGrid.innerHTML = '';
+        if (!q) { msEmpty.classList.remove('hidden'); return; }
+        msEmpty.classList.add('hidden');
+        var f = allAnime.filter(function (a) {
+          var h = [a.name, a.altName, a.studio, a.year].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+          return h.includes(q);
+        });
+        if (!f.length) { msGrid.innerHTML = '<div class="text-center py-16 px-6"><p class="text-aw-fg text-base font-semibold mb-2">No Results</p><p class="text-aw-muted text-sm">Try different keywords or check spelling</p></div>'; return; }
+        msGrid.innerHTML = f.map(function (a) { return suggestionRow(a, q); }).join('');
+        msGrid.querySelectorAll('.search-suggestion').forEach(function (el) {
+          el.addEventListener('click', function () { window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid); });
+        });
+      }
+
+      function msShowSugs(q) {
+        if (!q || q.length < 1) { msSugsEl.innerHTML = ''; msSugs_arr = []; msHlIdx = -1; return; }
+        var lq = q.toLowerCase().trim();
+        var m = allAnime.filter(function (a) {
+          var h = [a.name, a.altName, a.studio].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+          return h.includes(lq);
+        }).slice(0, 8);
+        msSugs_arr = m; msHlIdx = -1;
+        msSugsEl.innerHTML = m.map(function (a) { return suggestionRow(a, lq); }).join('');
+        msSugsEl.querySelectorAll('.search-suggestion').forEach(function (el) {
+          el.addEventListener('click', function () { window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid); });
+        });
+      }
+
+      msInput.addEventListener('input', function () {
+        var v = msInput.value;
+        msClear.classList.toggle('show', v.length > 0);
+        clearTimeout(msTimer);
+        msTimer = setTimeout(function () { msShowSugs(v); }, 150);
+      });
+      msClear.addEventListener('click', function () {
+        msInput.value = ''; msClear.classList.remove('show'); msSugsEl.innerHTML = '';
+        msEmpty.classList.remove('hidden'); msGrid.innerHTML = ''; msInput.focus();
+      });
+      msInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          msSugsEl.innerHTML = '';
+          msFilter();
+        } else if (e.key === 'Escape') { closeMobileSearch(); }
+      });
+
+      var searchInput = document.getElementById('searchInput');
+      var searchDropdown = document.getElementById('searchDropdown');
+      var searchClear = document.getElementById('searchClear');
+      var searchHint = document.getElementById('searchHint');
+      if (searchInput) {
+        var highlightedIndex = -1, currentSuggestions = [];
+
+        function showSuggestions(query) {
+          if (!query || query.length < 1) { closeSuggestions(); return; }
+          var q = query.toLowerCase().trim();
+          var matches = allAnime.filter(function (a) {
+            var hay = [a.name, a.altName, a.studio].concat(a.genre || [], a.tags || []).join(' ').toLowerCase();
+            return hay.includes(q);
+          }).slice(0, 8);
+          if (!matches.length) { closeSuggestions(); return; }
+          currentSuggestions = matches; highlightedIndex = -1;
+          searchDropdown.innerHTML = matches.map(function (a) { return suggestionRow(a, q); }).join('');
+          searchDropdown.classList.add('open');
+          searchDropdown.querySelectorAll('.search-suggestion').forEach(function (el) {
+            el.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            el.addEventListener('click', function () {
+              closeSuggestions();
+              window.location.href = 'anime.html?id=' + encodeURIComponent(el.dataset.msid);
+            });
+          });
+        }
+        function closeSuggestions() { searchDropdown.classList.remove('open'); highlightedIndex = -1; currentSuggestions = []; }
+
+        searchInput.addEventListener('input', function () {
+          var val = searchInput.value;
+          searchClear.classList.toggle('show', val.length > 0);
+          searchHint.classList.toggle('hide', val.length > 0);
+          showSuggestions(val);
+        });
+        searchClear.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        searchClear.addEventListener('click', function () {
+          searchInput.value = ''; searchClear.classList.remove('show'); searchHint.classList.remove('hide');
+          closeSuggestions(); searchInput.focus();
+        });
+        searchInput.addEventListener('keydown', function (e) {
+          var isOpen = searchDropdown.classList.contains('open');
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (isOpen && highlightedIndex >= 0 && currentSuggestions[highlightedIndex]) {
+              closeSuggestions();
+              window.location.href = 'anime.html?id=' + encodeURIComponent(currentSuggestions[highlightedIndex].id);
+              return;
+            }
+            closeSuggestions();
+            (function () {
+              var words = searchInput.value.trim().split(/\s+/).filter(Boolean);
+              if (words.length) window.location.href = 'search.html?q=' + words.map(function (w) { return encodeURIComponent(w); }).join('+');
+            })();
+          } else if (e.key === 'Escape') { searchInput.blur(); closeSuggestions(); }
+        });
+        document.addEventListener('click', function (e) { if (!document.getElementById('searchWrap').contains(e.target)) closeSuggestions(); });
+      }
+    })();
+
+    function openComingSoon(title) { showToast ? showToast((title || 'Feature') + ' coming soon', 'info') : null; }
+    window.goRandom = function () {
+      if (!allAnime.length) { if (window.showToast) showToast('Anime data not loaded yet', 'error'); return; }
+      const pool = allAnime.filter(a => {
+        const s = (a.state || '').toLowerCase();
+        return s !== 'planned' && s !== 'upcoming' && s !== 'plan_to_watch' && s !== 'plan';
+      });
+      if (!pool.length) { if (window.showToast) showToast('No anime data available', 'error'); return; }
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      if (window.showToast) showToast(`Random pick: ${a.name}`, 'info');
+      setTimeout(() => { window.location.href = 'anime.html?id=' + encodeURIComponent(a.id); }, 600);
+    };
+
+    document.addEventListener('keydown', function (e) {
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (window.innerWidth < 1024) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleSidebar(); }
+      else if (e.key === 'h' || e.key === 'H') { e.preventDefault(); window.location.href = 'index.html'; }
+    });
+
+    /* ============ Feed Building ============ */
+    const savedIds = JSON.parse(localStorage.getItem('aw_saved') || '[]');
+    const likedShorts = new Set(JSON.parse(sessionStorage.getItem('aw_shorts_liked') || '[]'));
+
+    function slideTemplate(item, idx) {
+      const a = item.anime;
+      const cover = bannerOrImage(a);
+      const isSaved = savedIds.includes(a.id);
+      const isLiked = likedShorts.has(a.id);
+      const genre = (a.genre || [])[0] || '';
+      return `
+        <div class="short-slide" data-idx="${idx}" data-id="${escAttr(a.id)}">
+          <div class="short-progress"><div class="short-progress-bar"></div></div>
+          <div class="short-media-wrap">
+            <img class="short-poster" src="${cover}" alt="${escAttr(a.name)}" onerror="handleImgError(this)">
+            <video class="short-video" playsinline muted loop preload="none" style="opacity:0"></video>
+            <iframe class="short-iframe" style="display:none" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+            <div class="short-bottom-grad"></div>
+            <div class="short-tap-layer" onclick="handleSlideTap(this)"></div>
+            <div class="short-center-play"><i class="fas fa-play"></i></div>
+            <button class="short-mute-btn" onclick="event.stopPropagation();toggleMute(this)" aria-label="Toggle sound">
+              <i class="fas fa-volume-xmark"></i>
+            </button>
+
+            <div class="short-info">
+              <div class="si-title">${escAttr(a.name)}</div>
+              <div class="si-meta">
+                ${a.rating ? `<span><i class="fas fa-star text-yellow-500"></i> ${escAttr(a.rating)}</span>` : ''}
+                ${genre ? `<span>&middot; ${escAttr(genre)}</span>` : ''}
+                ${a.year ? `<span>&middot; ${escAttr(a.year)}</span>` : ''}
+              </div>
+              <a class="si-watch" href="watch.html?id=${encodeURIComponent(a.id)}&s=${encodeURIComponent(item.ep.season)}&e=${encodeURIComponent(item.ep.episode)}">
+                <i class="fas fa-circle-play"></i> Watch Full Episode
+              </a>
+            </div>
+
+            <div class="short-side-actions">
+              <button class="sa-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation();toggleLike(this,'${escAttr(a.id)}')">
+                <span class="sa-circle"><i class="fas fa-heart"></i></span>
+                <span class="sa-label">Like</span>
+              </button>
+              <button class="sa-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation();toggleSave(this,'${escAttr(a.id)}')">
+                <span class="sa-circle"><i class="fas fa-bookmark"></i></span>
+                <span class="sa-label">Save</span>
+              </button>
+              <button class="sa-btn" onclick="event.stopPropagation();shareShort('${escAttr(a.id)}','${escAttr(a.name)}')">
+                <span class="sa-circle"><i class="fas fa-share"></i></span>
+                <span class="sa-label">Share</span>
+              </button>
+              <a class="sa-btn" href="anime.html?id=${encodeURIComponent(a.id)}" onclick="event.stopPropagation()">
+                <span class="sa-cover"><img src="${a.image || cover}" alt="" onerror="handleImgError(this)"></span>
+              </a>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // (buildFeed removed — feed is now built incrementally by startFeed()/appendItem())
+
+    /* ============ Playback control ============ */
+    let hlsInstances = {};
+    let activeSlideEl = null;
+    let globalMuted = true;
+
+    function getVideoEl(slide) { return slide.querySelector('.short-video'); }
+    function getPosterEl(slide) { return slide.querySelector('.short-poster'); }
+
+    function activateSlide(slide) {
+      if (!slide || slide === activeSlideEl) return;
+      if (activeSlideEl) deactivateSlide(activeSlideEl);
+      activeSlideEl = slide;
+
+      const idx = Number(slide.dataset.idx);
+      const item = shortsList[idx];
+      const v = getVideoEl(slide);
+      const poster = getPosterEl(slide);
+      const bar = slide.querySelector('.short-progress-bar');
+
+      v.muted = globalMuted;
+      slide.querySelector('.short-mute-btn i').className = globalMuted ? 'fas fa-volume-xmark' : 'fas fa-volume-high';
+
+      const url = item.ep.url;
+
+      if (!item.ep.direct) {
+        // Embed source: can't reliably autoplay cross-origin, so show a tap-to-play prompt instead.
+        const iframe = slide.querySelector('.short-iframe');
+        const centerPlay = slide.querySelector('.short-center-play');
+        v.style.display = 'none';
+        centerPlay.classList.add('show');
+        slide.querySelector('.short-mute-btn').style.display = 'none';
+        const tapLayer = slide.querySelector('.short-tap-layer');
+        tapLayer.onclick = () => {
+          if (iframe.src) return;
+          iframe.src = url;
+          iframe.style.display = 'block';
+          centerPlay.classList.remove('show');
+          getPosterEl(slide).style.opacity = '0';
+        };
+        return;
+      }
+
+      if (url.includes('.m3u8')) {
+        if (window.Hls && Hls.isSupported()) {
+          const hls = new Hls({ enableWorker: true, maxBufferLength: 20 });
+          hls.loadSource(url);
+          hls.attachMedia(v);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(() => {}));
+          hlsInstances[idx] = hls;
+        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+          v.src = url;
+          v.play().catch(() => {});
+        }
+      } else {
+        v.src = url;
+        v.play().catch(() => {});
+      }
+
+      v.addEventListener('playing', () => { poster.style.opacity = '0'; v.style.opacity = '1'; }, { once: true });
+      v.ontimeupdate = () => {
+        if (v.duration) bar.style.width = ((v.currentTime / v.duration) * 100) + '%';
+      };
+
+      // Preload the next slide's poster/video source for smoother swipes
+      const nextSlide = slide.nextElementSibling;
+      if (nextSlide) {
+        const nv = getVideoEl(nextSlide);
+        if (nv && !nv.src) {
+          const nextIdx = Number(nextSlide.dataset.idx);
+          const nextUrl = shortsList[nextIdx].ep.url;
+          if (!nextUrl.includes('.m3u8')) nv.preload = 'auto';
+        }
+      }
+    }
+
+    function deactivateSlide(slide) {
+      const idx = Number(slide.dataset.idx);
+      const v = getVideoEl(slide);
+      v.pause();
+      v.removeAttribute('src');
+      v.load();
+      v.style.opacity = '0';
+      getPosterEl(slide).style.opacity = '1';
+      if (hlsInstances[idx]) { hlsInstances[idx].destroy(); delete hlsInstances[idx]; }
+      const iframe = slide.querySelector('.short-iframe');
+      if (iframe && iframe.src) { iframe.removeAttribute('src'); iframe.style.display = 'none'; }
+    }
+
+    const feedObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          activateSlide(entry.target);
+          const idx = Number(entry.target.dataset.idx);
+          // Keep browser history in sync with whichever short is on screen (works for scrolling
+          // back up through already-shown shorts too — the slide is still in the DOM).
+          const id = shortsList[idx].anime.id;
+          if (history.state?.id !== id) history.pushState({ id }, '', 'shorts.html?' + encodeURIComponent(id));
+          // Append a new random short once the user reaches the last loaded slide.
+          if (idx >= shortsList.length - 1) appendItem(pickRandomItem());
+        }
+      });
+    }, { root: document.getElementById('shortsFeed'), threshold: [0, 0.6, 1] });
+
+    // Browser Back/Forward: scroll to the matching already-loaded slide instead of reloading.
+    window.addEventListener('popstate', (e) => {
+      const id = e.state?.id;
+      if (!id) return;
+      const idx = shortsList.findIndex(it => it.anime.id === id);
+      if (idx >= 0) {
+        document.querySelector(`.short-slide[data-idx="${idx}"]`)?.scrollIntoView({ behavior: 'instant' in document.documentElement.style ? 'auto' : 'auto' });
+      }
+    });
+
+    /* ============ Interactions ============ */
+    function handleSlideTap(layer) {
+      const slide = layer.closest('.short-slide');
+      const v = getVideoEl(slide);
+      const centerPlay = slide.querySelector('.short-center-play');
+      if (v.paused) {
+        v.play().catch(() => {});
+        centerPlay.classList.remove('show');
+      } else {
+        v.pause();
+        centerPlay.classList.add('show');
+      }
+    }
+
+    function toggleMute(btn) {
+      globalMuted = !globalMuted;
+      const slide = btn.closest('.short-slide');
+      const v = getVideoEl(slide);
+      v.muted = globalMuted;
+      btn.querySelector('i').className = globalMuted ? 'fas fa-volume-xmark' : 'fas fa-volume-high';
+    }
+
+    function toggleLike(btn, id) {
+      const isLiked = btn.classList.toggle('liked');
+      if (isLiked) {
+        likedShorts.add(id);
+        const slide = btn.closest('.short-slide');
+        const burst = document.createElement('div');
+        burst.className = 'short-heart-burst';
+        burst.innerHTML = '<i class="fas fa-heart"></i>';
+        slide.querySelector('.short-media-wrap').appendChild(burst);
+        setTimeout(() => burst.remove(), 750);
+      } else {
+        likedShorts.delete(id);
+      }
+      sessionStorage.setItem('aw_shorts_liked', JSON.stringify([...likedShorts]));
+    }
+
+    function toggleSave(btn, id) {
+      let saved = JSON.parse(localStorage.getItem('aw_saved') || '[]');
+      const isSaved = saved.includes(id);
+      if (isSaved) {
+        saved = saved.filter(x => x !== id);
+        btn.classList.remove('saved');
+      } else {
+        saved.push(id);
+        btn.classList.add('saved');
+      }
+      localStorage.setItem('aw_saved', JSON.stringify(saved));
+    }
+
+    function shareShort(id, name) {
+      const url = window.location.origin + window.location.pathname.replace(/shorts\.html$/, '') + 'anime.html?id=' + encodeURIComponent(id);
+      if (navigator.share) {
+        navigator.share({ title: name, url }).catch(() => {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url);
+      }
+    }
+
+    function goBack() {
+      if (document.referrer && document.referrer.includes(window.location.host)) {
+        window.history.back();
+      } else {
+        window.location.href = 'index.html';
+      }
+    }
+
+    /* Keyboard support on desktop (arrow up/down) */
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      if (!activeSlideEl) return;
+      const target = e.key === 'ArrowDown' ? activeSlideEl.nextElementSibling : activeSlideEl.previousElementSibling;
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    /* Pause everything when tab is hidden */
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && activeSlideEl) getVideoEl(activeSlideEl).pause();
+      else if (!document.hidden && activeSlideEl) getVideoEl(activeSlideEl).play().catch(() => {});
+    });
+
+    loadData();
+  </script>
+  <script src="USDSS.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="settings.js"></script>
+  <script src="ui.js"></script>
+  <script src="usinter.js"></script>
+</body>
+</html>
