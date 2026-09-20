@@ -1664,7 +1664,11 @@
         "e14": "https://as-cdn26.top/video/0b7361b9b59ab639eb91b016ddb87421",
         "e15": "https://as-cdn26.top/video/7514b3e0aba63c1dc6d14618f0d1f386",
         "e16": "https://as-cdn26.top/video/b4aa16d8d291bc9eef7d9eccc6567683",
-        "e17": "https://as-cdn26.top/video/2874698604693bf1c82c5f264ee15e96"
+        "e17": "https://as-cdn26.top/video/2874698604693bf1c82c5f264ee15e96",
+        "e18": "https://as-cdn26.top/video/05016d42450d2a5aa62105cd48dc8ce3",
+        "e19": "https://as-cdn26.top/video/554b410858ac9b6b9b5768601594e5df",
+        "e20": "https://as-cdn26.top/video/eda9c67d6a20358927319cf3510402df",
+        "e21": "https://as-cdn26.top/video/abd5e8f8c5783bc54bc2a3c91ae68118"
       }
     },
     "details": "https://www.imdb.com/title/tt11034066/",
@@ -1675,9 +1679,9 @@
     "studio": "Bandai Namco Pictures",
     "year": 2019,
     "review": "Anyways, it's pretty good, it's great for passing the time. I've watched it alongside other HARDCORE animes.",
-    "dnt": "2026-09-15T19:01:32.832Z",
-    "lastEp": "S3E17",
-    "epcount": "E17",
+    "dnt": "2026-09-20T12:51:33.672Z",
+    "lastEp": "S3E21",
+    "epcount": "E18-E21",
     "secount": "Season 3"
   },
   {
@@ -2915,26 +2919,38 @@
     "date": "2024-11",
     "season": "season 1,2",
     "language": "Hindi (Dub)",
-    "link": "https://animesalt.ac/series/kaiju-no-8/",
-    "videoUrl": "",
-    "seasons": [],
-    "episodeLinks": {},
+    "seasons": [
+      "Season 1",
+      "Season 2"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "https://as-cdn26.top/video/39d6530ef19d55fc98e82cb3907519fa",
+        "e2": "https://as-cdn26.top/video/032abcd424b4312e7087f434ef1c0094",
+        "e3": "https://as-cdn26.top/video/3a1dd98341fafc1dfe9bcf36360e6b84",
+        "e4": "https://as-cdn26.top/video/100d9f30ca54b18d14821dc88fea0631",
+        "e5": "https://as-cdn26.top/video/d51b416788b6ee70eb0c381c06efc9f1",
+        "e6": "https://as-cdn26.top/video/2056d8c1dec3d12cbce646b348d189d1",
+        "e7": "https://as-cdn26.top/video/00a03ec6533ca7f5c644d198d815329c",
+        "e8": "https://as-cdn26.top/video/f12ee9734e1edf70ed02d9829018b3d9",
+        "e9": "https://as-cdn26.top/video/81b3833e2504647f9d794f7d7b9bf341",
+        "e10": "https://as-cdn26.top/video/e2ad76f2326fbc6b56a45a56c59fafdb",
+        "e11": "https://as-cdn26.top/video/b440509a0106086a67bc2ea9df0a1dab",
+        "e12": "https://as-cdn26.top/video/1c6a0198177bfcc9bd93f6aab94aad3c"
+      }
+    },
     "details": "https://www.imdb.com/title/tt21975436/",
-    "state": "plan",
-    "sst": "",
-    "rank": null,
+    "state": "watching",
     "rating": 5.6,
     "tear": "A",
     "episodes": 23,
     "studio": "Production I.G",
     "year": 2024,
     "review": "In a world plagued by creatures known as Kaiju, Kafka Hibino aspired to enlist in The Defense Force. He makes a promise to enlist with his childhood friend, Mina Ashiro. Soon, life takes them in separate ways. While employed cleaning up after Kaiju battles, Kafka meets Reno Ichikawa. Reno's determination to join The Defense Force reawakens Kafka's promise to join Mina and protect humanity",
-    "tags": [
-      "Go",
-      "Watch",
-      "Fun",
-      "Animation"
-    ]
+    "dnt": "2026-09-20T12:49:42.617Z",
+    "lastEp": "S1E12",
+    "epcount": "E1-E12",
+    "secount": "Season 1"
   },
   {
     "id": "Why-Raeliana-Ended-Up-at-the-Duke's-Mansion",
@@ -4019,7 +4035,8 @@
         "e13": "https://as-cdn26.top/video/ed0eebbaa23beae2d9fcb2fd70cd6feb",
         "e14": "https://as-cdn26.top/video/6e890e85592f3ffa529332e0e35bc207",
         "e15": "https://as-cdn26.top/video/9a1a05c42c96b161ecd2884b758e114a",
-        "e16": "https://as-cdn26.top/video/108fe115000c147427da50c2b0c9ce31"
+        "e16": "https://as-cdn26.top/video/108fe115000c147427da50c2b0c9ce31",
+        "e17": "https://as-cdn26.top/video/62f6e7ceadd1f1eb64fe5d6936e7122b"
       }
     },
     "details": "https://www.imdb.com/title/tt9054364/",
@@ -4032,9 +4049,9 @@
     "studio": "Eight Bit",
     "year": 2019,
     "review": "This story takes place before Rimuru's reincarnation. Shizu, also known as the Conqueror of Flames, responds to an urgent request calling her to the Kingdom of Filtwood. When she reaches the castle, many adventurers are already there. What request could have demanded such a huge gathering? It turns out a demon has been revived, and the adventurers have been called to subjugate it. It is said that more than ten of the most skilled adventurers have already been killed by this demon. But there is more to this request than meets the eye...",
-    "dnt": "2026-09-11T17:23:07.723Z",
-    "lastEp": "S4E16",
-    "epcount": "E16",
+    "dnt": "2026-09-20T12:41:46.425Z",
+    "lastEp": "S4E17",
+    "epcount": "E17",
     "secount": "Season 4"
   },
   {
@@ -4741,7 +4758,8 @@
         "e17": "https://as-cdn26.top/video/acb3e29171829ebd25544aa20017060c",
         "e18": "https://as-cdn26.top/video/d7416380bea3deeffaa942591263d351",
         "e19": "https://as-cdn26.top/video/93dd84d3f9b0cc34957a3d9166d2d75e",
-        "e20": "https://as-cdn26.top/video/5328c22dc818e19521b07a7a36ca1620"
+        "e20": "https://as-cdn26.top/video/5328c22dc818e19521b07a7a36ca1620",
+        "e21": "https://as-cdn26.top/video/d95c6aef0aede9da6da41723b5ab4279"
       }
     },
     "details": "https://www.imdb.com/title/tt37532356/",
@@ -4752,9 +4770,9 @@
     "studio": "Bones",
     "year": 2026,
     "review": "Yuru, a young hunter, lives in a small village deep in the mountains, hunting wild game and leading a humble life with Asa, his younger twin sister. Their peaceful lives are torn apart when a dragon’s roar echoes across the sky. What secrets lurk within their village? What fate awaits them?",
-    "dnt": "2026-09-13T11:52:23.890Z",
-    "lastEp": "S1E20",
-    "epcount": "E20",
+    "dnt": "2026-09-20T12:53:31.232Z",
+    "lastEp": "S1E21",
+    "epcount": "E21",
     "secount": "Season 1"
   },
   {
@@ -9744,7 +9762,9 @@
         "e6": "https://as-cdn26.top/video/b71faf915b91184a5c4dc56c7d6262da",
         "e7": "https://as-cdn26.top/video/99bc147ed9068c9f2dbfc242373977eb",
         "e8": "https://as-cdn26.top/video/821b7564a31a15c15f5670de9e5e127d",
-        "e9": "https://as-cdn26.top/video/6b027466c3ca21b6d1a1d594d6820833"
+        "e9": "https://as-cdn26.top/video/6b027466c3ca21b6d1a1d594d6820833",
+        "e10": "https://as-cdn26.top/video/bfaadb09eb2d1eb21b7b5f1eac3ea902",
+        "e11": "https://as-cdn26.top/video/c764288af5c0147a988705c2e7826e28"
       }
     },
     "details": "https://www.imdb.com/title/tt37614297/",
@@ -9755,9 +9775,9 @@
     "studio": "Asahi Production",
     "year": 2026,
     "review": "Sasaki is an overworked salaryman drifting through the corporate grind, sustained by cigarettes and the cheerful service and smile of Yamada, the clerk at his favorite supermarket. But one night after a grueling shift, he arrives late to find Yamada nowhere to be seen. With nowhere left to smoke, his spirits sink—until a pierced young woman calls out to him: “You can smoke here.”",
-    "dnt": "2026-09-04T17:32:35.979Z",
-    "lastEp": "S1E9",
-    "epcount": "E9",
+    "dnt": "2026-09-20T12:40:00.211Z",
+    "lastEp": "S1E11",
+    "epcount": "E10-11",
     "secount": "Season 1"
   },
   {
@@ -10315,7 +10335,8 @@
         "e5": "https://as-cdn26.top/video/68e3bf852693ad8a72f32fdfe50dc6d4",
         "e6": "https://as-cdn26.top/video/8acac47f63dc5da08a77ff8eca8d3986",
         "e7": "https://as-cdn26.top/video/c14d241acbc5861cfb8bd95cf2535812",
-        "e8": "https://as-cdn26.top/video/37c429609aa5ffe35484714281ebcb23"
+        "e8": "https://as-cdn26.top/video/37c429609aa5ffe35484714281ebcb23",
+        "e9": "https://as-cdn26.top/video/694a6dc002be509353ef2c5dd874dfab"
       }
     },
     "details": "imdb.com/title/tt39551330/",
@@ -10326,9 +10347,9 @@
     "studio": "Bibury Animation Studios",
     "year": 2026,
     "review": "Catgirl Yani struggles to pay her rent and keep a job while feeding her smoking habit. As her loved ones' concerns grow, she must rethink her future.",
-    "dnt": "2026-09-04T17:31:41.900Z",
-    "lastEp": "S1E8",
-    "epcount": "E8",
+    "dnt": "2026-09-20T12:39:05.889Z",
+    "lastEp": "S1E9",
+    "epcount": "E9",
     "secount": "Season 1"
   },
   {
@@ -10814,7 +10835,8 @@
         "e5": "https://as-cdn26.top/video/b0513535543a50eb3038a8e06541be1d",
         "e6": "https://as-cdn26.top/video/de981004ec1ae72b933d28f84f8c0271",
         "e7": "https://as-cdn26.top/video/92f2c86007260e130e78c68fb7d800a1",
-        "e8": "https://as-cdn26.top/video/99e54f99035fe00a5b02e468dedeb7fe"
+        "e8": "https://as-cdn26.top/video/99e54f99035fe00a5b02e468dedeb7fe",
+        "e9": "https://as-cdn26.top/video/03f68714dba796f8d6b268029d0e62c4"
       }
     },
     "details": "imdb.com/title/tt39443204/",
@@ -10825,9 +10847,9 @@
     "studio": "Gekkou",
     "year": 2026,
     "review": "Luck, an S-rank mage in the hero's party, makes a last stand against the Demon King to save his companions. When he finally returns victorious, ten years have passed, and the world praises him as a legendary hero who died in battle. Unable to reclaim his former life, Luck conceals his identity and begins again as \"Lock,\" an F-rank adventurer forging a future in a world that moved on without him.",
-    "dnt": "2026-09-11T17:24:03.842Z",
-    "lastEp": "S1E8",
-    "epcount": "E8",
+    "dnt": "2026-09-20T12:40:56.601Z",
+    "lastEp": "S1E9",
+    "epcount": "E9",
     "secount": "Season 1"
   },
   {
@@ -11077,7 +11099,8 @@
         "e4": "https://rubystm.com/e/ugj7bbw3bv5f.html",
         "e5": "https://as-cdn26.top/video/803a8c2d069729f26ac947b48f7fc776",
         "e6": "https://as-cdn26.top/video/f48db3cd91ebb288ff33e95493b6329b",
-        "e7": "https://as-cdn26.top/video/22269b8cb48a778bb09fdfe1d3a37911"
+        "e7": "https://as-cdn26.top/video/22269b8cb48a778bb09fdfe1d3a37911",
+        "e8": "https://as-cdn26.top/video/c80e2e3dfd073a58a7868ba33aed57a9"
       }
     },
     "details": "https://www.imdb.com/title/tt41276828/",
@@ -11088,9 +11111,9 @@
     "studio": "LIDEN FILMS",
     "year": 2026,
     "review": "Once the Demon King, now a shut-in NEET—Ryusei Narukami's second life is anything but peaceful! When Meteor Hanaori, the Hero who once defeated him, suddenly returns as a normal high school girl, his world is thrown into chaos. Determined to change, Ryusei reenters society as a teacher and ends up teaching at her school! Their explosive reunion reignites the past—and sparks an unexpected love!",
-    "dnt": "2026-09-13T11:53:02.954Z",
-    "lastEp": "S1E7",
-    "epcount": "E7",
+    "dnt": "2026-09-20T12:33:34.258Z",
+    "lastEp": "S1E8",
+    "epcount": "E8",
     "secount": "Season 1"
   },
   {
@@ -11428,7 +11451,8 @@
         "e3": "https://as-cdn26.top/video/8995a6c234df0504e73ff81dd3af8ff5",
         "e4": "https://as-cdn26.top/video/65b5fc46fc82087ba24609b14f2dc4ff",
         "e5": "https://as-cdn26.top/video/8d4965eaf92972d652fd44ece6f79533",
-        "e6": "https://as-cdn26.top/video/bdbe575de5ecbc20be758c6f4e105da6"
+        "e6": "https://as-cdn26.top/video/bdbe575de5ecbc20be758c6f4e105da6",
+        "e7": "https://as-cdn26.top/video/8c2a6cec60863b5ffd776ad9ff57495a"
       }
     },
     "details": "https://www.imdb.com/title/tt27187054/",
@@ -11439,9 +11463,9 @@
     "studio": "CloverWorks",
     "year": 2024,
     "review": "Set between the Kamakura and Muromachi periods, during the Kenmu Restoration, the story follows the tale of Hojo Tokiyuki, a boy on the run after his family is overthrown by Ashikaga Takauji. With his only allies being a shady priest and his followers, the young lord must seek revenge and regain his glory, with his only weapon: a superhuman ability to flee and hide.",
-    "dnt": "2026-09-11T17:25:03.002Z",
-    "lastEp": "S2E6",
-    "epcount": "E6",
+    "dnt": "2026-09-20T12:44:17.505Z",
+    "lastEp": "S2E7",
+    "epcount": "E7",
     "secount": "Season 2"
   },
   {
@@ -11546,7 +11570,8 @@
         "e5": "https://as-cdn26.top/video/42cf125df2e054b2a12810263cda40b0",
         "e6": "https://as-cdn26.top/video/b759459d85d5c74ebd26499bbdb165e1",
         "e7": "https://as-cdn26.top/video/d54be4ff5a9dad8e016206a562bb7915",
-        "e8": "https://as-cdn26.top/video/7cbc8120edbc9108520a43532f5439a6"
+        "e8": "https://as-cdn26.top/video/7cbc8120edbc9108520a43532f5439a6",
+        "e9": "https://as-cdn26.top/video/9a469156f5e380345f69dba2862d44e0"
       }
     },
     "details": "https://www.imdb.com/title/tt33334216/",
@@ -11557,9 +11582,9 @@
     "studio": "GoHands",
     "year": 2026,
     "review": "Born into a prestigious family of master swordsmen, Elymas Edvaughn's future shatters when he awakens the so-called \"defective\" Heavy Knight class. Disowned and cast out, he regains memories of another life—and realizes this world mirrors a VR game he once mastered. Armed with knowledge no one else possesses, he sets out to rewrite his fate and prove the strength of the \"weakest\" class.",
-    "dnt": "2026-09-10T20:24:53.023Z",
-    "lastEp": "S1E8",
-    "epcount": "E8",
+    "dnt": "2026-09-20T12:38:26.115Z",
+    "lastEp": "S1E9",
+    "epcount": "E9",
     "secount": "Season 1"
   },
   {
@@ -11708,7 +11733,8 @@
         "e2": "https://rubystm.com/e/s9zcvhw2hfd4.html",
         "e3": "https://as-cdn26.top/video/e3f2b325739bbe549d3875450b27a3a1",
         "e4": "https://as-cdn26.top/video/a9a2c061a1c2743d489c6863eae6725a",
-        "e5": "https://as-cdn26.top/video/fd11255337d0a02076a3915eb1344bd9"
+        "e5": "https://as-cdn26.top/video/fd11255337d0a02076a3915eb1344bd9",
+        "e6": "https://as-cdn26.top/video/3d8338aae982b9c8be5f66ff9b91823e"
       }
     },
     "details": "https://www.imdb.com/title/tt39281887/",
@@ -11719,9 +11745,9 @@
     "studio": "Science SARU",
     "year": 2026,
     "review": "After losing her mother and her homeland, Sitara’s despair transforms into determination with the power of knowledge. New possibilities unfold when a family of scholars takes her in, deepening her education. Meanwhile, Genghis Khan’s Mongol Empire conquers nation after nation, nearing Sitara’s new home. After the Fourth Prince of the empire takes her captive, a flame of revenge is ignited.",
-    "dnt": "2026-09-13T11:51:36.410Z",
-    "lastEp": "S1E5",
-    "epcount": "E5",
+    "dnt": "2026-09-20T12:54:32.512Z",
+    "lastEp": "S1E6",
+    "epcount": "E6",
     "secount": "Season 1"
   },
   {
@@ -12209,7 +12235,9 @@
     "episodeLinks": {
       "s1": {
         "e1": "https://as-cdn26.top/video/5f22e82f3d2c279d57c76a0513276abb",
-        "e2": "https://as-cdn26.top/video/12d7d2b7f1a9db42326ae3f428f43a7a"
+        "e2": "https://as-cdn26.top/video/12d7d2b7f1a9db42326ae3f428f43a7a",
+        "e3": "https://as-cdn26.top/video/ed3fc73e6c5e6b0723e9e7935f50947a",
+        "e4": "https://as-cdn26.top/video/18c746a0e715b82e90f0b63ba322576f"
       }
     },
     "details": "https://www.imdb.com/title/tt37532893/",
@@ -12220,9 +12248,9 @@
     "studio": "100studio",
     "year": 2026,
     "review": "Jiro Azuma is no average high schooler. A descendant of ninjas and trained in the ancient warrior art of the shinobi, Jiro is also able to talk with animals. After a mysterious encounter with an injured cat named Rago, Jiro discovers the feline is actually the legendary Black Star of Doom! Joined by the Bureau of Espionage, they fight off swarms of mononoke lying in wait to exploit Rago’s powers.",
-    "dnt": "2026-09-05T18:28:34.608Z",
-    "lastEp": "S1E2",
-    "epcount": "E2",
+    "dnt": "2026-09-20T12:52:51.089Z",
+    "lastEp": "S1E4",
+    "epcount": "E3-E4",
     "secount": "Season 1"
   },
   {
@@ -12299,6 +12327,47 @@
     "dnt": "2026-09-07T18:23:04.282Z",
     "lastEp": "S1E36",
     "epcount": "E25-E36",
+    "secount": "Season 1"
+  },
+  {
+    "id": "The Frontier Lord Begins with Zero Subjects",
+    "name": "The Frontier Lord Begins with Zero Subjects",
+    "altName": "領民0人スタートの辺境領主様",
+    "image": "https://image.tmdb.org/t/p/w780/vHTHQZy3JhgoVMkbXlOot5gOUzZ.jpg",
+    "genre": [
+      "Action & Adventure",
+      "Animation",
+      "Comedy",
+      "Sci-Fi & Fantasy",
+      "Amazon Prime Video",
+      "Anime",
+      "Anime Series",
+      "Animetimes",
+      "Hindi",
+      "Japaneses"
+    ],
+    "date": "2026-09",
+    "season": "Season 1",
+    "language": "Japanese, Hindi",
+    "seasons": [
+      "Season 1"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "https://as-cdn26.top/video/fcbb3a1c04ec11f1506563c26ca63774"
+      }
+    },
+    "details": "https://www.imdb.com/title/tt41054252",
+    "state": "watching",
+    "rating": 6.4,
+    "tear": "C",
+    "episodes": 12,
+    "studio": "animation studio42",
+    "year": 2026,
+    "review": "The war is over, and hero Dias is finally rewarded with land of his own—only to discover it's a barren frontier with no people, no villages, and no sign of civilization. With nothing but endless grassland ahead of him, Dias sets out to build a domain from the ground up. But after meeting Alna, a mysterious girl with a blue horn, his lonely frontier is about to spring to life.",
+    "dnt": "2026-09-20T12:37:38.521Z",
+    "lastEp": "S1E1",
+    "epcount": "E1",
     "secount": "Season 1"
   }
 ]
