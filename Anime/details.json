@@ -5978,7 +5978,8 @@
       "s3": {
         "e1": "https://as-cdn26.top/video/b7f0b1c1761095727bb5513df24a3302",
         "e2": "https://as-cdn26.top/video/d5b2473a8cb10baff0ddae36ca49efa9",
-        "e3": "https://as-cdn26.top/video/7377f47f95a1202ea8d330061b674dea"
+        "e3": "https://as-cdn26.top/video/7377f47f95a1202ea8d330061b674dea",
+        "e4": "https://as-cdn26.top/video/2439bea046c7d9a2a716954e44d361d3"
       }
     },
     "details": "https://www.imdb.com/title/tt13293588/",
@@ -5989,9 +5990,9 @@
     "studio": "Studio Bind",
     "year": 2021,
     "review": "Despite being bullied, scorned, and oppressed all of his life, a 34-year-old shut-in still found the resolve to attempt something heroic—only for it to end in a tragic accident. But in a twist of fate, he awakens in another world as Rudeus Greyrat, starting life again as a baby born to two loving parents. Preserving his memories and knowledge from his previous life, Rudeus quickly adapts to his new environment. With the mind of a grown adult, he starts to display magical talent that exceeds all expectations, honing his skill with the help of a mage named Roxy Migurdia. Rudeus learns swordplay from his father, Paul, and meets Sylphiette, a girl his age who quickly becomes his closest friend.",
-    "dnt": "2026-09-14T17:04:47.542Z",
-    "lastEp": "S3E3",
-    "epcount": "E3",
+    "dnt": "2026-09-20T14:27:05.847Z",
+    "lastEp": "S3E4",
+    "epcount": "E4",
     "secount": "Season 3"
   },
   {
@@ -6222,27 +6223,37 @@
     "date": "2026-05",
     "season": "Season 1",
     "language": "English Hindi Japanese Malayalam Tamil",
-    "link": "",
-    "videoUrl": "",
     "seasons": [
       "Season 1"
     ],
-    "episodeLinks": {},
+    "episodeLinks": {
+      "s1": {
+        "e1": "https://as-cdn26.top/video/cd63a3eec3319fd9c84c942a08316e00",
+        "e2": "https://as-cdn26.top/video/8c3039bd5842dca3d944faab91447818",
+        "e3": "https://as-cdn26.top/video/ff1418e8cc993fe8abcfe3ce2003e5c5",
+        "e4": "https://as-cdn26.top/video/eb1e78328c46506b46a4ac4a1e378b91",
+        "e5": "https://as-cdn26.top/video/7503cfacd12053d309b6bed5c89de212",
+        "e6": "https://as-cdn26.top/video/49ad23d1ec9fa4bd8d77d02681df5cfa",
+        "e7": "https://as-cdn26.top/video/6ae07dcb33ec3b7c814df797cbda0f87",
+        "e8": "https://as-cdn26.top/video/3c947bc2f7ff007b86a9428b74654de5",
+        "e9": "https://as-cdn26.top/video/a3545bd79d31f9a72d3a78690adf73fc",
+        "e10": "https://as-cdn26.top/video/d7fd118e6f226a71b5f1ffe10efd0a78",
+        "e11": "https://as-cdn26.top/video/537de305e941fccdbba5627e3eefbb24",
+        "e12": "https://as-cdn26.top/video/96c5c28becf18e71190460a9955aa4d8"
+      }
+    },
     "details": "https://www.imdb.com/title/tt7441658/",
-    "state": "plan",
-    "sst": "",
-    "rank": null,
+    "state": "watching",
     "rating": 8.5,
     "tear": "SS",
     "episodes": 51,
     "studio": "Studio Pierrot Co., Ltd",
     "year": 2017,
     "review": "Asta and Yuno are two orphans who want the same thing: to become the Wizard King. Locked in a friendly rivalry, they work hard towards their goal. While Yuno excels at magic, Asta has a problem uncommon in this world: he has no powers! But, on the day they receive their grimoires, they surprise everyone. To reach their goal, they’ll each find their own path to greatness—with or without magic.",
-    "tags": [
-      "Go now",
-      "Watch now",
-      "Goat of anime"
-    ]
+    "dnt": "2026-09-20T16:32:46.696Z",
+    "lastEp": "S1E12",
+    "epcount": "E1-E12",
+    "secount": "Season 1"
   },
   {
     "id": "Dragon-Ball",
@@ -12368,6 +12379,61 @@
     "dnt": "2026-09-20T12:37:38.521Z",
     "lastEp": "S1E1",
     "epcount": "E1",
+    "secount": "Season 1"
+  },
+  {
+    "id": "MASHLE: MAGIC AND MUSCLES",
+    "name": "MASHLE: MAGIC AND MUSCLES",
+    "altName": "マッシュル-MASHLE",
+    "image": "https://image.tmdb.org/t/p/w780/dzCABR0joqtA0flLYpWAXc8mML1.jpg",
+    "genre": [
+      "Action & Adventure",
+      "Animation",
+      "Anime Series",
+      "Comedy",
+      "Crunchyroll",
+      "English",
+      "Hindi",
+      "Japaneses",
+      "Ongoing",
+      "Sci-Fi & Fantasy",
+      "Tamil",
+      "Telugu"
+    ],
+    "date": "2026-09",
+    "season": "Season 1,2",
+    "language": "Hindi – Tamil – Telugu – English – Japanese",
+    "seasons": [
+      "Season 1",
+      "Season 2"
+    ],
+    "episodeLinks": {
+      "s1": {
+        "e1": "https://as-cdn26.top/video/c6776f93bc9afe2e511a1dbd5478362c",
+        "e2": "https://as-cdn26.top/video/c74c4bf0dad9cbae3d80faa054b7d8ca",
+        "e3": "https://as-cdn26.top/video/15bb63b28926cd083b15e3b97567bbea",
+        "e4": "https://as-cdn26.top/video/1f8f69b53d86cf2a952bf95d87a59b0c",
+        "e5": "https://as-cdn26.top/video/be315e7f05e9f13629031915fe87ad44",
+        "e6": "https://as-cdn26.top/video/f0a5944c6a815b7bb44323d783eede4d",
+        "e7": "https://as-cdn26.top/video/ac6b3cce8c74b2e23688c3e45532e2a7",
+        "e8": "https://as-cdn26.top/video/a62344a91db0bb372d136f651af0ac97",
+        "e9": "https://as-cdn26.top/video/c570c225d1fb8a72ad79995dd17a77bc",
+        "e10": "https://as-cdn26.top/video/2048d4501a8ee60d3d586159d163dbeb",
+        "e11": "https://as-cdn26.top/video/601ac804ce8eac52499a1cde96bae911",
+        "e12": "https://as-cdn26.top/video/350a7f5ee27d22dbe36698b10930ff96"
+      }
+    },
+    "details": "https://www.imdb.com/title/tt21209804",
+    "state": "watching",
+    "rating": 7.5,
+    "tear": "A",
+    "episodes": 24,
+    "studio": "A-1 Pictures",
+    "year": 2023,
+    "review": "MASHLE: MAGIC AND MUSCLES - In the magic realm, magic is everything—everyone can use it, and one’s social status is determined by their skill level. Deep in the forest, oblivious to the ways of the world, lives Mash. Thanks to his daily training, he’s become a fitness god, but he harbors a secret that could turn his life upside down—he can’t use magic! When he’s found out, rather than his life being over, he’s unexpectedly enrolled in magic school, where he must beat the competition!",
+    "dnt": "2026-09-20T14:24:55.455Z",
+    "lastEp": "S1E12",
+    "epcount": "E1-E12",
     "secount": "Season 1"
   }
 ]
