@@ -2915,20 +2915,33 @@
         "e10": "https://as-cdn26.top/video/e2ad76f2326fbc6b56a45a56c59fafdb",
         "e11": "https://as-cdn26.top/video/b440509a0106086a67bc2ea9df0a1dab",
         "e12": "https://as-cdn26.top/video/1c6a0198177bfcc9bd93f6aab94aad3c"
+      },
+      "s2": {
+        "e1": "https://as-cdn26.top/video/803ae237d2df8bdde7bcbd872396d192",
+        "e2": "https://as-cdn26.top/video/a6dd1cdf6f9693dcf11c4450fab0e3f2",
+        "e3": "https://as-cdn26.top/video/5b18e1a3e2092783aea4b1aa4a894d8a",
+        "e4": "https://as-cdn26.top/video/fa7410de86471342fc198f32104ccb31",
+        "e5": "https://as-cdn26.top/video/2e64b43ae33b6a9c6718e03b11f7f24c",
+        "e6": "https://as-cdn26.top/video/0a94234e0f6cc54155bf0f806aa1aac2",
+        "e7": "https://as-cdn26.top/video/00f842ec2fc7bc8a6968c511f44dba04",
+        "e8": "https://as-cdn26.top/video/a2a750ff64f34c66249d0f7d3dd42004",
+        "e9": "https://as-cdn26.top/video/698a2826fe9b85734ee6f3d543d73a80",
+        "e10": "https://as-cdn26.top/video/e6496f5f04bc759fa7a33e69f604ef17",
+        "e11": "https://as-cdn26.top/video/1f689175473dcc4f921a76933e45bbb5"
       }
     },
     "details": "https://www.imdb.com/title/tt21975436/",
-    "state": "watching",
+    "state": "watched",
     "rating": 5.6,
     "tear": "A",
     "episodes": 23,
     "studio": "Production I.G",
     "year": 2024,
     "review": "In a world plagued by creatures known as Kaiju, Kafka Hibino aspired to enlist in The Defense Force. He makes a promise to enlist with his childhood friend, Mina Ashiro. Soon, life takes them in separate ways. While employed cleaning up after Kaiju battles, Kafka meets Reno Ichikawa. Reno's determination to join The Defense Force reawakens Kafka's promise to join Mina and protect humanity",
-    "dnt": "2026-09-20T12:49:42.617Z",
-    "lastEp": "S1E12",
-    "epcount": "E1-E12",
-    "secount": "Season 1"
+    "dnt": "2026-09-22T11:54:04.646Z",
+    "lastEp": "S2E11",
+    "epcount": "E1-E11",
+    "secount": "Season 2"
   },
   {
     "id": "Why-Raeliana-Ended-Up-at-the-Duke's-Mansion",
@@ -6217,7 +6230,19 @@
         "e9": "https://as-cdn26.top/video/a3545bd79d31f9a72d3a78690adf73fc",
         "e10": "https://as-cdn26.top/video/d7fd118e6f226a71b5f1ffe10efd0a78",
         "e11": "https://as-cdn26.top/video/537de305e941fccdbba5627e3eefbb24",
-        "e12": "https://as-cdn26.top/video/96c5c28becf18e71190460a9955aa4d8"
+        "e12": "https://as-cdn26.top/video/96c5c28becf18e71190460a9955aa4d8",
+        "e13": "https://as-cdn26.top/video/f9d1152547c0bde01830b7e8bd60024c",
+        "e14": "https://as-cdn26.top/video/4e87337f366f72daa424dae11df0538c",
+        "e15": "https://as-cdn26.top/video/09fb05dd477d4ae6479985ca56c5a12d",
+        "e16": "https://as-cdn26.top/video/d072677d210ac4c03ba046120f0802ec",
+        "e17": "https://as-cdn26.top/video/69d1fc78dbda242c43ad6590368912d4",
+        "e18": "https://as-cdn26.top/video/19de10adbaa1b2ee13f77f679fa1483a",
+        "e19": "https://as-cdn26.top/video/a19acd7d2689207f9047f8cb01357370",
+        "e20": "https://as-cdn26.top/video/c164bbc9d6c72a52c599bbb43d8db8e1",
+        "e21": "https://as-cdn26.top/video/68c694de94e6c110f42e587e8e48d852",
+        "e22": "https://as-cdn26.top/video/d305281faf947ca7acade9ad5c8c818c",
+        "e23": "https://as-cdn26.top/video/fb8feff253bb6c834deb61ec76baa893",
+        "e24": "https://as-cdn26.top/video/2f25f6e326adb93c5787175dda209ab6"
       }
     },
     "details": "https://www.imdb.com/title/tt7441658/",
@@ -6228,9 +6253,9 @@
     "studio": "Studio Pierrot Co., Ltd",
     "year": 2017,
     "review": "Asta and Yuno are two orphans who want the same thing: to become the Wizard King. Locked in a friendly rivalry, they work hard towards their goal. While Yuno excels at magic, Asta has a problem uncommon in this world: he has no powers! But, on the day they receive their grimoires, they surprise everyone. To reach their goal, they’ll each find their own path to greatness—with or without magic.",
-    "dnt": "2026-09-20T16:32:46.696Z",
-    "lastEp": "S1E12",
-    "epcount": "E1-E12",
+    "dnt": "2026-09-22T12:09:24.796Z",
+    "lastEp": "S1E24",
+    "epcount": "E13-E24",
     "secount": "Season 1"
   },
   {
@@ -12420,19 +12445,33 @@
         "e10": "https://as-cdn26.top/video/2048d4501a8ee60d3d586159d163dbeb",
         "e11": "https://as-cdn26.top/video/601ac804ce8eac52499a1cde96bae911",
         "e12": "https://as-cdn26.top/video/350a7f5ee27d22dbe36698b10930ff96"
+      },
+      "s2": {
+        "e1": "https://as-cdn26.top/video/8dbdbf0cedc89e9a82967a7d983c11ca",
+        "e2": "https://as-cdn26.top/video/edd47ba7fa1bbff38973841c9cd0733c",
+        "e3": "https://as-cdn26.top/video/dc1d3cb9517bda57aacd65f5b1986c6e",
+        "e4": "https://as-cdn26.top/video/fe998b49c41c4208c968bce204fa1cbb",
+        "e5": "https://as-cdn26.top/video/c24c65259d90ed4a19ab37b6fd6fe716",
+        "e6": "https://as-cdn26.top/video/0f0e13216262f4a201bec128044dd30f",
+        "e7": "https://as-cdn26.top/video/002c3a40ac50dc870f1ff386f11f5bae",
+        "e8": "https://as-cdn26.top/video/1ac978c8020be6d7212aa71d4f040fc3",
+        "e9": "https://as-cdn26.top/video/5781a2637b476d781eb3134581b32044",
+        "e10": "https://as-cdn26.top/video/bea5b83d3a056039813089e7aa7f7e9a",
+        "e11": "https://as-cdn26.top/video/5ad4f73ea28ca73f8fe529067b237db1",
+        "e12": "https://as-cdn26.top/video/de1b8f4be941d637edb68ee6a298538c"
       }
     },
     "details": "https://www.imdb.com/title/tt21209804",
-    "state": "watching",
+    "state": "watched",
     "rating": 7.5,
     "tear": "A",
     "episodes": 24,
     "studio": "A-1 Pictures",
     "year": 2023,
     "review": "MASHLE: MAGIC AND MUSCLES - In the magic realm, magic is everything—everyone can use it, and one’s social status is determined by their skill level. Deep in the forest, oblivious to the ways of the world, lives Mash. Thanks to his daily training, he’s become a fitness god, but he harbors a secret that could turn his life upside down—he can’t use magic! When he’s found out, rather than his life being over, he’s unexpectedly enrolled in magic school, where he must beat the competition!",
-    "dnt": "2026-09-20T14:24:55.455Z",
-    "lastEp": "S1E12",
+    "dnt": "2026-09-22T15:38:36.442Z",
+    "lastEp": "S2E12",
     "epcount": "E1-E12",
-    "secount": "Season 1"
+    "secount": "Season 2"
   }
 ]
